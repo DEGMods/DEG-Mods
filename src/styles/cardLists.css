@@ -1,0 +1,87 @@
+.IBMSecMain.IBMSMListWrapper {
+  grid-gap: 25px 0;
+}
+
+.IBMSMList {
+  width: 100%;
+  display: grid;
+  grid-template-columns: 1fr 1fr 1fr 1fr;
+  grid-gap: 15px;
+}
+
+.IBMSMListAlt {
+  grid-template-columns: 1fr 1fr 1fr;
+}
+
+@media (max-width: 992px) {
+  .IBMSMList {
+    display: grid;
+    grid-template-columns: 1fr 1fr 1fr;
+    grid-gap: 25px;
+  }
+}
+
+@media (max-width: 768px) {
+  .IBMSMList {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    grid-gap: 25px;
+  }
+}
+
+@media (max-width: 576px) {
+  .IBMSMList {
+    display: grid;
+    grid-template-columns: 1fr;
+    grid-gap: 25px;
+  }
+}
+
+.IBMSMList.IBMSMListFeatured {
+  grid-template-columns: 1fr 1fr 1fr;
+}
+
+@media (max-width: 768px) {
+  .IBMSMList.IBMSMListFeatured {
+    grid-template-columns: 1fr 1fr;
+  }
+}
+
+@media (max-width: 576px) {
+  .IBMSMList.IBMSMListFeatured {
+    grid-template-columns: 1fr;
+  }
+}
+
+.IBMSMList.IBMSMListFeaturedAlt {
+  grid-template-columns: 1fr 1fr 1fr 1fr 1fr;
+}
+
+@media (max-width: 992px) {
+  .IBMSMList.IBMSMListFeaturedAlt {
+    grid-template-columns: 1fr 1fr 1fr;
+  }
+}
+
+@media (max-width: 768px) {
+  .IBMSMList.IBMSMListFeaturedAlt {
+    grid-template-columns: 1fr 1fr;
+  }
+}
+
+@media (max-width: 360px) {
+  .IBMSMList.IBMSMListFeaturedAlt {
+    grid-template-columns: 1fr;
+  }
+}
+
+.IBMSMList.IBMSMListFeed {
+  grid-template-columns: 1fr 1fr;
+}
+
+@media (max-width: 1200px) {
+  .IBMSMList.IBMSMListFeed {
+    grid-template-columns: 1fr;
+  }
+}
+

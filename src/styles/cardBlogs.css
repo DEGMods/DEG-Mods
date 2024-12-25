@@ -1,0 +1,65 @@
+.cardBlogMain {
+  padding-top: 56.25%;
+  position: relative;
+  border-radius: 10px;
+}
+
+.cardBlogMainWrapperLink {
+  transition: ease 0.4s;
+  text-decoration: unset;
+  color: unset;
+  overflow: hidden;
+  border-radius: 10px;
+  box-shadow: 0 0 8px 0 rgb(0,0,0,0.1);
+  position: relative;
+  border: solid 1px #232323;
+}
+
+.cardBlogMainWrapperLink:hover {
+  transition: ease 0.4s;
+  transform: scale(1.03);
+}
+
+.cardBlogMainWrapperLink:active {
+  transition: ease 0.1s;
+  transform: scale(1.02);
+}
+
+.cardBlogMainInside {
+  transition: ease 0.4s;
+  position: absolute;
+  top: 0;
+  bottom: 0;
+  left: 0;
+  right: 0;
+  display: flex;
+  flex-direction: column;
+  justify-content: end;
+  align-items: start;
+  padding: 15px;
+  background: linear-gradient(rgb(0 0 0 / 0%) 0%, rgb(0 0 0 / 75%) 100%);
+}
+
+.cardBlogMainInside:hover {
+  transition: ease 0.4s;
+  background: linear-gradient(rgb(0 0 0 / 35%) 0%, rgb(0 0 0 / 85%) 100%);
+  backdrop-filter: blur(5px);
+}
+
+.cardBlogMainInsideTitle {
+  display: -webkit-box;
+  -webkit-box-orient: vertical;
+  overflow: hidden;
+  -webkit-line-clamp: 2;
+  font-size: 20px;
+  line-height: 1.5;
+  color: rgba(255,255,255,0.75);
+  text-shadow: 0 0 8px rgba(0,0,0,0.25);
+}
+
+.IBMSMSMBSSTagsTag.IBMSMSMBSSTagsTagNSFW.IBMSMSMBSSTagsTagNSFWCard.IBMSMSMBSSTagsTagNSFWCardAlt {
+    position: absolute;
+    top: 10px;
+    right: 10px;
+    bottom: unset;
+}

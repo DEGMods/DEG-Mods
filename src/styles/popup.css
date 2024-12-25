@@ -1,0 +1,441 @@
+.popUpMain {
+  position: fixed;
+  top: 0;
+  right: 0;
+  bottom: 0;
+  left: 0;
+  z-index: 1000;
+  background: rgba(0, 0, 0, 0.5);
+  backdrop-filter: blur(5px);
+  display: flex;
+  flex-direction: column;
+  justify-content: start;
+  align-items: center;
+  padding: 5% 0%;
+  overflow: auto;
+}
+
+.popUpMainCard {
+  width: 100%;
+  max-width: 1000px;
+  border-radius: 15px;
+  box-shadow: 0 0 16px 0 rgba(0, 0, 0, 0.5);
+  background: #232323;
+}
+
+.popUpMainCard.popUpMainCardQR {
+  max-width: 500px;
+}
+
+.popUpMainCardWrapper {
+  width: 100%;
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  align-items: center;
+}
+
+.popUpMainCardTop {
+  width: 100%;
+  display: flex;
+  flex-direction: row;
+  justify-content: end;
+  align-items: center;
+  padding: 15px 25px 10px 25px;
+  border-bottom: solid 1px rgba(255, 255, 255, 0.05);
+}
+
+.popUpMainCardBottom {
+  width: 100%;
+  display: flex;
+  flex-direction: column;
+  justify-content: start;
+  align-items: center;
+  padding: 25px;
+  overflow: auto;
+}
+
+.popUpMainCardBottomQR {
+  width: 100%;
+  max-width: 250px;
+  cursor: pointer;
+  padding: 17px 0px;
+  background: white;
+  border-radius: 5px;
+}
+
+.popUpMainCardBottomLnurl {
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  width: inherit;
+  display: inline;
+  cursor: pointer;
+  color: rgba(255, 255, 255, 0.5);
+}
+
+.popUpMainCardTopClose {
+  transition: ease 0.4s;
+  width: auto;
+  height: 100%;
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  align-items: end;
+  color: rgba(255, 255, 255, 0.25);
+  padding: 10px;
+  border-radius: 10px;
+  font-size: 20px;
+  position: relative;
+  cursor: pointer;
+}
+
+.popUpMainCardTopClose:hover {
+  transition: ease 0.4s;
+  color: rgba(255, 255, 255, 0.75);
+  box-shadow: 0 0 8px 0 rgb(0, 0, 0, 0.1);
+}
+
+.popUpMainCardTopInfo {
+  width: 100%;
+  color: rgba(255, 255, 255, 0.75);
+}
+
+.popUpMainCardTopClose:hover::before {
+  transition: ease 0.4s;
+  opacity: 1;
+}
+
+.popUpMainCardTopClose::before {
+  transition: ease 0.4s;
+  opacity: 0;
+  content: '';
+  position: absolute;
+  top: 0;
+  bottom: 0;
+  right: 0;
+  left: 0;
+  background: #323232;
+  /*z-index: -1;*/
+  border-radius: 10px;
+}
+
+.pUMCB_PrimeComment {
+  width: 100%;
+  padding: 0 0 15px 0;
+  margin: 0 0 15px 0;
+  /*border-bottom: solid 1px rgba(255,255,255,0.1);*/
+}
+
+.pUMCB_RepliesToPrime {
+  width: 100%;
+  padding: 25px;
+  grid-gap: 25px;
+  display: flex;
+  flex-direction: column;
+  border: solid 1px rgba(255, 255, 255, 0.1);
+  border-radius: 10px;
+}
+
+.pUMCB_CommentToPrime {
+  width: 100%;
+  margin: 0 0 25px 0;
+  display: flex;
+  flex-direction: column;
+  grid-gap: 10px;
+}
+
+.pUMCB_Zaps {
+  width: 100%;
+  display: flex;
+  flex-direction: column;
+  grid-gap: 10px;
+  padding: 25px;
+}
+
+.pUMCB_ZapsInside {
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  align-items: center;
+  width: 100%;
+  grid-gap: 15px;
+}
+
+.btnMain.pUMCB_ZapsInsideElementBtn {
+  width: 100%;
+  background: rgba(255, 255, 255, 0.05);
+}
+
+.btnMain.pUMCB_ZapsInsideElementBtn:hover {
+  transition: ease 0.4s;
+  color: yellow;
+  background: rgba(255, 255, 255, 0.1);
+}
+
+.pUMCB_ZapsInsideAmount {
+  width: 100%;
+  display: flex;
+  flex-direction: column;
+  grid-gap: 15px;
+}
+
+.pUMCB_ZapsInsideAmountOptions {
+  width: 100%;
+  display: flex;
+  flex-direction: row;
+  grid-gap: 10px;
+  text-align: center;
+  flex-wrap: wrap;
+}
+
+.btnMain.pUMCB_ZapsInsideAmountOptionsBtn {
+  transition: ease 0.4s;
+  flex-grow: 1;
+  display: flex;
+  flex-direction: row;
+  justify-content: center;
+  align-items: center;
+  grid-gap: 10px;
+  color: rgba(255, 255, 255, 0.5);
+  border-radius: 10px;
+  cursor: pointer;
+  font-weight: bold;
+  padding: 10px;
+  background: unset;
+}
+
+.btnMain.pUMCB_ZapsInsideAmountOptionsBtn:hover {
+  transition: ease 0.4s;
+  background: rgba(255, 255, 255, 0.1);
+  color: yellow;
+}
+
+.dividerPopup {
+  width: 100%;
+  display: flex;
+  flex-direction: row;
+  grid-gap: 25px;
+  justify-content: center;
+  align-items: center;
+  color: rgba(255, 255, 255, 0.5);
+}
+
+.dividerPopupLine {
+  height: 1px;
+  background: rgba(255, 255, 255, 0.1);
+  flex-grow: 1;
+}
+
+.btnMain.btnMainPopup {
+  width: 100%;
+}
+
+.btnMain.pUMCB_Report:hover {
+  color: tomato;
+}
+
+.popUpMain.popUpMainGallery {
+}
+
+.popUpMainGalleryInside {
+  width: 100%;
+  display: flex;
+  flex-direction: row;
+  grid-gap: 25px;
+  height: 100%;
+  /*padding: 25px;*/
+  align-items: center;
+}
+
+.popUpMainGalleryInside {
+  width: 100%;
+  display: flex;
+  flex-direction: column;
+  grid-gap: 25px;
+  height: 100%;
+  /*padding: 25px;*/
+  align-items: center;
+}
+
+.popUpMainGalleryInsideMid {
+  /*flex-grow: 1;*/
+  background: rgba(0, 0, 0, 0.5);
+  /*height: 100%;*/
+  padding-top: 100% * (16 / 9);
+  width: 100%;
+}
+
+.btnMain.popUpMainGalleryInsideBtn {
+  background: #232323;
+  height: 100%;
+  max-height: 250px;
+  font-size: 24px;
+  flex-grow: 1;
+  max-width: 300px;
+}
+
+.popUpMainGalleryTop {
+  width: 100%;
+  display: flex;
+  flex-direction: row;
+  justify-content: end;
+}
+
+.popUpMainGalleryWrapper {
+  width: 100%;
+  flex-grow: 1;
+  display: flex;
+  flex-direction: column;
+  grid-gap: 25px;
+}
+
+.btnMain.popUpMainGalleryTopBtn {
+  padding: 15px;
+  font-size: 24px;
+  background: #232323;
+}
+
+.popUpMainGalleryInsideControlls {
+  display: flex;
+  flex-direction: row;
+  grid-gap: 15px;
+  width: 100%;
+  justify-content: center;
+  align-items: center;
+}
+
+.ZapSplitUserBox {
+  border-radius: 10px;
+  border: solid 1px rgba(255, 255, 255, 0.1);
+  padding: 10px;
+  display: flex;
+  flex-direction: column;
+  grid-gap: 10px;
+}
+
+.ZapSplitUserBoxUser {
+  transition: ease 0.4s;
+  display: flex;
+  flex-direction: row;
+  grid-gap: 15px;
+  width: 100%;
+  border-radius: 10px;
+  text-decoration: unset;
+  color: rgba(255, 255, 255, 0.65);
+}
+
+.ZapSplitUserBoxUserPic {
+  border-radius: 10px;
+  height: 60px;
+  width: 60px;
+  min-height: 60px;
+  min-width: 60px;
+}
+
+.ZapSplitUserBoxUserDetails {
+  flex-grow: 1;
+  display: flex;
+  flex-direction: column;
+  grid-gap: 0;
+}
+
+.ZapSplitUserBoxUserDetailsName {
+}
+
+.ZapSplitUserBoxUserDetailsHandle {
+}
+
+.ZapSplitUserBoxText {
+  color: rgba(255, 255, 255, 0.5);
+}
+
+.ZapSplitUserBoxRange {
+  display: flex;
+  flex-direction: row;
+  grid-gap: 10px;
+}
+
+.ZapSplitUserBoxRangeText {
+  white-space: nowrap;
+  color: rgba(255, 255, 255, 0.5);
+}
+
+.keyGenerationTable {
+  width: 100%;
+  border-radius: 10px;
+  background: rgba(255, 255, 255, 0.05);
+  display: flex;
+  flex-direction: column;
+  border: solid 1px rgba(255, 255, 255, 0.1);
+  box-shadow: 0 0 8px 0 rgb(0, 0, 0, 0.1);
+  overflow: hidden;
+}
+
+.keyGenerationTableRow {
+  display: grid;
+  grid-template-columns: 30% 55% 15%;
+  grid-gap: 0;
+}
+
+.keyGenerationTableRowCol {
+  padding: 10px;
+  display: flex;
+  flex-direction: row;
+  align-items: center;
+  justify-content: center;
+  overflow: hidden;
+  white-space: nowrap;
+  text-overflow: ellipsis;
+}
+
+.keyGenerationTableRowColText {
+  color: rgba(255, 255, 255, 0.75);
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.keyGenerationTableRowColText.keyGenerationTableRowColTextStart {
+  font-weight: bold;
+}
+
+.keyGenerationTableRowCol.keyGenerationTableRowColStart {
+  background: rgba(255, 255, 255, 0.1);
+}
+
+.popUpMainCardBottom.popUpMainCardBottomAlt {
+  padding: 0;
+}
+
+.popUpMainCardFooter {
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  align-items: center;
+  padding: 15px 10px;
+}
+
+.pUMCB_ZapsInsideBtns {
+  display: grid;
+  grid-template-columns: 0.25fr 1.75fr;
+  width: 100%;
+  grid-gap: 15px;
+}
+
+.BTCAddressPopZap {
+    display: flex;
+    flex-direction: column;
+    grid-gap: 0px;
+    color: #ffffff50;
+    font-size: 12px;
+    font-weight: bold;
+    border-top: solid 1px #ffffff10;
+    padding: 10px 0 0 0;
+    margin: 10px 0 0 0;
+    white-space: break-spaces;
+}
+
+.BTCAddressPopZapTextSpan {
+    font-weight: normal;
+    color: #ffffff25;
+}

@@ -1,0 +1,13 @@
+.quill .ql-toolbar.ql-snow {
+  border: none;
+  border-bottom: inherit;
+}
+
+.quill .ql-container.ql-snow {
+  border: none;
+}
+
+.quill .ql-editor.ql-blank::before {
+  color: #757575;
+  font-size: medium;
+}

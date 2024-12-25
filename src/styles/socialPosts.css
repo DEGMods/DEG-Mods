@@ -1,0 +1,129 @@
+.IBMSMSMSSS_ShortPosts {
+  border-radius: 15px;
+  display: grid;
+  grid-template-columns: 1fr;
+  grid-gap: 15px;
+  max-height: 250px;
+  overflow: auto;
+  border-radius: 10px;
+  border: solid 1px rgba(255,255,255,0.1);
+  padding: 15px;
+}
+
+@media (max-width: 1200px) {
+  .IBMSMSMSSS_ShortPosts {
+    border-radius: 15px;
+    display: grid;
+    grid-template-columns: 1fr;
+    grid-gap: 25px;
+    padding: 10px;
+  }
+}
+
+.IBMSMSMSSS_ShortPostsPost {
+  width: 100%;
+  display: grid;
+  grid-template-columns: 1fr;
+  grid-gap: 10px;
+}
+
+.IBMSMSMSSS_ShortPostsPost_Top {
+  display: grid;
+  grid-template-columns: 1.75fr 0.25fr;
+  grid-gap: 0;
+}
+
+.IBMSMSMSSS_ShortPostsPost_Bottom {
+  flex-direction: column;
+  display: -webkit-box;
+  -webkit-box-orient: vertical;
+  overflow: hidden;
+  -webkit-line-clamp: 4;
+  color: rgba(255,255,255,0.5);
+  font-size: 14px;
+  line-height: 1.5;
+  position: relative;
+}
+
+.IBMSMSMSSS_ShortPostsPost_TopName {
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  align-items: start;
+  font-weight: bold;
+  color: rgba(255,255,255,0.5);
+}
+
+.IBMSMSMSSS_ShortPostsPost_TopLink {
+  transition: ease 0.4s;
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  align-items: center;
+  color: rgba(255,255,255,0.25);
+  padding: 7px;
+  /*background: rgba(255,255,255,0.1);*/
+  border-radius: 5px;
+}
+
+.IBMSMSMSSS_ShortPostsPostLink {
+  transition: ease 0.4s;
+  text-decoration: unset;
+  color: unset;
+  padding: 25px;
+  border-radius: 15px;
+  box-shadow: 0 0 8px 0 rgba(0,0,0,0);
+  transform: scale(1);
+  background-color: rgba(38,38,38,0);
+}
+
+.IBMSMSMSSS_ShortPostsPostLink:hover {
+  transition: ease 0.4s;
+  text-decoration: unset;
+  color: unset;
+  padding: 25px;
+  border-radius: 15px;
+  box-shadow: 0 0 8px 0 rgb(0,0,0,0.1);
+  transform: scale(1.03);
+}
+
+.IBMSMSMSSS_ShortPostsPostLink:active {
+  transition: ease 0.1s;
+  transform: scale(0.98);
+}
+
+.IBMSMSMSSS_ShortPostsPostLink::before {
+  transition: ease 0.4s;
+  background: linear-gradient(to top right, #262626, #292929, #262626);
+  opacity: 0;
+  content: '';
+  position: absolute;
+  top: 0;
+  bottom: 0;
+  right: 0;
+  left: 0;
+  z-index: -1;
+  border-radius: 15px;
+}
+
+.IBMSMSMSSS_ShortPostsPostLink:hover::before {
+  transition: ease 0.4s;
+  background: linear-gradient(to top right, #262626, #292929, #262626);
+  opacity: 1;
+}
+
+.IBMSMSMSSS_ShortPostsPost_TopLinkIcon {
+  width: 100%;
+  height: 100%;
+  max-width: 25px;
+}
+
+.IBMSMSMSSS_ShortPostsPost_BottomImg {
+  width: 100%;
+  height: 100px;
+  border-radius: 10px;
+  margin: 15px 0 0 0;
+  box-shadow: 0 0 8px 0 rgb(0,0,0,0.1);
+  position: relative;
+}
+

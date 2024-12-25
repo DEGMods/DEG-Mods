@@ -1,0 +1,18 @@
+.loading::after {
+  content: '.';
+  animation: dots 1.5s steps(4, end) infinite;
+}
+
+@keyframes dots {
+  0%,
+  20% {
+    content: '.\00a0\00a0';
+  }
+  40% {
+    content: '..\00a0';
+  }
+  60%,
+  100% {
+    content: '...';
+  }
+}

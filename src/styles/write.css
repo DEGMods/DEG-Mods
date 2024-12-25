@@ -1,0 +1,15 @@
+.IBMSMSMBS_Write {
+  width: 100%;
+  display: flex;
+  flex-direction: column;
+  grid-gap: 15px;
+}
+
+.IBMSMSMBS_WriteAction {
+  width: 100%;
+  display: flex;
+  flex-direction: row;
+  justify-content: end;
+  align-items: center;
+  gap: 25px;
+}

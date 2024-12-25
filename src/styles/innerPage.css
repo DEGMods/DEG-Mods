@@ -1,0 +1,141 @@
+.IBMSMSplitMain {
+  display: grid;
+  grid-template-columns: 1.5fr 0.5fr;
+  grid-gap: 25px;
+}
+
+@media (max-width: 1200px) {
+  .IBMSMSplitMain {
+    display: flex;
+    flex-direction: column;
+  }
+}
+
+.IBMSMSplitMain.IBMSMSplitMainThree {
+  grid-template-columns: 0.75fr 1.5fr 0.75fr;
+  grid-gap: 25px;
+}
+
+.IBMSMSplitMainBigSide {
+  display: flex;
+  flex-direction: column;
+  grid-gap: 25px;
+}
+
+.IBMSMSplitMainSmallSide {
+  display: flex;
+  flex-direction: column;
+  grid-gap: 25px;
+  position: relative;
+}
+
+.IBMSMSplitMainBigSideSec {
+  display: flex;
+  flex-direction: column;
+  grid-gap: 25px;
+}
+
+.IBMSMSplitMainSmallSideSec {
+  display: flex;
+  flex-direction: column;
+  grid-gap: 15px;
+}
+
+.IBMSMSplitMainFullSide {
+  grid-column-start: 1;
+  grid-column-end: 3;
+  display: flex;
+  flex-direction: column;
+  grid-gap: 25px;
+}
+
+.IBMSMSplitMainFullSideSec {
+  display: flex;
+  flex-direction: column;
+  grid-gap: 15px;
+}
+
+.IBMSMSplitMainFullSideSec.IBMSMSMFSSNav {
+  display: flex;
+  flex-direction: row;
+  grid-gap: 15px;
+  background: #1c1c1c;
+  border-radius: 10px;
+  padding: 10px;
+  border: solid 1px rgba(255,255,255,0.05);
+  box-shadow: inset 0 0 8px 0 rgb(0,0,0,0.1);
+}
+
+.btnMain.IBMSMSMFSSNavBtn {
+  flex-grow: 1;
+  background: unset;
+  color: rgba(255,255,255,0.25);
+}
+
+.btnMain.IBMSMSMFSSNavBtn::before {
+  transition: ease 0.4s;
+  opacity: 0;
+  content: '';
+  position: absolute;
+  top: 0;
+  bottom: 0;
+  right: 0;
+  left: 0;
+  background: linear-gradient(rgba(255,255,255,0.01), rgba(255,255,255,0.01)), linear-gradient(to top right, #262626, #292929, #262626);
+  z-index: -1;
+  border-radius: 10px;
+}
+
+.btnMain.IBMSMSMFSSNavBtn:hover::before {
+  transition: ease 0.4s;
+  opacity: 1;
+}
+
+.btnMain.IBMSMSMFSSNavBtn.IBMSMSMFSSNavBtnActive {
+  background: linear-gradient(rgba(255,255,255,0.03), rgba(255,255,255,0.03)), linear-gradient(to top right, #262626, #292929, #262626);
+  /*border: solid 1px rgba(255,255,255,0.05);*/
+  color: rgba(255,255,255,0.75);
+}
+
+.IBMSMSplitMainFullSideSec.IBMSMSMFSSContent {
+  display: flex;
+}
+
+.IBMSMSMFSSContentPosts {
+  width: 100%;
+  display: flex;
+  flex-direction: column;
+  grid-gap: 25px;
+}
+
+.btnMain.IBMSMSMFSSNavBtn.IBMSMSMFSSNavBtnAlt {
+  padding: 5px 10px;
+}
+
+.IBMSMSMFSSContentPost {
+  width: 100%;
+}
+
+.IBMSMSMSSS_Buttons {
+  padding: 10px;
+  border-radius: 10px;
+  border: solid 1px rgba(255,255,255,0.1);
+  display: flex;
+  flex-direction: column;
+  grid-gap: 10px;
+}
+
+.IBMSMSMSSS_Text {
+  font-size: 28px;
+  color: rgba(255,255,255,0.75);
+}
+
+.IBMSMSplitMainSmallSideSecWrapper {
+  display: flex;
+  flex-direction: column;
+  grid-gap: 0px;
+  position: sticky;
+  top: 15px;
+  grid-gap: 25px;
+}
+

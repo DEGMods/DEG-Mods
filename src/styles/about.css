@@ -1,0 +1,109 @@
+.LearnText {
+  width: 100%;
+  display: flex;
+  flex-direction: column;
+  grid-gap: 25px;
+  padding: 50px 15px;
+  border-radius: 15px;
+  background: rgba(255, 255, 255, 0.05);
+  box-shadow: 0 0 8px 0 rgb(0, 0, 0, 0.1);
+  color: rgba(255, 255, 255, 0.75);
+  align-items: center;
+  justify-content: start;
+  position: relative;
+}
+
+.LearnTextInside {
+  width: 100%;
+  max-width: 750px;
+  grid-gap: 25px;
+  display: flex;
+  flex-direction: column;
+}
+
+.AboutSec {
+  display: flex;
+  flex-direction: column;
+  width: 100%;
+  padding: 15px;
+  grid-gap: 25px;
+}
+
+.LearnTextHeading {
+}
+
+.LearnTextPara {
+  width: 100%;
+}
+
+.LearnTextCharacterImgRight {
+  width: 100%;
+  max-width: 200px;
+  position: absolute;
+  bottom: 15px;
+  right: 15px;
+}
+
+@media (max-width: 1200px) {
+  .LearnTextCharacterImgRight {
+    opacity: 0.1;
+  }
+}
+
+.LearnTextCharacterImgLeft {
+  width: 100%;
+  max-width: 200px;
+  position: absolute;
+  bottom: 15px;
+  left: 15px;
+}
+
+@media (max-width: 1200px) {
+  .LearnTextCharacterImg {
+    display: none;
+  }
+}
+
+.LearnFAQ {
+  width: 100%;
+  display: flex;
+  flex-direction: column;
+  grid-gap: 25px;
+}
+
+.learnLinks {
+  display: flex;
+  flex-direction: row;
+  grid-gap: 10px;
+  border-top: solid 1px rgba(255, 255, 255, 0.1);
+  padding: 10px 0 0 0;
+}
+
+.learnLinksLink {
+  transition: ease 0.4s;
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  align-items: center;
+  padding: 10px;
+  opacity: 0.5;
+  transform: scale(1);
+  border-radius: 10px;
+}
+
+.learnLinksLink:hover {
+  transition: ease 0.4s;
+  opacity: 1;
+  transform: scale(1.02);
+  background: rgba(255, 255, 255, 0.1);
+}
+
+.learnLinksLinkImg {
+  width: 100%;
+  max-width: 28px;
+}
+
+.IBMSMSMBSSTagsTag.IBMSMSMBSSTagsTagNSFW:hover {
+  border: unset;
+  transform: scale(1);
+}

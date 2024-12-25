@@ -1,0 +1,317 @@
+.swiper-pagination-bullet-active {
+  background: rgba(255, 255, 255, 0.5);
+  box-shadow: 0 0 4px 0 rgba(0, 0, 0, 0.5);
+}
+
+.simple-slider .swiper-slide {
+  height: 400px;
+  background-repeat: no-repeat;
+  background-size: cover;
+  background-position: center;
+}
+
+@media (max-width: 576px) {
+  .simple-slider .swiper-slide {
+    height: 200px;
+  }
+}
+
+@media (max-width: 360px) {
+  .simple-slider .swiper-slide {
+    height: 150px;
+  }
+}
+
+.simple-slider .swiper-button-next,
+.simple-slider .swiper-button-prev {
+  width: 50px;
+  margin-left: 00px;
+  margin-right: 00px;
+  color: rgba(255, 255, 255, 0.5);
+  background: linear-gradient(
+      rgba(255, 255, 255, 0.05),
+      rgba(255, 255, 255, 0.05)
+    ),
+    linear-gradient(to top right, #262626, #292929, #262626),
+    linear-gradient(to top right, #262626, #292929, #262626);
+  padding: 10px;
+  height: 75px;
+  border-radius: 10px;
+  box-shadow: 0 0 8px 0 rgb(0, 0, 0, 0.1);
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  align-items: center;
+  margin-top: -35px;
+}
+
+.simple-slider .swiper-button-next:hover,
+.simple-slider .swiper-button-prev:hover {
+  background: linear-gradient(
+      rgba(255, 255, 255, 0.1),
+      rgba(255, 255, 255, 0.1)
+    ),
+    linear-gradient(to top right, #262626, #292929, #262626),
+    linear-gradient(to top right, #262626, #292929, #262626);
+}
+
+.swiper-button-next:after,
+.swiper-button-prev:after {
+  font-size: 18px!important;
+}
+
+@media (max-width: 992px) {
+  .simple-slider .swiper-button-next,
+  .simple-slider .swiper-button-prev {
+    bottom: 0;
+    top: unset;
+    width: 45%;
+    height: unset;
+    padding: 10px;
+  }
+}
+
+.simple-slider.IBMSMSlider {
+  cursor: grab;
+  /*border-radius: 10px;*/
+  overflow: hidden;
+  margin: 0;
+}
+
+.simple-slider.IBMSMSlider:active {
+  border-radius: 10px;
+  cursor: grabbing;
+}
+
+.swiper-container.IBMSMSliderContainer {
+  padding: 0 0 35px 0;
+}
+
+.swiper-wrapper.IBMSMSliderContainerWrapper {
+}
+
+.swiper-slide.IBMSMSliderContainerWrapperSlider {
+  position: relative;
+  display: grid;
+  grid-template-columns: 1.25fr 0.75fr;
+  grid-gap: 25px;
+  padding: 0 75px;
+  height: unset;
+}
+
+@media (max-width: 992px) {
+  .swiper-slide.IBMSMSliderContainerWrapperSlider {
+    grid-template-columns: 1.15fr 0.85fr;
+    padding: 0 5px 25px 5px;
+    grid-gap: 15px;
+  }
+}
+
+@media (max-width: 768px) {
+  .swiper-slide.IBMSMSliderContainerWrapperSlider {
+    display: flex;
+    flex-direction: column;
+    grid-gap: 15px;
+    height: 500px;
+  }
+}
+
+.IBMSMSliderContainerWrapperSliderAction {
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  align-items: center;
+}
+
+.btnMain.IBMSMSliderContainerWrapperSliderActionbtn::before {
+  transition: ease 0.4s;
+  opacity: 0;
+  content: '';
+  position: absolute;
+  top: 0;
+  bottom: 0;
+  right: 0;
+  left: 0;
+  background: linear-gradient(
+      rgba(255, 255, 255, 0.15),
+      rgba(255, 255, 255, 0.15)
+    ),
+    linear-gradient(to top right, #262626, #292929, #262626),
+    linear-gradient(to top right, #262626, #292929, #262626);
+  z-index: -1;
+  border-radius: 10px;
+}
+
+.btnMain.IBMSMSliderContainerWrapperSliderActionbtn {
+  width: 100%;
+}
+
+.btnMain.IBMSMSliderContainerWrapperSliderActionbtn:hover::before {
+  transition: ease 0.4s;
+  opacity: 1;
+}
+
+.swiper-container-horizontal > .swiper-pagination-bullets,
+.swiper-pagination-custom,
+.swiper-pagination-fraction {
+  width: 100%;
+  bottom: 0;
+}
+
+.swiper-button-next,
+.swiper-button-prev {
+  position: absolute;
+}
+
+.swiper-button-next {
+  right: 5px;
+}
+
+@media (max-width: 992px) {
+  .swiper-button-next {
+    right: 0px;
+  }
+}
+
+.swiper-button-prev {
+  left: 5px;
+}
+
+@media (max-width: 992px) {
+  .swiper-button-prev {
+    left: 0px;
+  }
+}
+
+.SliderWrapper {
+  width: 100%;
+  padding: 50px 0;
+  background: rgba(0, 0, 0, 0.1);
+  backdrop-filter: blur(5px);
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  align-items: center;
+  margin: -25px 0 0 0;
+  border-bottom: solid 1px rgba(255, 255, 255, 0.05);
+}
+
+.IBMSMSCWSPic {
+  border-radius: 10px;
+  overflow: hidden;
+  border: solid 1px rgba(255, 255, 255, 0.05);
+  z-index: 1;
+  box-shadow: 0 0 8px 0 rgba(0, 0, 0, 0.25);
+  width: 100%;
+  height: 100%;
+  object-fit: cover; /* Ensures the image covers the container like a background image */
+}
+
+.IBMSMSCWSPicWrapper {
+    width: 100%;
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    align-items: center;
+    overflow: hidden;
+    position: relative;
+}
+
+@media (max-width: 768px) {
+  .IBMSMSCWSPicWrapper {
+    height: 300px;
+  }
+}
+
+.IBMSMSCWSInfo {
+  display: flex;
+  flex-direction: column;
+  grid-gap: 25px;
+  justify-content: center;
+  padding: 25px;
+  border-radius: 10px;
+  background: linear-gradient(rgba(255, 255, 255, 0), rgba(255, 255, 255, 0)),
+    linear-gradient(
+      to top right,
+      rgb(38, 38, 38),
+      rgb(41, 41, 41),
+      rgb(38, 38, 38)
+    );
+  box-shadow: 0 0 8px 0 rgb(0, 0, 0, 0.1);
+  border: solid 1px rgba(255, 255, 255, 0.05);
+}
+
+@media (max-width: 768px) {
+  .IBMSMSCWSInfo {
+    height: 100%;
+  }
+}
+
+@media (max-width: 576px) {
+  .IBMSMSCWSInfo {
+    grid-gap: 10px;
+    padding: 15px;
+  }
+}
+
+.IBMSMSCWSInfoHeading {
+  display: -webkit-box;
+  -webkit-box-orient: vertical;
+  overflow: hidden;
+  -webkit-line-clamp: 2;
+  font-size: 20px;
+  line-height: 1.25;
+  color: rgba(255, 255, 255, 0.75);
+  font-weight: bold;
+}
+
+.IBMSMSCWSInfoTextWrapper {
+  flex-grow: 1;
+}
+
+.IBMSMSCWSInfoText {
+  display: -webkit-box;
+  -webkit-box-orient: vertical;
+  overflow: hidden;
+  -webkit-line-clamp: 8;
+  color: rgba(255, 255, 255, 0.5);
+  font-size: 15px;
+  line-height: 1.5;
+}
+
+@media (max-width: 576px) {
+  .IBMSMSCWSInfoText {
+    -webkit-line-clamp: 4;
+    font-size: 14px;
+  }
+}
+
+.IBMSMSCWSInfoText.IBMSMSCWSInfoText2 {
+  -webkit-line-clamp: 1;
+  border-top: solid 1px rgba(255,255,255,0.1);
+  padding: 10px 0 0 5px;
+  flex-grow: 0;
+}
+
+.swiper-pagination {
+  display: none;
+  bottom: -10px !important;
+}
+
+@media (max-width: 992px) {
+  .swiper-pagination {
+    display: none;
+  }
+}
+
+.swiper-pagination-bullet {
+  background: rgba(0, 0, 0, 0.5);
+  opacity: 1;
+  width: 12px;
+  height: 12px;
+  border-radius: 3px;
+}
+
+.swiper-pagination-bullet.swiper-pagination-bullet-active {
+  background: rgba(128, 0, 255, 0.5);
+}

@@ -1,0 +1,100 @@
+.IBMSMSMBSS_Details {
+  width: 100%;
+  display: flex;
+  flex-direction: row;
+  grid-gap: 15px;
+  /*background: linear-gradient(to top right, #262626, #292929, #262626);*/
+  /*box-shadow: 0 0 8px 0 rgb(0,0,0,0.1);*/
+  flex-wrap: wrap;
+}
+
+@media (max-width: 768px) {
+  .IBMSMSMBSS_Details {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+  }
+}
+
+.IBMSMSMBSS_Details_Card {
+  display: flex;
+  flex-direction: row;
+  justify-content: space-between;
+  align-items: center;
+  background: linear-gradient(to top right, #262626, #292929, #262626);
+  border-radius: 10px;
+  overflow: hidden;
+  box-shadow: 0 0 8px 0 rgb(0,0,0,0.1);
+  color: rgba(255,255,255,0.25);
+  cursor: pointer;
+  position: relative;
+}
+
+.IBMSMSMBSS_Details_Card:hover > .IBMSMSMBSS_Details_CardVisual > .IBMSMSMBSS_Details_CardVisualIcon {
+  transition: ease 0.4s;
+  transform: scale(1.1);
+}
+
+.IBMSMSMBSS_Details_Card:active > .IBMSMSMBSS_Details_CardVisual > .IBMSMSMBSS_Details_CardVisualIcon {
+  transition: ease 0.2s;
+  transform: scale(0.95);
+}
+
+.IBMSMSMBSS_Details_CardVisual {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  padding: 15px;
+  box-shadow: 0 0 8px 0 rgb(0,0,0,0.1);
+  background: rgba(255,255,255,0.05);
+  font-size: 20px;
+}
+
+.IBMSMSMBSS_Details_CardText {
+  transition: ease 0.4s;
+  text-align: center;
+  width: 100%;
+  font-weight: bold;
+  margin: 0 15px;
+  min-width: 50px;
+}
+
+.IBMSMSMBSS_Details_Card.IBMSMSMBSS_D_CBolt:hover {
+  color: rgba(255,255,0,0.85);
+}
+
+.IBMSMSMBSS_Details_Card.IBMSMSMBSS_D_CComments:hover {
+  color: rgba(173,90,255,0.75);
+}
+
+.IBMSMSMBSS_Details_Card.IBMSMSMBSS_D_CReactUp:hover {
+  color: rgba(255,70,70,0.85);
+}
+
+.IBMSMSMBSS_Details_Card.IBMSMSMBSS_D_CReactDown:hover {
+  color: rgba(255,114,54,0.85);
+}
+
+.IBMSMSMBSS_Details_CardText:hover {
+  transition: ease 0.4s;
+}
+
+.IBMSMSMBSS_Details_CardVisualIcon {
+  transition: ease 0.4s;
+}
+
+.HBLA_Details_Card:hover {
+}
+
+.IBMSMSMBSS_Details_Card.IBMSMSMBSS_D_CReactUp.IBMSMSMBSS_D_CRUActive {
+  color: rgba(255,70,70,0.85);
+}
+
+.IBMSMSMBSS_Details_Card.IBMSMSMBSS_D_CReactDown.IBMSMSMBSS_D_CRDActive {
+  color: rgba(255,114,54,0.85);
+}
+
+.IBMSMSMBSS_Details_Card.IBMSMSMBSS_D_CBolt.IBMSMSMBSS_D_CBActive {
+  color: rgba(255,255,0,0.85);
+}
+

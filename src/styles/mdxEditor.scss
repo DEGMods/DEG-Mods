@@ -1,0 +1,154 @@
+.editor,
+.viewer {
+  padding: 0;
+
+  > {
+    p {
+      margin: 5px 0 10px 0;
+    }
+    ul,
+    ol {
+      padding: 0 1rem;
+      margin: 1.25rem 1rem 1.25rem 0.4rem;
+
+      li p {
+        margin-top: 0.25em;
+        margin-bottom: 0.25em;
+      }
+    }
+
+    h1,
+    h2,
+    h3,
+    h4,
+    h5,
+    h6 {
+      margin: 15px 0 15px 0;
+      border-bottom: solid 1px rgb(255 255 255 / 10%);
+      padding: 0px 0 10px 0;
+      line-height: 1.5;
+      text-wrap: pretty;
+    }
+
+    h1 {
+      font-size: 1.4rem;
+    }
+
+    h2 {
+      font-size: 1.2rem;
+    }
+
+    h3 {
+      font-size: 1.1rem;
+    }
+
+    h4,
+    h5,
+    h6 {
+      font-size: 1rem;
+    }
+
+    blockquote {
+      border-radius: 0 10px 10px 0;
+      border-left: solid 6px rgba(255, 255, 255, 0.1);
+      padding: 25px;
+      background: #232323;
+      color: rgba(255, 255, 255, 0.75);
+      margin: 10px 0;
+    }
+  }
+
+  code {
+    background-color: #666;
+    border-radius: 0.4rem;
+    color: var(--black);
+    font-size: 0.85rem;
+    padding: 0.25em 0.3em;
+    outline: none;
+
+    &:empty::before {
+      content: '\00A0';
+    }
+  }
+
+  pre {
+    background: var(--black);
+    color: var(--white);
+    font-family: 'JetBrainsMono', monospace;
+    margin: 1.5rem 0;
+    padding: 0.75rem 1rem;
+    background: #00000030;
+    border-radius: 5px;
+    border: solid 2px rebeccapurple;
+
+    code {
+      background: none;
+      color: inherit;
+      font-size: 0.8rem;
+      padding: 0;
+    }
+  }
+
+  img {
+    background: #232323;
+    border-radius: 10px;
+    max-width: 100%;
+    height: auto;
+  }
+}
+.editor {
+  --basePageBg: var(--slate-3);
+  padding-top: 10px;
+  min-height: 75px;
+}
+.viewer {
+  table {
+    table-layout: fixed;
+    width: 100%;
+    border-spacing: 0;
+    border-collapse: collapse;
+
+    & > tbody > tr > td,
+    & > thead > tr > th {
+      border: 1px solid #e0e1e6;
+      padding: 0.25rem 0.5rem;
+      white-space: normal;
+
+      & > div {
+        outline: none;
+
+        & > p {
+          margin: 0;
+        }
+      }
+
+      & > tbody > tr > td,
+      & > thead > tr > th {
+        [align='left'] {
+          text-align: left;
+        }
+        [align='center'] {
+          text-align: center;
+        }
+        [align='right'] {
+          text-align: right;
+        }
+      }
+
+      &:empty::before {
+        content: '\00A0';
+      }
+    }
+  }
+}
+.mdxeditor {
+  --baseBg: #262626;
+}
+.mdxeditor-toolbar {
+  top: 10px;
+  border: 1px solid rgb(255, 255, 255, 0.1);
+}
+.mdxeditor,
+.mdxeditor-popup-container {
+  --basePageBg: var(--slate-3);
+}

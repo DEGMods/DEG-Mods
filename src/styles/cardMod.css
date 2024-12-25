@@ -1,0 +1,166 @@
+.cardModMain {
+  width: 100%;
+  height: 100%;
+  display: flex;
+  flex-direction: column;
+  background: rgba(255, 255, 255, 0.05);
+  border-radius: 10px;
+  overflow: hidden;
+  background: linear-gradient(to top right, #262626, #292929, #262626);
+}
+
+.cMMPictureWrapper {
+  position: relative;
+  width: 100%;
+  padding-top: 56.25%;
+}
+
+.cMMPicture {
+  position: absolute;
+  width: 100%;
+  height: 100%;
+  top: 0;
+  object-fit: cover; /* Ensures the image covers the container like a background image */
+}
+
+.cMMBody {
+  padding: 15px;
+  color: rgba(255, 255, 255, 0.5);
+  display: flex;
+  flex-direction: column;
+  grid-gap: 15px;
+  flex-grow: 1;
+  justify-content: space-between;
+}
+
+.cMMFoot {
+  width: 100%;
+  padding: 10px 25px;
+  border-top: solid 1px rgba(255, 255, 255, 0.05);
+  font-size: 14px;
+  display: flex;
+  flex-direction: row;
+  justify-content: start;
+  align-items: center;
+}
+
+.cardModMainWrapperLink {
+  transition: ease 0.4s;
+  text-decoration: unset;
+  color: unset;
+  transform: scale(1);
+  border-radius: 12px;
+  padding: 2px;
+  box-shadow: 0 0 8px 0 rgb(0, 0, 0, 0.05);
+  cursor: pointer;
+}
+
+.cardModMainWrapperLink:hover {
+  transition: ease 0.4s;
+  text-decoration: unset;
+  color: unset;
+  transform: scale(1.01);
+}
+
+.cardModMainWrapperLink:active {
+  transition: ease 0.1s;
+  transform: scale(1);
+}
+
+.cardModMainWrapperLink::before {
+  transition: ease 0.4s;
+  background: linear-gradient(
+    to top,
+    #8000ff 0%,
+    #232323 50%,
+    rgba(255, 255, 255, 0) 100%
+  );
+  content: '';
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  opacity: 0;
+  z-index: -1;
+  border-radius: 12px;
+}
+
+.cardModMainWrapperLink:hover::before {
+  transition: 0.4s ease;
+  opacity: 1;
+}
+
+.cMMBodyTitle {
+  display: -webkit-box;
+  -webkit-box-orient: vertical;
+  overflow: hidden;
+  -webkit-line-clamp: 2;
+  line-clamp: 2;
+  font-size: 20px;
+  line-height: 1.25;
+  color: rgba(255, 255, 255, 0.75);
+  font-weight: bold;
+}
+
+.cMMBodyText {
+  display: -webkit-box;
+  -webkit-box-orient: vertical;
+  overflow: hidden;
+  -webkit-line-clamp: 2;
+  line-clamp: 2;
+  color: rgba(255, 255, 255, 0.5);
+  font-size: 15px;
+  line-height: 1.5;
+}
+
+.cMMBodyGame {
+  border-radius: 5px;
+  padding: 5px 10px;
+  flex-direction: row;
+  justify-content: start;
+  align-items: center;
+  font-size: 14px;
+  background: rgba(255, 255, 255, 0.05);
+  display: -webkit-box;
+  -webkit-box-orient: vertical;
+  overflow: hidden;
+  -webkit-line-clamp: 1;
+  line-clamp: 1;
+}
+
+.cMMFootReactions {
+  display: flex;
+  flex-direction: row;
+  justify-content: center;
+  align-items: center;
+  flex-wrap: wrap;
+  grid-gap: 25px;
+}
+
+.cMMFootReactionsElement {
+  display: flex;
+  flex-direction: row;
+  grid-gap: 5px;
+  justify-content: center;
+  align-items: center;
+  color: rgba(255, 255, 255, 0.25);
+}
+
+.IBMSMSMBSSTagsTag.IBMSMSMBSSTagsTagNSFW.IBMSMSMBSSTagsTagNSFWCard {
+  position: absolute;
+  bottom: 10px;
+  right: 10px;
+  -webkit-backdrop-filter: blur(10px);
+  backdrop-filter: blur(10px);
+  background: rgba(35, 35, 35, 0.85);
+}
+
+.IBMSMSMBSSTagsTag.IBMSMSMBSSTagsTagRepost.IBMSMSMBSSTagsTagRepostCard {
+    position: absolute;
+    bottom: 10px;
+    left: 10px;
+    -webkit-backdrop-filter: blur(10px);
+    backdrop-filter: blur(10px);
+    background: #232323d9;
+}

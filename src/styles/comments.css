@@ -1,0 +1,575 @@
+.IBMSMSMBSSComments {
+  width: 100%;
+  display: flex;
+  flex-direction: column;
+  grid-gap: 25px;
+}
+
+.IBMSMSMBSSCommentsList {
+  width: 100%;
+  display: grid;
+  grid-template-columns: 1fr;
+  grid-gap: 25px;
+}
+
+.IBMSMSMBSSCL_Comment {
+  width: 100%;
+  display: grid;
+  grid-template-columns: 1fr;
+  grid-gap: 20px;
+}
+
+.IBMSMSMBSSCL_CommentTop {
+  width: 100%;
+  display: flex;
+  flex-direction: row;
+  grid-gap: 15px;
+  padding: 0;
+}
+
+.IBMSMSMBSSCL_CommentTopPP {
+  border-radius: 10px;
+  width: 60px;
+  height: 60px;
+  box-shadow: 0 0 8px 0 rgb(0, 0, 0, 0.1);
+}
+
+.IBMSMSMBSSCL_CommentTopDetails {
+  display: flex;
+  flex-direction: column;
+  flex-grow: 1;
+}
+
+.IBMSMSMBSSCL_CommentBottom {
+  padding: 20px;
+  color: rgba(255, 255, 255, 0.75);
+  background: linear-gradient(to top right, #262626, #292929, #262626);
+  box-shadow: 0 0 8px 0 rgb(0, 0, 0, 0.1);
+  border-radius: 10px;
+  display: flex;
+  flex-direction: column;
+  grid-gap: 5px;
+}
+
+.IBMSMSMBSSCL_CommentTopPPWrapper {
+  display: flex;
+  flex-direction: column;
+  justify-content: end;
+  align-items: center;
+}
+
+.IBMSMSMBSSCL_CBText {
+}
+
+.IBMSMSMBSSCL_CBTextStatus {
+  display: flex;
+  flex-direction: row;
+  grid-gap: 0px;
+  border-radius: 4px;
+  border: solid 1px rgba(255, 255, 255, 0.1);
+  padding: 5px 10px;
+}
+
+.IBMSMSMBSSCL_CBTextStatusSpan {
+  font-weight: 600;
+  margin-right: 5px;
+}
+
+.IBMSMSMBSSCL_CommentActions {
+  margin: -10px 0 0 0;
+  display: grid;
+  grid-template-columns: 1;
+  grid-gap: 25px;
+}
+
+@media (max-width: 576px) {
+  .IBMSMSMBSSCL_CommentActions {
+    margin: -10px 0 0 0;
+    display: grid;
+    grid-template-columns: 1fr;
+    grid-gap: 25px;
+  }
+}
+
+.IBMSMSMBSSCL_CAElement {
+  transition: ease 0.4s;
+  display: flex;
+  flex-direction: row;
+  align-items: center;
+  grid-gap: 10px;
+  padding: 5px 15px;
+  border-radius: 10px;
+  color: rgba(255, 255, 255, 0.25);
+  font-weight: bold;
+  position: relative;
+  cursor: pointer;
+  font-size: 14px;
+  overflow: hidden;
+  transform: scale(1);
+  flex-wrap: wrap;
+}
+
+@media (max-width: 576px) {
+  .IBMSMSMBSSCL_CAElement {
+    flex-grow: 1;
+    justify-content: center;
+  }
+}
+
+.IBMSMSMBSSCL_CAElement:hover::before {
+  transition: ease 0.4s;
+  background: linear-gradient(to top right, #262626, #292929, #262626);
+  opacity: 1;
+}
+
+.IBMSMSMBSSCL_CAElement::before {
+  transition: ease 0.4s;
+  background: linear-gradient(to top right, #262626, #292929, #262626);
+  opacity: 0;
+  content: '';
+  position: absolute;
+  top: 0;
+  bottom: 0;
+  right: 0;
+  left: 0;
+  z-index: -1;
+  border-radius: 10px;
+  box-shadow: 0 0 8px 0 rgb(0, 0, 0, 0.1);
+}
+
+.IBMSMSMBSSCL_CAElementText {
+}
+
+.IBMSMSMBSSCL_CAElementIcon {
+  background: rgba(255, 255, 255, 0);
+  font-size: 14px;
+}
+
+.IBMSMSMBSSCL_CTD_Name {
+  font-weight: bold;
+  color: rgba(255, 255, 255, 0.5);
+  overflow: hidden;
+  white-space: nowrap;
+  text-overflow: ellipsis;
+  max-width: 200px;
+}
+
+.IBMSMSMBSSCL_CTD_Address {
+  color: rgba(255, 255, 255, 0.25);
+  overflow: hidden;
+  white-space: nowrap;
+  text-overflow: ellipsis;
+  max-width: 150px;
+}
+
+.IBMSMSMBSSCL_CAElement.IBMSMSMBSSCL_CAEReply {
+  border: solid 1px rgba(255, 255, 255, 0.05);
+}
+
+.IBMSMSMBSSCL_CAElement.IBMSMSMBSSCL_CAEReply:hover {
+  transition: ease 0.4s;
+  border: solid 1px rgba(255, 255, 255, 0.05);
+  color: rgba(255, 255, 255, 0.5);
+}
+
+.IBMSMSMBSSCL_CAElement.IBMSMSMBSSCL_CAEReplies:hover {
+  transition: ease 0.4s;
+  color: rgba(173, 90, 255, 0.75);
+}
+
+.IBMSMSMBSSCL_CAElement.IBMSMSMBSSCL_CAERepost.IBMSMSMBSSCL_CAERepostActive {
+  color: rgba(255, 255, 255, 0.75);
+}
+
+.IBMSMSMBSSCL_CAElement.IBMSMSMBSSCL_CAERepost:hover {
+  transition: ease 0.4s;
+  color: rgba(255, 255, 255, 0.75);
+}
+
+.IBMSMSMBSSCL_CAElement.IBMSMSMBSSCL_CAElement.IBMSMSMBSSCL_CAEDown:hover {
+  transition: ease 0.4s;
+  color: rgba(255, 114, 54, 0.85);
+}
+
+.IBMSMSMBSSCL_CAElement.IBMSMSMBSSCL_CAElement.IBMSMSMBSSCL_CAEUp:hover {
+  transition: ease 0.4s;
+  color: rgba(255, 70, 70, 0.85);
+}
+
+.IBMSMSMBSSCL_CAElement.IBMSMSMBSSCL_CAElement.IBMSMSMBSSCL_CAEBolt:hover {
+  transition: ease 0.4s;
+  color: rgba(255, 255, 0, 0.85);
+}
+
+.IBMSMSMBSSCL_CAElement:hover {
+  transition: ease 0.4s;
+  transform: scale(1.05);
+}
+
+.IBMSMSMBSSCL_CAElement:active {
+  transition: ease 0.1s;
+  transform: scale(0.95);
+}
+
+.IBMSMSMBSSCL_CAElement.IBMSMSMBSSCL_CAElement.IBMSMSMBSSCL_CAEUp.IBMSMSMBSSCL_CAEUpActive {
+  color: rgba(255, 70, 70, 0.85);
+}
+
+.IBMSMSMBSSCL_CAElement.IBMSMSMBSSCL_CAElement.IBMSMSMBSSCL_CAEDown.IBMSMSMBSSCL_CAEDownActive {
+  color: rgba(255, 114, 54, 0.85);
+}
+
+.IBMSMSMBSSCL_CAElement.IBMSMSMBSSCL_CAElement.IBMSMSMBSSCL_CAEBolt.IBMSMSMBSSCL_CAEBoltActive {
+  color: rgba(255, 255, 0, 0.85);
+}
+
+.IBMSMSMBSSCL_CommentActionsInside {
+  display: flex;
+  flex-direction: row;
+  justify-content: end;
+  flex-wrap: wrap;
+  grid-gap: 10px;
+}
+
+.IBMSMSMBSSCL_CommentActionsDetails {
+  color: rgba(255, 255, 255, 0.25);
+  font-size: 16px;
+  display: flex;
+  flex-direction: column;
+  justify-content: start;
+  align-items: end;
+  grid-gap: 5px;
+  line-height: 1;
+  flex-grow: 1;
+}
+
+@media (max-width: 576px) {
+  .IBMSMSMBSSCL_CommentActionsDetails {
+    flex-direction: row;
+    justify-content: end;
+    grid-gap: 10px;
+  }
+}
+
+.IBMSMSMBSSCL_CADDate {
+  transition: ease 0.4s;
+  color: rgba(255, 255, 255, 0.25);
+}
+
+.IBMSMSMBSSCL_CADTime {
+  transition: ease 0.4s;
+  color: rgba(255, 255, 255, 0.25);
+}
+
+.IBMSMSMBSSCL_CommentTopDetailsWrapper {
+  width: 100%;
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  grid-gap: 15px;
+  flex-wrap: wrap;
+  align-items: end;
+}
+
+@media (max-width: 576px) {
+  .IBMSMSMBSSCL_CommentTopDetailsWrapper {
+    grid-template-columns: 1fr;
+  }
+}
+
+.IBMSMSMBSSCommentsCreation {
+  padding: 0;
+  display: flex;
+  flex-direction: column;
+  grid-gap: 15px;
+}
+
+.IBMSMSMBSSCC_Top {
+}
+
+.IBMSMSMBSSCC_Bottom {
+  display: flex;
+  flex-direction: row;
+  justify-content: end;
+  align-items: start;
+  grid-gap: 10px;
+}
+
+.IBMSMSMBSSCC_Top_Box {
+  transition: border, background, box-shadow ease 0.4s;
+  width: 100%;
+  background: rgba(0, 0, 0, 0.05);
+  border: solid 1px rgba(255, 255, 255, 0.05);
+  box-shadow: inset 0 0 8px 0 rgb(0, 0, 0, 0.1);
+  border-radius: 10px;
+  min-height: 100px;
+  height: 100px;
+  min-width: 100%;
+  outline: unset;
+  padding: 15px 20px;
+  color: rgba(255, 255, 255, 0.75);
+}
+
+@media (max-width: 576px) {
+  .IBMSMSMBSSCC_Top_Box {
+    padding: 15px 15px;
+    height: 100px;
+  }
+}
+
+.IBMSMSMBSSCC_Top_Box:focus,
+hover {
+  transition: border, background, box-shadow ease 0.4s;
+  background: rgba(0, 0, 0, 0.1);
+  border: solid 1px rgba(255, 255, 255, 0.1);
+  box-shadow: inset 0 0 8px 0 rgb(0, 0, 0, 0.15);
+  outline: unset;
+}
+
+.IBMSMSMBSSCC_BottomButton {
+  transition: ease 0.4s;
+  text-decoration: unset;
+  color: rgba(255, 255, 255, 0.25);
+  font-weight: bold;
+  padding: 10px 20px;
+  border-radius: 10px;
+  box-shadow: 0 0 8px 0 rgba(0, 0, 0, 0);
+  font-size: 16px;
+  transform: scale(1);
+  position: relative;
+  cursor: pointer;
+  border: solid 1px rgba(255, 255, 255, 0.1);
+  overflow: hidden;
+}
+
+.IBMSMSMBSSCC_BottomButton:hover {
+  transition: ease 0.4s;
+  text-decoration: unset;
+  color: rgba(255, 255, 255, 0.75);
+  border-radius: 10px;
+  box-shadow: 0 0 8px 0 rgb(0, 0, 0, 0.1);
+  font-size: 16px;
+  transform: scale(1.03);
+  /*border: solid 1px rgba(255,255,255,0);*/
+}
+
+.IBMSMSMBSSCC_BottomButton:active {
+  transition: ease 0.1s;
+  transform: scale(0.98);
+}
+
+.IBMSMSMBSSCC_BottomButton::before {
+  transition: ease 0.4s;
+  background: linear-gradient(to top right, #262626, #292929, #262626);
+  opacity: 0;
+  content: '';
+  position: absolute;
+  top: 0;
+  bottom: 0;
+  right: 0;
+  left: 0;
+  z-index: -1;
+  border-radius: 10px;
+}
+
+.IBMSMSMBSSCC_BottomButton:hover::before {
+  transition: ease 0.4s;
+  background: linear-gradient(to top right, #262626, #292929, #262626);
+  opacity: 1;
+}
+
+.IBMSMSMBSSCL_CommentTopOther {
+  display: flex;
+  flex-direction: row;
+  justify-content: end;
+  align-items: end;
+  flex-grow: 1;
+  grid-gap: 10px;
+}
+
+.IBMSMSMBSSCL_CTO {
+  transition: ease 0.4s;
+  display: flex;
+  flex-direction: row;
+  border-radius: 10px;
+  border: solid 1px rgba(255, 255, 255, 0.1);
+  overflow: hidden;
+  color: rgba(255, 255, 255, 0.25);
+  font-size: 14px;
+}
+
+@media (max-width: 576px) {
+  .IBMSMSMBSSCL_CTO {
+    width: 100%;
+  }
+}
+
+.IBMSMSMBSSCL_CTOLink {
+  transition: ease 0.4s;
+  padding: 5px 10px;
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  align-items: center;
+  background: rgba(255, 255, 255, 0.05);
+  color: rgba(255, 255, 255, 0.25);
+}
+
+.IBMSMSMBSSCL_CTOLink:hover {
+  transition: ease 0.4s;
+  background: rgba(255, 255, 255, 0.1);
+  color: rgba(255, 255, 255, 0.5);
+}
+
+.IBMSMSMBSSCL_CTOLink:active > .IBMSMSMBSSCL_CTOLinkIcon {
+  transition: ease 0.1s;
+  transform: scale(0.9);
+}
+
+.IBMSMSMBSSCL_CTOText {
+  transition: ease 0.4s;
+  display: flex;
+  flex-direction: row;
+  justify-content: center;
+  align-items: center;
+  padding: 5px 10px;
+}
+
+.CommentsToggle {
+  width: 100%;
+  display: flex;
+  flex-direction: row;
+  grid-gap: 15px;
+  /*padding: 10px;*/
+  /*background: rgba(0,0,0,0.05);*/
+  border-radius: 10px;
+  /*border: solid 1px rgba(255,255,255,0.05);*/
+}
+
+@media (max-width: 576px) {
+  .CommentsToggle {
+    flex-direction: column;
+  }
+}
+
+.btnMain.CommentsToggleBtn {
+  flex-grow: 1;
+  background: unset;
+  box-shadow: unset;
+  font-weight: normal;
+  border-radius: 7px;
+}
+
+.btnMain.CommentsToggleBtn.CommentsToggleActive {
+  background: rgba(255, 255, 255, 0.1);
+  font-weight: bold;
+}
+
+.IBMSMSMBSSCommentsWrapper {
+  display: flex;
+  flex-direction: column;
+  grid-gap: 25px;
+}
+
+.IBMSMSMBSSTitle {
+  color: rgba(255, 255, 255, 0.5);
+}
+
+.IBMSMSMBSSCL_CommentNoteRepliesTitle {
+  color: rgba(255, 255, 255, 0.5);
+}
+
+.IBMSMSMBSSCL_CAElementLoadWrapper {
+  position: absolute;
+  bottom: 0;
+  left: 0;
+  right: 0;
+  height: 2px;
+  display: flex;
+  flex-direction: row;
+}
+
+.IBMSMSMBSSCL_CAElementLoad {
+  background: rgba(255, 255, 255, 0.5);
+  width: 0%;
+}
+
+.btnMain.IBMSMSMBSSCL_CTOBtn {
+  padding: 5px 10px;
+  height: 100%;
+}
+
+.IBMSMSMBSSCL_CommentRepost {
+  width: 100%;
+  display: flex;
+  flex-direction: row;
+  grid-gap: 0px;
+  margin-bottom: -5px;
+}
+
+.IBMSMSMBSSCL_CommentRepostVisual {
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  align-items: center;
+  width: 50px;
+  color: rgba(255,255,255,0.51);
+}
+
+.IBMSMSMBSSCL_CommentRepostText {
+  display: flex;
+  flex-direction: row;
+  grid-gap: 5px;
+  color: rgba(255,255,255,0.5);
+  width: 100%;
+  background: rgba(255,255,255,0.05);
+  padding: 5px 15px;
+  border-radius: 5px;
+}
+
+.IBMSMSMBSSCL_CommentRepostText > a {
+  display: -webkit-box;
+  -webkit-box-orient: vertical;
+  overflow: hidden;
+  -webkit-line-clamp: 1;
+  max-width: 200px;
+}
+
+.IBMSMSMBSSCL_CommentWrapper {
+  display: flex;
+  flex-direction: column;
+  grid-gap: 15px;
+  width: 100%;
+}
+
+.IBMSMSMBSSCL_CommentQP {
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  align-items: center;
+  padding: 15px;
+  border-radius: 10px;
+  border: solid 1px rgba(255,255,255,0.1);
+  background: rgba(0,0,0,0.15);
+}
+
+.IBMSMSMBSSCL_CBExpand {
+  transition: ease 0.3s;
+  width: 100%;
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  padding: 5px 15px;
+  background: rgba(255,255,255,0);
+  border-radius: 5px;
+  text-align: center;
+  font-size: 12px;
+  color: rgba(255,255,255,0.25);
+  line-height: 1.5;
+  cursor: pointer;
+}
+
+.IBMSMSMBSSCL_CBExpand:hover {
+  transition: ease 0.3s;
+  background: rgba(255,255,255,0.05);
+  color: rgba(255,255,255,0.25);
+}

@@ -1,0 +1,121 @@
+.socialNav {
+  transition: ease 0.4s;
+  position: fixed;
+  bottom: 0;
+  overflow: hidden;
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  align-items: center;
+  padding: 0 10px;
+  right: 50%;
+  transform: translateX(50%);
+}
+
+@media (max-width: 576px) {
+  .socialNav {
+    transition: ease 0.4s;
+    right: 100%;
+    transform: translateX(100%);
+    width: 100%;
+    align-items: end;
+  }
+}
+
+.socialNavInside {
+  width: 100%;
+  padding: 10px;
+  border-radius: 15px;
+  Background: linear-gradient(to top right, rgba(27,27,27,0.9), rgba(35,35,35,0.9), rgba(27,27,27,0.9));
+  box-shadow: 0 0 8px rgba(0,0,0,0.2);
+  backdrop-filter: blur(5px);
+  display: flex;
+  flex-direction: row;
+  grid-gap: 5px;
+  border: solid 2px rgba(255,255,255,0.05);
+  overflow-x: auto;
+  max-width: 80vw;
+}
+
+@media (max-width: 576px) {
+  .socialNavInside {
+    max-width: unset;
+  }
+}
+
+.socialNavInside::-webkit-scrollbar {
+  display: none;
+}
+
+.btnMain.socialNavInsideBtn {
+  transition: ease 0.4s;
+  padding: 0 15px;
+  font-size: 24px;
+  height: 45px;
+  width: 55px;
+  border-radius: 10px;
+  Background: linear-gradient(to top right, rgba(50,50,50,0), rgba(55,55,55,0), rgba(50,50,50,0));
+  color: rgba(255,255,255,0.25);
+}
+
+.btnMain.socialNavInsideBtn:hover {
+  transition: ease 0.4s;
+  background: #434343;
+}
+
+.btnMain.socialNavInsideBtn.socialNavInsideBtnActive {
+  Background: #434343;
+  box-shadow: 0 0 8px 0 rgb(0,0,0,0.1);
+  color: rgba(255,255,255,0.75);
+}
+
+.socialNavInsideWrapper {
+  margin: 10px 0 15px 0;
+  display: flex;
+  flex-direction: row;
+  justify-content: center;
+  align-items: center;
+  grid-gap: 5px;
+}
+
+@media (max-width: 576px) {
+  .socialNavInsideWrapper {
+    width: 100%;
+    justify-content: end;
+  }
+}
+
+.socialNavCollapse {
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  align-items: center;
+  Background: linear-gradient(to top right, rgba(27,27,27,0.75), rgba(35,35,35,0.75), rgba(27,27,27,0.75));
+  box-shadow: 0 0 8px rgba(0,0,0,0.2);
+  padding: 15px 5px;
+  border-radius: 5px;
+  border: solid 1px rgba(255,255,255,0.05);
+  backdrop-filter: blur(5px);
+  cursor: pointer;
+  transform: scale(1);
+  color: rgba(255,255,255,0.75);
+}
+
+.socialNavCollapse:hover {
+  Background: linear-gradient(rgba(255,255,255,0.01), rgba(255,255,255,0.01)), linear-gradient(to right top, rgba(27,27,27,0.75), rgba(35,35,35,0.75), rgba(27,27,27,0.75));
+  color: rgb(255,255,255);
+}
+
+.socialNavCollapseIcon {
+  transition: ease 0.4s;
+}
+
+.btnMain.socialNavInsideBtn::before {
+  background: linear-gradient(rgba(255,255,255,0.05), rgba(255,255,255,0.05)), linear-gradient(to top right, #262626, #292929, #262626), linear-gradient(to top right, #262626, #292929, #262626);
+  opacity: 0;
+}
+
+.btnMain.socialNavInsideBtn:hover::before {
+  opacity: 1;
+}
+

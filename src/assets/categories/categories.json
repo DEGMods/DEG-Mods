@@ -1,0 +1,12 @@
+[
+  { "name": "gameplay ", "sub": ["difficulty"]},
+  { "name": "input", "sub": ["key mapping", "macro"]},
+  { "name": "visual", "sub": ["textures", "lighting", "character models", "environment models"] },
+  { "name": "audio", "sub": ["sfx", "music", "voice"] },
+  { "name": "user interface", "sub": ["hud", "menu"] },
+  { "name": "quality of life", "sub": ["bug fixes", "performance", "accessibility"] },
+  "total conversions",
+  "translation",
+  "multiplayer",
+  "clothing"
+]
