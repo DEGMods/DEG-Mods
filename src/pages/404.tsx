@@ -1,4 +1,4 @@
-import { Link, useRouteError } from 'react-router-dom'
+import { Link, useLocation, useRouteError } from 'react-router-dom'
 import { appRoutes } from 'routes'
 
 interface NotFoundPageProps {
@@ -12,6 +12,8 @@ export const NotFoundPage = ({
 }: Partial<NotFoundPageProps>) => {
   const error = useRouteError() as Partial<NotFoundPageProps>
 
+  const location = useLocation()
+
   return (
     <div className='InnerBodyMain'>
       <div className='ContainerMain'>
@@ -23,7 +25,19 @@ export const NotFoundPage = ({
             <div>
               <p>{error?.message || message}</p>
             </div>
-            <div className='IBMSMAction'>
+            <div
+              className='IBMSMAction'
+              style={{
+                gap: '10px'
+              }}
+            >
+              <Link
+                to={location.pathname}
+                className='btn btnMain IBMSMActionBtn'
+                type='button'
+              >
+                Try again
+              </Link>
               <Link
                 to={appRoutes.home}
                 className='btn btnMain IBMSMActionBtn'

@@ -705,3 +705,28 @@ a:hover {
     transform: rotate(360deg);
   }
 }
+
+.uploadBoxMain {
+  background: hsl(0deg 0% 0% / 10%);
+  border-radius: 10px;
+  height: 10px;
+  padding: 10px;
+  border: solid 1px hsl(0deg 0% 100% / 5%);
+}
+
+.uploadBoxMain:hover > .uploadBoxMainInside {
+  padding: 5px;
+}
+
+.uploadBoxMainInside {
+  padding: 10px;
+  border: dashed 2px hsl(0deg 0% 100% / 5%);
+  border-radius: 8px;
+  height: 100%;
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  align-items: center;
+  color: hsl(0deg 0% 100% / 20%);
+  grid-gap: 10px;
+}

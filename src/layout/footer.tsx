@@ -1,4 +1,6 @@
+import { Link } from 'react-router-dom'
 import styles from '../styles/footer.module.scss'
+import { appRoutes, getProfilePageRoute } from 'routes'
 
 export const Footer = () => {
   return (
@@ -7,6 +9,7 @@ export const Footer = () => {
         <p className={styles.secMainFooterPara}>
           Built with&nbsp;
           <a
+            rel='noopener'
             className={styles.secMainFooterParaLink}
             href='https://github.com/nostr-protocol/nostr'
             target='_blank'
@@ -14,21 +17,26 @@ export const Footer = () => {
             Nostr
           </a>{' '}
           by&nbsp;
-          <a
+          <Link
             className={styles.secMainFooterParaLink}
-            href='https://degmods.com/profile/nprofile1qqsre6jgq6c7r2vzn5cdtju20qq36sn3cer5avc4x8kfru5pzrlr7sqnancjp'
+            to={getProfilePageRoute(
+              'nprofile1qqsre6jgq6c7r2vzn5cdtju20qq36sn3cer5avc4x8kfru5pzrlr7sqnancjp'
+            )}
             target='_blank'
           >
             Freakoverse
-          </a>
+          </Link>
           , with the support of{' '}
-          <a className={styles.secMainFooterParaLink} href='backers.html'>
+          <Link
+            className={styles.secMainFooterParaLink}
+            to={appRoutes.supporters}
+          >
             Supporters
-          </a>
+          </Link>
           . Check our&nbsp;
-          <a className={styles.secMainFooterParaLink} href='backup.html'>
+          <Link className={styles.secMainFooterParaLink} to={appRoutes.backup}>
             Backup Plan
-          </a>
+          </Link>
           .
         </p>
       </div>

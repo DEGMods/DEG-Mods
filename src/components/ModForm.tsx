@@ -222,7 +222,7 @@ export const ModForm = () => {
 
       <InputField
         label='Featured Image URL'
-        description='We recommend to upload images to https://nostr.build/'
+        description='We recommend to upload images to https://imgur.com/upload'
         type='text'
         inputMode='url'
         placeholder='Image URL'
@@ -293,7 +293,7 @@ export const ModForm = () => {
           </button>
         </div>
         <p className='labelDescriptionMain'>
-          We recommend to upload images to https://nostr.build/
+          We recommend to upload images to https://imgur.com/upload
         </p>
         {formState.screenshotsUrls.map((url, index) => (
           <Fragment key={`screenShot-${index}`}>
@@ -607,7 +607,7 @@ const ScreenshotUrlFields = React.memo(
           type='text'
           className='inputMain'
           inputMode='url'
-          placeholder='We recommend to upload images to https://nostr.build/'
+          placeholder='We recommend to upload images to https://imgur.com/upload'
           value={url}
           onChange={handleChange}
         />

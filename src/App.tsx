@@ -1,11 +1,12 @@
 import { RouterProvider } from 'react-router-dom'
-import { useEffect } from 'react'
-import { routerWithNdkContext } from 'routes'
+import { useEffect, useMemo } from 'react'
+import { routerWithNdkContext as routerWithState } from 'routes'
 import { useNDKContext } from 'hooks'
 import './styles/styles.css'
 
 function App() {
   const ndkContext = useNDKContext()
+  const router = useMemo(() => routerWithState(ndkContext), [ndkContext])
 
   useEffect(() => {
     // Find the element with id 'root'
@@ -24,7 +25,7 @@ function App() {
     }
   }, [])
 
-  return <RouterProvider router={routerWithNdkContext(ndkContext)} />
+  return <RouterProvider router={router} />
 }
 
 export default App

@@ -13,6 +13,7 @@ import {
 } from 'types'
 import {
   DEFAULT_FILTER_OPTIONS,
+  getFallbackPubkey,
   getLocalStorageItem,
   log,
   LogType
@@ -41,7 +42,8 @@ export const blogRouteLoader =
     }
 
     const userState = store.getState().user
-    const loggedInUserPubkey = userState?.user?.pubkey as string | undefined
+    const loggedInUserPubkey =
+      (userState?.user?.pubkey as string | undefined) || getFallbackPubkey()
 
     // Check if editing and the user is the original author
     // Redirect if NOT

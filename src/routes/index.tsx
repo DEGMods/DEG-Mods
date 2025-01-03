@@ -28,6 +28,8 @@ import { BlogPage } from '../pages/blog'
 import { blogRouteLoader } from '../pages/blog/loader'
 import { blogRouteAction } from '../pages/blog/action'
 import { reportRouteAction } from '../actions/report'
+import { BackupPage } from 'pages/backup'
+import { SupportersPage } from 'pages/supporters'
 
 export const appRoutes = {
   home: '/',
@@ -51,7 +53,9 @@ export const appRoutes = {
   settingsAdmin: '/settings-admin',
   profile: '/profile/:nprofile?',
   feed: '/feed',
-  notifications: '/notifications'
+  notifications: '/notifications',
+  backup: '/backup',
+  supporters: '/supporters'
 }
 
 export const getGamePageRoute = (name: string) =>
@@ -184,6 +188,14 @@ export const routerWithNdkContext = (context: NDKContextType) =>
               element: <NotificationsPage />
             }
           ]
+        },
+        {
+          path: appRoutes.backup,
+          element: <BackupPage />
+        },
+        {
+          path: appRoutes.supporters,
+          element: <SupportersPage />
         },
         {
           path: '*',

@@ -1,7 +1,13 @@
 import { NDKContextType } from 'contexts/NDKContext'
 import { store } from 'store'
 import { MuteLists } from 'types'
-import { getReportingSet, CurationSetIdentifiers, log, LogType } from 'utils'
+import {
+  getReportingSet,
+  CurationSetIdentifiers,
+  log,
+  LogType,
+  getFallbackPubkey
+} from 'utils'
 
 export interface ModsPageLoaderResult {
   muteLists: {
@@ -31,15 +37,11 @@ export const modsRouteLoader = (ndkContext: NDKContextType) => async () => {
 
   // Get the current state
   const userState = store.getState().user
-
-  // Check if current user is logged in
-  let userPubkey: string | undefined
-  if (userState.auth && userState.user?.pubkey) {
-    userPubkey = userState.user.pubkey as string
-  }
+  const loggedInUserPubkey =
+    (userState?.user?.pubkey as string | undefined) || getFallbackPubkey()
 
   const settled = await Promise.allSettled([
-    ndkContext.getMuteLists(userPubkey),
+    ndkContext.getMuteLists(loggedInUserPubkey),
     getReportingSet(CurationSetIdentifiers.NSFW, ndkContext),
     getReportingSet(CurationSetIdentifiers.Repost, ndkContext)
   ])

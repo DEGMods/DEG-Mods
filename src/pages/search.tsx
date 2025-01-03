@@ -39,6 +39,7 @@ import {
   scrollIntoView
 } from 'utils'
 import { useCuratedSet } from 'hooks/useCuratedSet'
+import dedup from 'utils/nostr'
 
 enum SearchKindEnum {
   Mods = 'Mods',
@@ -508,6 +509,11 @@ const GamesResult = ({ searchTerm }: GamesResultProps) => {
 
   return (
     <>
+      {searchTerm !== '' && filteredGames.length === 0 && (
+        <div className='IBMSecMain IBMSMListWrapper'>
+          Game not found. Send us a message where you can reach us to add it
+        </div>
+      )}
       <div className='IBMSecMain IBMSMListWrapper'>
         <div className='IBMSMList IBMSMListFeaturedAlt'>
           {filteredGames
@@ -521,20 +527,14 @@ const GamesResult = ({ searchTerm }: GamesResultProps) => {
             ))}
         </div>
       </div>
-      <Pagination
-        page={page}
-        disabledNext={filteredGames.length <= page * MAX_GAMES_PER_PAGE}
-        handlePrev={handlePrev}
-        handleNext={handleNext}
-      />
+      {searchTerm !== '' && filteredGames.length > MAX_GAMES_PER_PAGE && (
+        <Pagination
+          page={page}
+          disabledNext={filteredGames.length <= page * MAX_GAMES_PER_PAGE}
+          handlePrev={handlePrev}
+          handleNext={handleNext}
+        />
+      )}
     </>
   )
-}
-function dedup(event1: NDKEvent, event2: NDKEvent) {
-  // return the newest of the two
-  if (event1.created_at! > event2.created_at!) {
-    return event1
-  }
-
-  return event2
 }

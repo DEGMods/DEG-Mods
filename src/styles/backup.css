@@ -1,0 +1,36 @@
+.backupList {
+  width: 100%;
+  display: flex;
+  flex-direction: column;
+  grid-gap: 15px;
+}
+
+.backupListLink {
+  transition: ease 0.4s;
+  overflow: hidden;
+  padding: 15px;
+  box-shadow: 0 0 8px 0 rgb(0,0,0,0.1);
+  border-radius: 10px;
+  /*border: solid 1px rgba(255,255,255,0.1);*/
+  position: relative;
+  color: rgba(255,255,255,0.75);
+  min-height: 150px;
+  display: flex;
+  flex-direction: column;
+}
+
+.backupListLink:hover {
+  transition: ease 0.4s;
+  text-decoration: unset;
+  color: rgb(255,255,255);
+  transform: scale(1.02);
+}
+
+.backupListLinkInside {
+  display: flex;
+  flex-direction: column;
+  grid-gap: 0px;
+  flex-grow: 1;
+  justify-content: end;
+}
+

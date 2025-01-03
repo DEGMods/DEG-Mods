@@ -46,7 +46,6 @@ export const ProfilePage = () => {
     profilePubkey,
     profile,
     isBlocked: _isBlocked,
-    isOwnProfile,
     repostList,
     muteLists,
     nsfwList
@@ -60,6 +59,10 @@ export const ProfilePage = () => {
   const displayName =
     profile?.displayName || profile?.name || '[name not set up]'
   const [showReportPopUp, setShowReportPopUp] = useState(false)
+  const isOwnProfile =
+    userState.auth &&
+    userState.user?.pubkey &&
+    userState.user.pubkey === profilePubkey
 
   const [isBlocked, setIsBlocked] = useState(_isBlocked)
   const handleBlock = async () => {
@@ -661,7 +664,7 @@ const ReportUserPopup = ({
 }
 
 const ProfileTabBlogs = () => {
-  const { profile, muteLists, nsfwList } =
+  const { profilePubkey, muteLists, nsfwList } =
     useLoaderData() as ProfilePageLoaderResult
   const navigation = useNavigation()
   const { fetchEvents } = useNDKContext()
@@ -669,7 +672,7 @@ const ProfileTabBlogs = () => {
   const [isLoading, setIsLoading] = useState(true)
   const blogfilter: NDKFilter = useMemo(() => {
     const filter: NDKFilter = {
-      authors: [profile?.pubkey as string],
+      authors: [profilePubkey],
       kinds: [kinds.LongFormArticle]
     }
 
@@ -683,13 +686,13 @@ const ProfileTabBlogs = () => {
     }
 
     return filter
-  }, [filterOptions.nsfw, filterOptions.source, profile?.pubkey])
+  }, [filterOptions.nsfw, filterOptions.source, profilePubkey])
 
   const [page, setPage] = useState(1)
   const [hasMore, setHasMore] = useState(false)
   const [blogs, setBlogs] = useState<Partial<BlogCardDetails>[]>([])
   useEffect(() => {
-    if (profile) {
+    if (profilePubkey) {
       // Initial blog fetch, go beyond limit to check for next
       const filter: NDKFilter = {
         ...blogfilter,
@@ -704,7 +707,7 @@ const ProfileTabBlogs = () => {
           setIsLoading(false)
         })
     }
-  }, [blogfilter, fetchEvents, profile])
+  }, [blogfilter, fetchEvents, profilePubkey])
 
   const handleNext = useCallback(() => {
     if (isLoading) return
@@ -758,7 +761,7 @@ const ProfileTabBlogs = () => {
     let _blogs = blogs || []
     const isAdmin = userState.user?.npub === import.meta.env.VITE_REPORTING_NPUB
     const isOwner =
-      userState.user?.pubkey && userState.user.pubkey === profile?.pubkey
+      userState.user?.pubkey && userState.user.pubkey === profilePubkey
     const isUnmoderatedFully =
       filterOptions.moderated === ModeratedFilter.Unmoderated_Fully
 
@@ -815,7 +818,7 @@ const ProfileTabBlogs = () => {
     muteLists.user.authors,
     muteLists.user.replaceableEvents,
     nsfwList,
-    profile?.pubkey,
+    profilePubkey,
     userState.user?.npub,
     userState.user?.pubkey
   ])
@@ -826,10 +829,7 @@ const ProfileTabBlogs = () => {
         <LoadingSpinner desc={'Loading...'} />
       )}
 
-      <BlogsFilter
-        filterKey={'filter-blog'}
-        author={profile?.pubkey as string}
-      />
+      <BlogsFilter filterKey={'filter-blog'} author={profilePubkey} />
 
       <div className='IBMSMList IBMSMListAlt'>
         {moderatedAndSortedBlogs.map((b) => (

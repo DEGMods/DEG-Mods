@@ -16,10 +16,12 @@ import {
   DEFAULT_FILTER_OPTIONS,
   extractBlogCardDetails,
   extractModData,
+  getFallbackPubkey,
   getLocalStorageItem,
   getReportingSet,
   log,
-  LogType
+  LogType,
+  timeout
 } from 'utils'
 
 export const modRouteLoader =
@@ -46,7 +48,8 @@ export const modRouteLoader =
     }
 
     const userState = store.getState().user
-    const loggedInUserPubkey = userState?.user?.pubkey as string | undefined
+    const loggedInUserPubkey =
+      (userState?.user?.pubkey as string | undefined) || getFallbackPubkey()
 
     try {
       // Set up the filters
@@ -82,8 +85,8 @@ export const modRouteLoader =
 
       // Parallel fetch mod event, latest events, mute, nsfw, repost lists
       const settled = await Promise.allSettled([
-        ndkContext.fetchEvent(modFilter),
-        ndkContext.fetchEvents(latestFilter),
+        Promise.race([ndkContext.fetchEvent(modFilter), timeout(2000)]),
+        Promise.race([ndkContext.fetchEvents(latestFilter), timeout(2000)]),
         ndkContext.getMuteLists(loggedInUserPubkey), // Pass pubkey for logged-in users
         getReportingSet(CurationSetIdentifiers.NSFW, ndkContext),
         getReportingSet(CurationSetIdentifiers.Repost, ndkContext)

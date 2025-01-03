@@ -44,7 +44,7 @@ export const Layout = () => {
           })
       }
     }
-  }, [ndk, dispatch])
+  }, [dispatch, ndk])
 
   // calculate user's wot
   useEffect(() => {
@@ -60,7 +60,7 @@ export const Layout = () => {
             toast.error('An error occurred in calculating user web-of-trust!')
           })
     }
-  }, [ndk, userState.user, dispatch])
+  }, [dispatch, ndk, userState.user?.pubkey])
 
   // get site's wot level
   useEffect(() => {
@@ -106,7 +106,7 @@ export const Layout = () => {
         })
       }
     }
-  }, [userState.user, dispatch, fetchEventFromUserRelays])
+  }, [dispatch, fetchEventFromUserRelays, userState.user?.pubkey])
 
   return (
     <>

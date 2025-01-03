@@ -252,7 +252,7 @@ export const NDKContextProvider = ({ children }: { children: ReactNode }) => {
       })
       .catch((err) => {
         log(
-          true,
+          false, // Too many failed requests, turned off for clarity
           LogType.Error,
           `An error occurred in fetching user's (${hexKey}) ${userRelaysType}`,
           err

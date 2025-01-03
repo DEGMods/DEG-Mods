@@ -6,6 +6,7 @@ import { store } from 'store'
 import { MuteLists, UserProfile } from 'types'
 import {
   CurationSetIdentifiers,
+  getFallbackPubkey,
   getReportingSet,
   log,
   LogType,
@@ -16,7 +17,6 @@ export interface ProfilePageLoaderResult {
   profilePubkey: string
   profile: UserProfile
   isBlocked: boolean
-  isOwnProfile: boolean
   muteLists: {
     admin: MuteLists
     user: MuteLists
@@ -58,21 +58,17 @@ export const profileRouteLoader =
 
     // Get the current state
     const userState = store.getState().user
-
-    // Check if current user is logged in
-    let userPubkey: string | undefined
-    if (userState.auth && userState.user?.pubkey) {
-      userPubkey = userState.user.pubkey as string
-    }
+    const loggedInUserPubkey =
+      (userState?.user?.pubkey as string | undefined) || getFallbackPubkey()
 
     // Redirect if profile naddr is missing
     // - home if user is not logged
     let profileRoute = appRoutes.home
-    if (!profilePubkey && userPubkey) {
+    if (!profilePubkey && loggedInUserPubkey) {
       // - own profile
       profileRoute = getProfilePageRoute(
         nip19.nprofileEncode({
-          pubkey: userPubkey
+          pubkey: loggedInUserPubkey
         })
       )
     }
@@ -83,7 +79,6 @@ export const profileRouteLoader =
       profilePubkey: profilePubkey,
       profile: {},
       isBlocked: false,
-      isOwnProfile: false,
       muteLists: {
         admin: {
           authors: [],
@@ -98,14 +93,9 @@ export const profileRouteLoader =
       repostList: []
     }
 
-    // Check if user the user is logged in
-    if (userState.auth && userState.user?.pubkey) {
-      result.isOwnProfile = userState.user.pubkey === profilePubkey
-    }
-
     const settled = await Promise.allSettled([
       ndkContext.findMetadata(profilePubkey),
-      ndkContext.getMuteLists(userPubkey),
+      ndkContext.getMuteLists(loggedInUserPubkey),
       getReportingSet(CurationSetIdentifiers.NSFW, ndkContext),
       getReportingSet(CurationSetIdentifiers.Repost, ndkContext)
     ])

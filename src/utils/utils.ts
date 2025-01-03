@@ -160,3 +160,23 @@ export const parseFormData = <T>(formData: FormData) => {
 export const capitalizeEachWord = (str: string): string => {
   return str.replace(/\b\w/g, (char) => char.toUpperCase())
 }
+
+/**
+ * nostr-login - helper function
+ * should only be used as the fallback
+ * user state is not updated before `onAuth` triggers but loaders are faster
+ */
+export const getFallbackPubkey = () => {
+  try {
+    // read nostr-login conf from localStorage
+    const stored = window.localStorage.getItem('__nostrlogin_nip46')
+    if (!stored) return
+
+    const info = JSON.parse(stored)
+    if (info && !info.pubkey) return
+
+    return info.pubkey as string
+  } catch {
+    // Silently ignore
+  }
+}
