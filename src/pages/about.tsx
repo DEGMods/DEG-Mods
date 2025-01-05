@@ -13,14 +13,22 @@ export type FAQItem = {
 const FAQ_ITEMS: FAQItem[] = [
   {
     question: "You don't host mod files?",
-    answer: `We don't handle that directly, but you, as the creator, will.`
+    answer: `We could, but that's not the focus. When a creator publishes a mod, they have the option to upload their mod files 
+    to whichever server they want and simply add the link to their post. To the end user, there's no difference; they'd always see 
+    a 'Download' button. This results in the censorship-resistant structure of a creator's mod post. However, later on, we'll be 
+    implementing a system where creators can upload within the site (not to the site) and choose from multiple server hosts 
+    (to upload to one or more), with us potentially offering a backup. This system would also provide censorship resistance to 
+    the mod files themselves, as anyone would be able to host the files, back them up, and provide them for the public to download from, 
+    decreasing the chance of the file getting taken down or lost.`
   },
   {
     question:
       'How do you assure security of game mod files that someone downloads?',
-    answer: `We don't assure security directly. However, we will provide a reaction
-      system to help users gauge the safety of download links, and mod creators
-      are encouraged to include scan links.`
+    answer: `When a mod creator attempts to publish a mod, there is a security field that they can fill out 
+    that shows a scan report of the files, and users would be able to see that report. If a mod creator doesn't add a report, 
+    a prominent warning would be shown to the user on a mod's post (TBA, if not already added). Later, when the new file uploading 
+    system (Blossom) gets implemented, along with further security implementations, a scan would automatically happen (depending on 
+    the server that it is being uploaded to), and a report would be auto-generated and shared within the mod post.`
   },
   {
     question: "Why are you quoting 'account'?",
@@ -41,8 +49,11 @@ const FAQ_ITEMS: FAQItem[] = [
   {
     question:
       "You can't do anything about any mod or person? Nothing at all? What about the illegal stuff?",
-    answer: `Direct removal or banning is not possible. We can only filter or
-      hide content on the site, but it remains accessible on here and elsewhere.`
+    answer: `While we can't directly take down mod posts or ban user accounts, the best that we can do is hide 
+    posts from initially being viewed on the site. However, they can still be accessible if a user has a direct 
+    link, and they can also be accessible on different sites running the same protocol and similar setup to DEG Mods. 
+    When non-mods, harmful, or illegal posts are published, such posts would be discovered and then hidden. 
+    Afterwards, relevant authorities would handle the rest.`
   },
   {
     question:
@@ -57,13 +68,12 @@ const FAQ_ITEMS: FAQItem[] = [
   {
     question: 'Is this an open-source project?',
     answer: `Yes, DEG Mods is open-source. You can access the code repository
-    [here](https://github.com/your-repo).`
+    here (sharing soon).`
   },
   {
     question: "Who's developing / maintaining DEG Mods?",
     answer: `Considering this is an open-source project, anyone can contribute to its development and maintenance.
-      With that said, the initial idea-tor, designer, and frontend developer is [Freakoverse](https://degmods.com/profile/nprofile1qqsre6jgq6c7r2vzn5cdtju20qq36sn3cer5avc4x8kfru5pzrlr7sqnancjp), and the co-developer
-      is [Nostr Dev](https://nostrdev.com/).`
+      With that said, the project was ideated, launched, and led by Freakoverse.`
   },
   {
     question: "Who's that character above with the orange hair?",
@@ -71,9 +81,7 @@ const FAQ_ITEMS: FAQItem[] = [
   },
   {
     question: "Who's that character above with the purple hair?",
-    answer: `That's Moda-chan. DEG Mods' mascot. She's a master game mod creator! (Yes, she was AI-generated,
-      as such her design is temporary and will be replaced with a design created by an artist (or artists)
-      when that time comes.)`
+    answer: `That's Moda-chan. DEG Mods' mascot. She's a game mod creator!`
   }
 ]
 

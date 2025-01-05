@@ -441,6 +441,19 @@ const RegisterButtonWithDialog = () => {
                     style={{
                       padding: '10px',
                       borderRadius: '10px',
+                      background: 'rgba(205,44,255,0.1)',
+                      border: 'solid 2px rgba(255,66,235,0.3)',
+                      margin: '10px 0 0 0',
+                      color: '#ffffffbf'
+                    }}
+                  >
+                    Warning:&nbsp;Make sure you backup your private key somewhere safe. If you lose it or it gets leaked, we actually can't help you.
+                  </p>
+                  <p
+                    className='labelDescriptionMain'
+                    style={{
+                      padding: '10px',
+                      borderRadius: '10px',
                       background: 'rgba(0,0,0,0.1)',
                       border: 'solid 1px rgba(255,255,255,0.1)',
                       margin: '10px 0 0 0'
@@ -451,8 +464,6 @@ const RegisterButtonWithDialog = () => {
                     A: DEG Mods can't ban you or delete your content (we can
                     only hide you), and the consequence of that is this kind of
                     registration/login system.
-                    <br /><br />
-                    Warning:&nbsp;Make sure you backup your private key somewhere safe. If you lose it or it gets leaked, we actually can't help you.
                   </p>
                   <div className='dividerPopup'>
                     <div className='dividerPopupLine'></div>

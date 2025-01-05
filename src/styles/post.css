@@ -283,6 +283,16 @@
   text-align: center;
 }
 
+.IBMSMSMBSSNote {
+  width: 100%;
+  border-radius: 8px;
+  padding: 10px 15px;
+  border: solid 2px rgba(255,255,255,0.1);
+  background: rgba(255,122,0,0.2);
+  color: rgba(255,255,255,0.95);
+  text-align: center;
+}
+
 .IBMSMSMBSSPostBodyHideText > * {
     width: 100%;
     text-align: center;
