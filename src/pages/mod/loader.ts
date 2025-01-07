@@ -26,7 +26,7 @@ import {
 
 export const modRouteLoader =
   (ndkContext: NDKContextType) =>
-  async ({ params }: LoaderFunctionArgs) => {
+  async ({ params, request }: LoaderFunctionArgs) => {
     const { naddr } = params
     if (!naddr) {
       log(true, LogType.Error, 'Required naddr.')
@@ -50,6 +50,14 @@ export const modRouteLoader =
     const userState = store.getState().user
     const loggedInUserPubkey =
       (userState?.user?.pubkey as string | undefined) || getFallbackPubkey()
+
+    // Check if editing and the user is the original author
+    // Redirect if NOT
+    const url = new URL(request.url)
+    const isEditMode = url.pathname.includes('edit-mod')
+    if (isEditMode && loggedInUserPubkey !== pubkey) {
+      return redirect(appRoutes.mods)
+    }
 
     try {
       // Set up the filters

@@ -661,6 +661,7 @@ a:hover {
   padding-right: 50px;
 }
 
+.successMain,
 .errorMain {
   width: 100%;
   border-radius: 10px;
@@ -671,13 +672,17 @@ a:hover {
   flex-direction: row;
   grid-gap: 10px;
 }
-
+.successMainColor,
 .errorMainColor {
   width: 5px;
   border-radius: 2px;
+}
+.errorMainColor {
   background: tomato;
 }
-
+.successMainColor {
+  background: #60ae60;
+}
 .errorMainText {
 }
 
@@ -709,12 +714,14 @@ a:hover {
 .uploadBoxMain {
   background: hsl(0deg 0% 0% / 10%);
   border-radius: 10px;
-  height: 10px;
+  height: 150px;
   padding: 10px;
   border: solid 1px hsl(0deg 0% 100% / 5%);
+  transition: padding ease-in-out 0.4s;
+  position: relative;
 }
 
-.uploadBoxMain:hover > .uploadBoxMainInside {
+.uploadBoxMain:hover {
   padding: 5px;
 }
 
@@ -729,4 +736,5 @@ a:hover {
   align-items: center;
   color: hsl(0deg 0% 100% / 20%);
   grid-gap: 10px;
+  cursor: pointer;
 }

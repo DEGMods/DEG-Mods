@@ -7,8 +7,8 @@ import {
 } from 'react-router-dom'
 import {
   CheckboxFieldUncontrolled,
-  InputError,
-  InputFieldUncontrolled
+  InputFieldUncontrolled,
+  InputFieldWithImageUpload
 } from '../../components/Inputs'
 import { ProfileSection } from '../../components/ProfileSection'
 import { useAppSelector } from '../../hooks'
@@ -19,6 +19,7 @@ import '../../styles/write.css'
 import { LoadingSpinner } from 'components/LoadingSpinner'
 import { AlertPopup } from 'components/AlertPopup'
 import { Editor, EditorRef } from 'components/Markdown/Editor'
+import { InputError } from 'components/Inputs/Error'
 
 export const WritePage = () => {
   const userState = useAppSelector((state) => state.user)
@@ -29,8 +30,11 @@ export const WritePage = () => {
   const blog = data?.blog
   const title = data?.blog ? 'Edit blog post' : 'Submit a blog post'
   const [content, setContent] = useState(blog?.content || '')
+  const [image, setImage] = useState(blog?.image || '')
+
   const formRef = useRef<HTMLFormElement>(null)
   const editorRef = useRef<EditorRef>(null)
+
   const [showConfirmPopup, setShowConfirmPopup] = useState<boolean>(false)
   const handleReset = () => {
     setShowConfirmPopup(true)
@@ -40,6 +44,9 @@ export const WritePage = () => {
 
     // Cancel if not confirmed
     if (!confirm) return
+
+    // Reset featured image
+    setImage(blog?.image || '')
 
     // Reset editor
     if (blog?.content) {
@@ -97,12 +104,14 @@ export const WritePage = () => {
                     readOnly
                   />
                 </div>
-                <InputFieldUncontrolled
+                <InputFieldWithImageUpload
                   label='Featured Image URL'
                   name='image'
                   inputMode='url'
-                  defaultValue={blog?.image}
+                  value={image}
                   error={formErrors?.image}
+                  onInputChange={(_, value) => setImage(value)}
+                  placeholder='Image URL'
                 />
                 <InputFieldUncontrolled
                   label='Summary'

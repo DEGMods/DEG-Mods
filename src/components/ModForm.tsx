@@ -23,11 +23,14 @@ import {
   ModPageLoaderResult
 } from '../types'
 import { initializeFormState } from '../utils'
-import { CheckboxField, InputError, InputField } from './Inputs'
+import { CheckboxField, InputField, InputFieldWithImageUpload } from './Inputs'
 import { OriginalAuthor } from './OriginalAuthor'
 import { CategoryAutocomplete } from './CategoryAutocomplete'
 import { AlertPopup } from './AlertPopup'
 import { Editor, EditorRef } from './Markdown/Editor'
+import { MEDIA_OPTIONS } from 'controllers'
+import { InputError } from './Inputs/Error'
+import { ImageUpload } from './Inputs/ImageUpload'
 
 interface GameOption {
   value: string
@@ -220,16 +223,15 @@ export const ModForm = () => {
         />
       </div>
 
-      <InputField
+      <InputFieldWithImageUpload
         label='Featured Image URL'
-        description='We recommend to upload images to https://imgur.com/upload'
-        type='text'
+        description={`We recommend to upload images to ${MEDIA_OPTIONS[0].host}`}
         inputMode='url'
         placeholder='Image URL'
         name='featuredImageUrl'
         value={formState.featuredImageUrl}
         error={formErrors?.featuredImageUrl}
-        onChange={handleInputChange}
+        onInputChange={handleInputChange}
       />
       <InputField
         label='Summary'
@@ -293,8 +295,24 @@ export const ModForm = () => {
           </button>
         </div>
         <p className='labelDescriptionMain'>
-          We recommend to upload images to https://imgur.com/upload
+          We recommend to upload images to {MEDIA_OPTIONS[0].host}
         </p>
+
+        <ImageUpload
+          multiple={true}
+          onChange={(values) => {
+            setFormState((prevState) => ({
+              ...prevState,
+              screenshotsUrls: Array.from(
+                new Set([
+                  ...prevState.screenshotsUrls.filter((url) => url),
+                  ...values
+                ])
+              )
+            }))
+          }}
+        />
+
         {formState.screenshotsUrls.map((url, index) => (
           <Fragment key={`screenShot-${index}`}>
             <ScreenshotUrlFields
@@ -607,7 +625,7 @@ const ScreenshotUrlFields = React.memo(
           type='text'
           className='inputMain'
           inputMode='url'
-          placeholder='We recommend to upload images to https://imgur.com/upload'
+          placeholder='Image URL'
           value={url}
           onChange={handleChange}
         />
