@@ -1,3 +1,4 @@
+import _ from 'lodash'
 import { NDKEvent } from '@nostr-dev-kit/ndk'
 import { Event } from 'nostr-tools'
 import { ModDetails, ModFormState } from '../types'
@@ -131,16 +132,20 @@ export const initializeFormState = (
   originalAuthor: existingModData?.originalAuthor || undefined,
   screenshotsUrls: existingModData?.screenshotsUrls || [''],
   tags: existingModData?.tags.join(',') || '',
-  lTags: existingModData?.lTags || [],
-  LTags: existingModData?.LTags || [],
-  downloadUrls: existingModData?.downloadUrls || [
-    {
-      url: '',
-      hash: '',
-      signatureKey: '',
-      malwareScanLink: '',
-      modVersion: '',
-      customNote: ''
-    }
-  ]
+  lTags: existingModData ? _.clone(existingModData.lTags) : [],
+  LTags: existingModData ? _.clone(existingModData.lTags) : [],
+  downloadUrls: existingModData
+    ? _.cloneDeep(existingModData.downloadUrls)
+    : [
+        {
+          url: '',
+          hash: '',
+          signatureKey: '',
+          malwareScanLink: '',
+          modVersion: '',
+          customNote: ''
+        }
+      ]
 })
+
+export const MOD_DRAFT_CACHE_KEY = 'draft-mod'

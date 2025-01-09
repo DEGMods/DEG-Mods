@@ -1,60 +1,123 @@
-import { useRef, useState } from 'react'
+import { useCallback, useEffect, useRef, useState } from 'react'
 import {
-  Form,
   useActionData,
   useLoaderData,
-  useNavigation
+  useNavigation,
+  useSubmit
 } from 'react-router-dom'
 import {
-  CheckboxFieldUncontrolled,
-  InputFieldUncontrolled,
+  CheckboxField,
+  InputField,
   InputFieldWithImageUpload
-} from '../../components/Inputs'
-import { ProfileSection } from '../../components/ProfileSection'
-import { useAppSelector } from '../../hooks'
-import { BlogFormErrors, BlogPageLoaderResult } from 'types'
-import '../../styles/innerPage.css'
-import '../../styles/styles.css'
-import '../../styles/write.css'
+} from 'components/Inputs'
+import { ProfileSection } from 'components/ProfileSection'
+import { useAppSelector, useLocalCache } from 'hooks'
+import {
+  BlogEventEditForm,
+  BlogEventSubmitForm,
+  BlogFormErrors,
+  BlogPageLoaderResult
+} from 'types'
 import { LoadingSpinner } from 'components/LoadingSpinner'
 import { AlertPopup } from 'components/AlertPopup'
 import { Editor, EditorRef } from 'components/Markdown/Editor'
 import { InputError } from 'components/Inputs/Error'
+import { BLOG_DRAFT_CACHE_KEY, initializeBlogForm } from 'utils'
+import 'styles/innerPage.css'
+import 'styles/styles.css'
+import 'styles/write.css'
 
 export const WritePage = () => {
   const userState = useAppSelector((state) => state.user)
   const data = useLoaderData() as BlogPageLoaderResult
+
   const formErrors = useActionData() as BlogFormErrors
   const navigation = useNavigation()
+  const submit = useSubmit()
 
   const blog = data?.blog
-  const title = data?.blog ? 'Edit blog post' : 'Submit a blog post'
-  const [content, setContent] = useState(blog?.content || '')
-  const [image, setImage] = useState(blog?.image || '')
 
-  const formRef = useRef<HTMLFormElement>(null)
+  // Enable cache for the new blog
+  const isEditing = typeof data?.blog !== 'undefined'
+  const [cache, setCache, clearCache] =
+    useLocalCache<BlogEventSubmitForm>(BLOG_DRAFT_CACHE_KEY)
+
+  const title = isEditing ? 'Edit blog post' : 'Submit a blog post'
+  const [formState, setFormState] = useState<
+    BlogEventSubmitForm | BlogEventEditForm
+  >(isEditing ? initializeBlogForm(blog) : cache ? cache : initializeBlogForm())
+
+  useEffect(() => {
+    !isEditing && setCache(formState)
+  }, [formState, isEditing, setCache])
+
   const editorRef = useRef<EditorRef>(null)
 
   const [showConfirmPopup, setShowConfirmPopup] = useState<boolean>(false)
-  const handleReset = () => {
+  const handleReset = useCallback(() => {
     setShowConfirmPopup(true)
-  }
-  const handleResetConfirm = (confirm: boolean) => {
-    setShowConfirmPopup(false)
+  }, [])
+  const handleResetConfirm = useCallback(
+    (confirm: boolean) => {
+      setShowConfirmPopup(false)
 
-    // Cancel if not confirmed
-    if (!confirm) return
+      // Cancel if not confirmed
+      if (!confirm) return
 
-    // Reset featured image
-    setImage(blog?.image || '')
+      const initialState = initializeBlogForm(blog)
 
-    // Reset editor
-    if (blog?.content) {
-      editorRef.current?.setMarkdown(blog?.content)
-    }
+      // Reset editor
+      editorRef.current?.setMarkdown(initialState.content)
+      setFormState(initialState)
 
-    formRef.current?.reset()
-  }
+      // Clear cache
+      !isEditing && clearCache()
+    },
+    [blog, clearCache, isEditing]
+  )
+
+  const handleImageChange = useCallback((_name: string, value: string) => {
+    setFormState((prev) => ({
+      ...prev,
+      image: value
+    }))
+  }, [])
+
+  const handleInputChange = useCallback((name: string, value: string) => {
+    setFormState((prevState) => ({
+      ...prevState,
+      [name]: value
+    }))
+  }, [])
+
+  const handleEditorChange = useCallback(
+    (md: string) => {
+      handleInputChange('content', md)
+    },
+    [handleInputChange]
+  )
+
+  const handleCheckboxChange = useCallback(
+    (e: React.ChangeEvent<HTMLInputElement>) => {
+      const { name, checked } = e.target
+      setFormState((prevState) => ({
+        ...prevState,
+        [name]: checked
+      }))
+    },
+    []
+  )
+
+  const handleFormSubmit = useCallback(
+    (e: React.FormEvent) => {
+      e.preventDefault()
+      submit(JSON.stringify(formState), {
+        method: isEditing ? 'put' : 'post',
+        encType: 'application/json'
+      })
+    },
+    [formState, isEditing, submit]
+  )
 
   return (
     <div className='InnerBodyMain'>
@@ -71,82 +134,63 @@ export const WritePage = () => {
               {navigation.state === 'submitting' && (
                 <LoadingSpinner desc='Publishing blog to relays' />
               )}
-              <Form
-                ref={formRef}
-                className='IBMSMSMBS_Write'
-                method={blog ? 'put' : 'post'}
-              >
-                <InputFieldUncontrolled
+              <form className='IBMSMSMBS_Write' onSubmit={handleFormSubmit}>
+                <InputField
                   label='Title'
                   name='title'
-                  defaultValue={blog?.title}
+                  value={formState.title}
                   error={formErrors?.title}
+                  onChange={handleInputChange}
+                  placeholder='Blog title'
                 />
                 <div className='inputLabelWrapperMain'>
                   <label className='form-label labelMain'>Content</label>
                   <div className='inputMain'>
                     <Editor
                       ref={editorRef}
-                      markdown={content}
-                      onChange={(md) => {
-                        setContent(md)
-                      }}
+                      markdown={formState.content}
+                      onChange={handleEditorChange}
                     />
                   </div>
                   {typeof formErrors?.content !== 'undefined' && (
                     <InputError message={formErrors?.content} />
                   )}
-                  {/* encode to keep the markdown formatting */}
-                  <input
-                    name='content'
-                    hidden
-                    value={encodeURIComponent(content)}
-                    readOnly
-                  />
                 </div>
                 <InputFieldWithImageUpload
                   label='Featured Image URL'
                   name='image'
                   inputMode='url'
-                  value={image}
+                  value={formState.image}
                   error={formErrors?.image}
-                  onInputChange={(_, value) => setImage(value)}
+                  onInputChange={handleImageChange}
                   placeholder='Image URL'
                 />
-                <InputFieldUncontrolled
+                <InputField
                   label='Summary'
                   name='summary'
                   type='textarea'
-                  defaultValue={blog?.summary}
+                  value={formState.summary}
                   error={formErrors?.summary}
+                  onChange={handleInputChange}
+                  placeholder={'This is a quick description of my blog'}
                 />
-                <InputFieldUncontrolled
+                <InputField
                   label='Tags'
                   description='Separate each tag with a comma. (Example: tag1, tag2, tag3)'
                   placeholder='Tags'
                   name='tags'
-                  defaultValue={blog?.tTags?.join(', ')}
+                  value={formState.tags}
                   error={formErrors?.tags}
+                  onChange={handleInputChange}
                 />
-                <CheckboxFieldUncontrolled
+                <CheckboxField
                   label='This post is not safe for work (NSFW)'
                   name='nsfw'
-                  defaultChecked={blog?.nsfw}
+                  isChecked={formState.nsfw}
+                  handleChange={handleCheckboxChange}
+                  type='stylized'
                 />
-                {typeof blog?.dTag !== 'undefined' && (
-                  <input name='dTag' hidden value={blog.dTag} readOnly />
-                )}
-                {typeof blog?.rTag !== 'undefined' && (
-                  <input name='rTag' hidden value={blog.rTag} readOnly />
-                )}
-                {typeof blog?.published_at !== 'undefined' && (
-                  <input
-                    name='published_at'
-                    hidden
-                    value={blog.published_at}
-                    readOnly
-                  />
-                )}
+
                 <div className='IBMSMSMBS_WriteAction'>
                   <button
                     className='btn btnMain'
@@ -157,7 +201,7 @@ export const WritePage = () => {
                       navigation.state === 'submitting'
                     }
                   >
-                    {blog ? 'Reset' : 'Clear fields'}
+                    {isEditing ? 'Reset' : 'Clear fields'}
                   </button>
                   <button
                     className='btn btnMain'
@@ -178,13 +222,13 @@ export const WritePage = () => {
                     handleClose={() => setShowConfirmPopup(false)}
                     header={'Are you sure?'}
                     label={
-                      blog
+                      isEditing
                         ? `Are you sure you want to clear all changes?`
                         : `Are you sure you want to clear all field data?`
                     }
                   />
                 )}
-              </Form>
+              </form>
             </div>
             {userState.auth && userState.user?.pubkey && (
               <ProfileSection pubkey={userState.user.pubkey as string} />

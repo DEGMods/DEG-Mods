@@ -180,3 +180,14 @@ export const getFallbackPubkey = () => {
     // Silently ignore
   }
 }
+
+export function mergeWithInitialValue<T>(storedValue: T, initialValue: T): T {
+  if (
+    !Array.isArray(storedValue) &&
+    typeof storedValue === 'object' &&
+    storedValue !== null
+  ) {
+    return { ...initialValue, ...storedValue }
+  }
+  return storedValue
+}

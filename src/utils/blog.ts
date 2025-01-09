@@ -1,5 +1,10 @@
 import { NDKEvent } from '@nostr-dev-kit/ndk'
-import { BlogCardDetails, BlogDetails } from 'types'
+import {
+  BlogCardDetails,
+  BlogDetails,
+  BlogEventEditForm,
+  BlogEventSubmitForm
+} from 'types'
 import { getFirstTagValue, getFirstTagValueAsInt, getTagValues } from './nostr'
 import { kinds, nip19 } from 'nostr-tools'
 
@@ -50,3 +55,25 @@ export const extractBlogCardDetails = (
       : undefined
   }
 }
+
+export const initializeBlogForm = (
+  blog?: Partial<BlogDetails>
+): BlogEventSubmitForm | BlogEventEditForm => ({
+  content: blog?.content || '',
+  image: blog?.image || '',
+  nsfw: blog?.nsfw || false,
+  summary: blog?.summary || '',
+  title: blog?.title || '',
+  tags: blog?.tTags?.join(', ') || '',
+  ...(blog?.aTag && {
+    aTag: blog.aTag
+  }),
+  ...(blog?.dTag && {
+    dTag: blog.dTag
+  }),
+  ...(blog?.published_at && {
+    published_at: blog.published_at
+  })
+})
+
+export const BLOG_DRAFT_CACHE_KEY = 'draft-blog'

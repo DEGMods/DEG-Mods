@@ -22,7 +22,7 @@ import {
   ModFormState,
   ModPageLoaderResult
 } from '../types'
-import { initializeFormState } from '../utils'
+import { initializeFormState, MOD_DRAFT_CACHE_KEY } from '../utils'
 import { CheckboxField, InputField, InputFieldWithImageUpload } from './Inputs'
 import { OriginalAuthor } from './OriginalAuthor'
 import { CategoryAutocomplete } from './CategoryAutocomplete'
@@ -31,6 +31,7 @@ import { Editor, EditorRef } from './Markdown/Editor'
 import { MEDIA_OPTIONS } from 'controllers'
 import { InputError } from './Inputs/Error'
 import { ImageUpload } from './Inputs/ImageUpload'
+import { useLocalCache } from 'hooks/useLocalCache'
 
 interface GameOption {
   value: string
@@ -45,9 +46,19 @@ export const ModForm = () => {
   const submit = useSubmit()
   const games = useGames()
   const [gameOptions, setGameOptions] = useState<GameOption[]>([])
+
+  // Enable cache for the new mod
+  const isEditing = typeof mod !== 'undefined'
+  const [cache, setCache, clearCache] =
+    useLocalCache<ModFormState>(MOD_DRAFT_CACHE_KEY)
   const [formState, setFormState] = useState<ModFormState>(
-    initializeFormState(mod)
+    isEditing ? initializeFormState(mod) : cache ? cache : initializeFormState()
   )
+
+  useEffect(() => {
+    !isEditing && setCache(formState)
+  }, [formState, isEditing, setCache])
+
   const editorRef = useRef<EditorRef>(null)
 
   useEffect(() => {
@@ -145,45 +156,42 @@ export const ModForm = () => {
   )
 
   const [showConfirmPopup, setShowConfirmPopup] = useState<boolean>(false)
-  const handleReset = () => {
+  const handleReset = useCallback(() => {
     setShowConfirmPopup(true)
-  }
-  const handleResetConfirm = (confirm: boolean) => {
-    setShowConfirmPopup(false)
+  }, [])
+  const handleResetConfirm = useCallback(
+    (confirm: boolean) => {
+      setShowConfirmPopup(false)
 
-    // Cancel if not confirmed
-    if (!confirm) return
+      // Cancel if not confirmed
+      if (!confirm) return
 
-    // Editing
-    if (mod) {
-      const initial = initializeFormState(mod)
+      // Reset fields to the initial or original existing data
+      const initialState = initializeFormState(mod)
 
       // Reset editor
-      editorRef.current?.setMarkdown(initial.body)
+      editorRef.current?.setMarkdown(initialState.body)
+      setFormState(initialState)
 
-      // Reset fields to the original existing data
-      setFormState(initial)
-      return
-    }
+      // Clear cache
+      !isEditing && clearCache()
+    },
+    [clearCache, isEditing, mod]
+  )
 
-    // New - set form state to the initial (clear form state)
-    setFormState(initializeFormState())
-  }
-  const handlePublish = () => {
-    submit(JSON.stringify(formState), {
-      method: mod ? 'put' : 'post',
-      encType: 'application/json'
-    })
-  }
+  const handlePublish = useCallback(
+    (e: React.FormEvent<HTMLFormElement>) => {
+      e.preventDefault()
+      submit(JSON.stringify(formState), {
+        method: isEditing ? 'put' : 'post',
+        encType: 'application/json'
+      })
+    },
+    [formState, isEditing, submit]
+  )
 
   return (
-    <form
-      className='IBMSMSMBS_Write'
-      onSubmit={(e) => {
-        e.preventDefault()
-        handlePublish()
-      }}
-    >
+    <form className='IBMSMSMBS_Write' onSubmit={handlePublish}>
       <GameDropdown
         options={gameOptions}
         selected={formState?.game}
@@ -406,7 +414,7 @@ export const ModForm = () => {
             navigation.state === 'loading' || navigation.state === 'submitting'
           }
         >
-          {mod ? 'Reset' : 'Clear fields'}
+          {isEditing ? 'Reset' : 'Clear fields'}
         </button>
         <button
           className='btn btnMain'

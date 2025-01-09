@@ -20,9 +20,7 @@ export interface BlogDetails extends BlogForm {
   tTags: string[]
 }
 
-export interface BlogEventSubmitForm extends Omit<BlogForm, 'nsfw'> {
-  nsfw: string
-}
+export interface BlogEventSubmitForm extends BlogForm {}
 
 export interface BlogEventEditForm extends BlogEventSubmitForm {
   dTag: string

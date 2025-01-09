@@ -3,12 +3,13 @@ import { ActionFunctionArgs, redirect } from 'react-router-dom'
 import { getBlogPageRoute } from 'routes'
 import { BlogFormErrors, BlogEventSubmitForm, BlogEventEditForm } from 'types'
 import {
+  BLOG_DRAFT_CACHE_KEY,
   isReachable,
   isValidImageUrl,
   log,
   LogType,
   now,
-  parseFormData
+  removeLocalStorageItem
 } from 'utils'
 import { kinds, UnsignedEvent, Event, nip19 } from 'nostr-tools'
 import { toast } from 'react-toastify'
@@ -43,12 +44,9 @@ export const writeRouteAction =
     }
 
     // Get the form data from submit request
-    const formData = await request.formData()
-
-    // Parse the the data
-    const formSubmit = parseFormData<BlogEventSubmitForm | BlogEventEditForm>(
-      formData
-    )
+    const formSubmit = (await request.json()) as
+      | BlogEventSubmitForm
+      | BlogEventEditForm
 
     // Check for errors
     const formErrors = await validateFormData(formSubmit)
@@ -80,7 +78,7 @@ export const writeRouteAction =
     const tTags = formSubmit
       .tags!.toLowerCase()
       .split(',')
-      .map((t) => ['t', t])
+      .map((t) => ['t', t.trim()])
 
     const tags = [
       ['d', uuid],
@@ -95,7 +93,7 @@ export const writeRouteAction =
 
     // Add NSFW tag, L label namespace standardized tag
     // https://github.com/nostr-protocol/nips/blob/2838e3bd51ac00bd63c4cef1601ae09935e7dd56/README.md#standardized-tags
-    if (formSubmit.nsfw === 'on') tags.push(['L', 'content-warning'])
+    if (formSubmit.nsfw) tags.push(['L', 'content-warning'])
 
     const unsignedEvent: UnsignedEvent = {
       kind: kinds.LongFormArticle,
@@ -128,6 +126,9 @@ export const writeRouteAction =
             '\n'
           )}`
         )
+
+        !isEditing && removeLocalStorageItem(BLOG_DRAFT_CACHE_KEY)
+
         const naddr = nip19.naddrEncode({
           identifier: uuid,
           pubkey: signedEvent.pubkey,

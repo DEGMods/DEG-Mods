@@ -12,7 +12,9 @@ import {
   isValidUrl,
   log,
   LogType,
-  now
+  MOD_DRAFT_CACHE_KEY,
+  now,
+  removeLocalStorageItem
 } from 'utils'
 import { v4 as uuidv4 } from 'uuid'
 import { T_TAG_VALUE } from '../../constants'
@@ -141,6 +143,8 @@ export const submitModRouteAction =
           )}`
         )
 
+        !isEditing && removeLocalStorageItem(MOD_DRAFT_CACHE_KEY)
+
         const naddr = nip19.naddrEncode({
           identifier: aTag,
           pubkey: signedEvent.pubkey,
@@ -207,13 +211,6 @@ const validateState = async (
           'All screenshot URLs must be valid and reachable image URLs'
       }
     }
-  }
-
-  if (
-    formState.repost &&
-    (!formState.originalAuthor || formState.originalAuthor === '')
-  ) {
-    errors.originalAuthor = 'Original author field can not be empty'
   }
 
   if (!formState.tags || formState.tags === '') {

@@ -1,6 +1,7 @@
 import React, { useMemo } from 'react'
 import {
   getSessionStorageItem,
+  mergeWithInitialValue,
   removeSessionStorageItem,
   setSessionStorageItem
 } from 'utils'
@@ -8,17 +9,6 @@ import {
 const useSessionStorageSubscribe = (callback: () => void) => {
   window.addEventListener('sessionStorage', callback)
   return () => window.removeEventListener('sessionStorage', callback)
-}
-
-function mergeWithInitialValue<T>(storedValue: T, initialValue: T): T {
-  if (
-    !Array.isArray(storedValue) &&
-    typeof storedValue === 'object' &&
-    storedValue !== null
-  ) {
-    return { ...initialValue, ...storedValue }
-  }
-  return storedValue
 }
 
 export function useSessionStorage<T>(

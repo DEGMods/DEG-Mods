@@ -1,6 +1,7 @@
 import React, { useMemo } from 'react'
 import {
   getLocalStorageItem,
+  mergeWithInitialValue,
   removeLocalStorageItem,
   setLocalStorageItem
 } from 'utils'
@@ -8,17 +9,6 @@ import {
 const useLocalStorageSubscribe = (callback: () => void) => {
   window.addEventListener('storage', callback)
   return () => window.removeEventListener('storage', callback)
-}
-
-function mergeWithInitialValue<T>(storedValue: T, initialValue: T): T {
-  if (
-    !Array.isArray(storedValue) &&
-    typeof storedValue === 'object' &&
-    storedValue !== null
-  ) {
-    return { ...initialValue, ...storedValue }
-  }
-  return storedValue
 }
 
 export function useLocalStorage<T>(
