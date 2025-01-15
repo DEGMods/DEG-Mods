@@ -5,7 +5,12 @@ import { ActionFunctionArgs, redirect } from 'react-router-dom'
 import { toast } from 'react-toastify'
 import { getModPageRoute } from 'routes'
 import { store } from 'store'
-import { FormErrors, ModFormState } from 'types'
+import {
+  FormErrors,
+  ModFormState,
+  SubmitModActionResult,
+  TimeoutError
+} from 'types'
 import {
   isReachable,
   isValidImageUrl,
@@ -14,7 +19,8 @@ import {
   LogType,
   MOD_DRAFT_CACHE_KEY,
   now,
-  removeLocalStorageItem
+  removeLocalStorageItem,
+  timeout
 } from 'utils'
 import { v4 as uuidv4 } from 'uuid'
 import { T_TAG_VALUE } from '../../constants'
@@ -51,29 +57,31 @@ export const submitModRouteAction =
       // Check for errors
       const formErrors = await validateState(formState)
 
-      // Return earily if there are any errors
-      if (Object.keys(formErrors).length) return formErrors
+      // Return early if there are any errors
+      if (Object.keys(formErrors).length) {
+        return {
+          type: 'validation',
+          error: formErrors
+        } as SubmitModActionResult
+      }
 
-      // Check if we are editing or this is a new mob
+      const currentTimeStamp = now()
+
       const { naddr } = params
+      // Check if we are editing or this is a new mob
       const isEditing = naddr && request.method === 'PUT'
 
       const uuid = formState.dTag || uuidv4()
-      const currentTimeStamp = now()
       const aTag =
         formState.aTag || `${kinds.ClassifiedListing}:${hexPubkey}:${uuid}`
+      const published_at = formState.published_at || currentTimeStamp
 
       const tags = [
         ['d', uuid],
         ['a', aTag],
         ['r', formState.rTag],
         ['t', T_TAG_VALUE],
-        [
-          'published_at',
-          isEditing
-            ? formState.published_at.toString()
-            : currentTimeStamp.toString()
-        ],
+        ['published_at', published_at.toString()],
         ['game', formState.game],
         ['title', formState.title],
         ['featuredImageUrl', formState.featuredImageUrl],
@@ -131,32 +139,52 @@ export const submitModRouteAction =
       }
 
       const ndkEvent = new NDKEvent(ndkContext.ndk, signedEvent)
-      const publishedOnRelays = await ndkContext.publish(ndkEvent)
+      // Publishing a mod sometime hangs (ndk.publish has internal timeout of 10s)
+      // Make sure to actually throw a timeout error (30s)
+      try {
+        const publishedOnRelays = await Promise.race([
+          ndkContext.publish(ndkEvent),
+          timeout(30000)
+        ])
+        // Handle cases where publishing failed or succeeded
+        if (publishedOnRelays.length === 0) {
+          toast.error('Failed to publish event on any relay')
+        } else {
+          toast.success(
+            `Event published successfully to the following relays\n\n${publishedOnRelays.join(
+              '\n'
+            )}`
+          )
 
-      // Handle cases where publishing failed or succeeded
-      if (publishedOnRelays.length === 0) {
-        toast.error('Failed to publish event on any relay')
-      } else {
-        toast.success(
-          `Event published successfully to the following relays\n\n${publishedOnRelays.join(
-            '\n'
-          )}`
-        )
+          !isEditing && removeLocalStorageItem(MOD_DRAFT_CACHE_KEY)
 
-        !isEditing && removeLocalStorageItem(MOD_DRAFT_CACHE_KEY)
+          const naddr = nip19.naddrEncode({
+            identifier: aTag,
+            pubkey: signedEvent.pubkey,
+            kind: signedEvent.kind,
+            relays: publishedOnRelays
+          })
 
-        const naddr = nip19.naddrEncode({
-          identifier: aTag,
-          pubkey: signedEvent.pubkey,
-          kind: signedEvent.kind,
-          relays: publishedOnRelays
-        })
+          return redirect(getModPageRoute(naddr))
+        }
+      } catch (error) {
+        if (error instanceof TimeoutError) {
+          const result: SubmitModActionResult = {
+            type: 'timeout',
+            data: {
+              dTag: uuid,
+              aTag,
+              published_at: published_at
+            }
+          }
+          return result
+        }
 
-        return redirect(getModPageRoute(naddr))
+        // Rethrow non-timeout for general catch
+        throw error
       }
     } catch (error) {
       log(true, LogType.Error, 'Failed to sign the event!', error)
-      toast.error('Failed to sign the event!')
       return null
     }
 

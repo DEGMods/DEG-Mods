@@ -4,6 +4,8 @@ import {
   codeBlockPlugin,
   CodeToggle,
   CreateLink,
+  diffSourcePlugin,
+  DiffSourceToggleWrapper,
   directivesPlugin,
   headingsPlugin,
   imagePlugin,
@@ -68,34 +70,42 @@ export const Editor = React.memo(
       () => [
         toolbarPlugin({
           toolbarContents: () => (
-            <>
-              <UndoRedo />
-              <Separator />
-              <BoldItalicUnderlineToggles />
-              <CodeToggle />
-              <Separator />
-              <StrikeThroughSupSubToggles />
-              <Separator />
-              <ListsToggle />
-              <Separator />
-              <BlockTypeSelect />
-              <Separator />
+            <DiffSourceToggleWrapper
+              children={
+                <>
+                  <UndoRedo />
+                  <Separator />
+                  <BoldItalicUnderlineToggles />
+                  <CodeToggle />
+                  <Separator />
+                  <StrikeThroughSupSubToggles />
+                  <Separator />
+                  <ListsToggle />
+                  <Separator />
+                  <BlockTypeSelect />
+                  <Separator />
 
-              <CreateLink />
-              <InsertImage />
-              <YouTubeButton />
+                  <CreateLink />
+                  <InsertImage />
+                  <YouTubeButton />
 
-              <Separator />
+                  <Separator />
 
-              <InsertTable />
-              <InsertThematicBreak />
+                  <InsertTable />
+                  <InsertThematicBreak />
 
-              <Separator />
-              <InsertCodeBlock />
-            </>
+                  <Separator />
+                  <InsertCodeBlock />
+                </>
+              }
+            />
           )
         }),
         headingsPlugin(),
+        diffSourcePlugin({
+          viewMode: 'rich-text',
+          diffMarkdown: markdown
+        }),
         quotePlugin(),
         imagePlugin({
           ImageDialog: ImageDialog
@@ -118,6 +128,7 @@ export const Editor = React.memo(
           codeBlockEditorDescriptors: [PlainTextCodeEditorDescriptor]
         })
       ],
+      // eslint-disable-next-line react-hooks/exhaustive-deps
       []
     )
 

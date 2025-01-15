@@ -42,8 +42,8 @@ export class BaseError extends Error {
 
     super(message, { cause: cause })
     this.name = this.constructor.name
-
     this.context = context
+    Object.setPrototypeOf(this, BaseError.prototype)
   }
 }
 
@@ -54,5 +54,17 @@ export function errorFeedback(error: unknown) {
   } else {
     toast.error('Something went wrong.')
     log(true, LogType.Error, error)
+  }
+}
+
+export class TimeoutError extends Error {
+  constructor(timeoutMs?: number) {
+    let message = 'Time elapsed.'
+    if (timeoutMs) {
+      message += `\n* ${timeoutMs}ms`
+    }
+    super(message)
+    this.name = this.constructor.name
+    Object.setPrototypeOf(this, TimeoutError.prototype)
   }
 }

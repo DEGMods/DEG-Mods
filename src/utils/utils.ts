@@ -1,3 +1,5 @@
+import { TimeoutError } from 'types'
+
 export enum LogType {
   Info = 'info',
   Error = 'error',
@@ -23,14 +25,14 @@ export const log = (
 /**
  * Creates a promise that rejects with a timeout error after a specified duration.
  * @param ms The duration in milliseconds after which the promise should reject. Defaults to 60000 milliseconds (1 minute).
- * @returns A promise that rejects with an Error('Timeout') after the specified duration.
+ * @returns A promise that rejects with an TimeoutError after the specified duration.
  */
 export const timeout = (ms: number = 60000) => {
   return new Promise<never>((_, reject) => {
     // Set a timeout using setTimeout
     setTimeout(() => {
       // Reject the promise with an Error indicating a timeout
-      reject(new Error('Timeout'))
+      reject(new TimeoutError(ms))
     }, ms) // Timeout duration in milliseconds
   })
 }

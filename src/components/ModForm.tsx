@@ -18,11 +18,16 @@ import { useGames } from '../hooks'
 import '../styles/styles.css'
 import {
   DownloadUrl,
-  FormErrors,
   ModFormState,
-  ModPageLoaderResult
+  ModPageLoaderResult,
+  SubmitModActionResult
 } from '../types'
-import { initializeFormState, MOD_DRAFT_CACHE_KEY } from '../utils'
+import {
+  initializeFormState,
+  log,
+  LogType,
+  MOD_DRAFT_CACHE_KEY
+} from '../utils'
 import { CheckboxField, InputField, InputFieldWithImageUpload } from './Inputs'
 import { OriginalAuthor } from './OriginalAuthor'
 import { CategoryAutocomplete } from './CategoryAutocomplete'
@@ -32,6 +37,7 @@ import { MEDIA_OPTIONS } from 'controllers'
 import { InputError } from './Inputs/Error'
 import { ImageUpload } from './Inputs/ImageUpload'
 import { useLocalCache } from 'hooks/useLocalCache'
+import { toast } from 'react-toastify'
 
 interface GameOption {
   value: string
@@ -41,7 +47,11 @@ interface GameOption {
 export const ModForm = () => {
   const data = useLoaderData() as ModPageLoaderResult
   const mod = data?.mod
-  const formErrors = useActionData() as FormErrors
+  const actionData = useActionData() as SubmitModActionResult
+  const formErrors = useMemo(
+    () => (actionData?.type === 'validation' ? actionData.error : undefined),
+    [actionData]
+  )
   const navigation = useNavigation()
   const submit = useSubmit()
   const games = useGames()
@@ -55,8 +65,25 @@ export const ModForm = () => {
     isEditing ? initializeFormState(mod) : cache ? cache : initializeFormState()
   )
 
+  // Enable backwards compatibility with the mods that used html
+  const body = useMemo(() => {
+    // Replace the most problematic HTML tags (<br>)
+    const fixed = formState.body.replaceAll(/<br>/g, '\r\n')
+    return fixed
+  }, [formState.body])
+
   useEffect(() => {
-    !isEditing && setCache(formState)
+    if (!isEditing) {
+      const newCache = _.cloneDeep(formState)
+
+      // Remove aTag, dTag and published_at from cache
+      // These are used for editing and try again timeout
+      newCache.aTag = ''
+      newCache.dTag = ''
+      newCache.published_at = 0
+
+      setCache(newCache)
+    }
   }, [formState, isEditing, setCache])
 
   const editorRef = useRef<EditorRef>(null)
@@ -154,6 +181,32 @@ export const ModForm = () => {
     },
     []
   )
+  const [showTryAgainPopup, setShowTryAgainPopup] = useState<boolean>(false)
+  useEffect(() => {
+    const isTimeout = actionData?.type === 'timeout'
+    setShowTryAgainPopup(isTimeout)
+    if (isTimeout) {
+      setFormState((prev) => ({
+        ...prev,
+        aTag: actionData.data.aTag,
+        dTag: actionData.data.dTag,
+        published_at: actionData.data.published_at
+      }))
+    }
+  }, [actionData])
+  const handleTryAgainConfirm = useCallback(
+    (confirm: boolean) => {
+      setShowTryAgainPopup(false)
+
+      // Cancel if not confirmed
+      if (!confirm) return
+      submit(JSON.stringify(formState), {
+        method: isEditing ? 'put' : 'post',
+        encType: 'application/json'
+      })
+    },
+    [formState, isEditing, submit]
+  )
 
   const [showConfirmPopup, setShowConfirmPopup] = useState<boolean>(false)
   const handleReset = useCallback(() => {
@@ -213,10 +266,14 @@ export const ModForm = () => {
         <div className='inputMain'>
           <Editor
             ref={editorRef}
-            markdown={formState.body}
+            markdown={body}
             placeholder="Here's what this mod is all about"
             onChange={(md) => {
               handleInputChange('body', md)
+            }}
+            onError={(payload) => {
+              toast.error('Markdown error. Fix manually in the source mode.')
+              log(true, LogType.Error, payload.error)
             }}
           />
         </div>
@@ -426,13 +483,21 @@ export const ModForm = () => {
           {navigation.state === 'submitting' ? 'Publishing...' : 'Publish'}
         </button>
       </div>
+      {showTryAgainPopup && (
+        <AlertPopup
+          handleConfirm={handleTryAgainConfirm}
+          handleClose={() => setShowTryAgainPopup(false)}
+          header={'Publish'}
+          label={`Submission timed out. Do you want to try again?`}
+        />
+      )}
       {showConfirmPopup && (
         <AlertPopup
           handleConfirm={handleResetConfirm}
           handleClose={() => setShowConfirmPopup(false)}
           header={'Are you sure?'}
           label={
-            mod
+            isEditing
               ? `Are you sure you want to clear all changes?`
               : `Are you sure you want to clear all field data?`
           }

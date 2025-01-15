@@ -369,16 +369,14 @@ export const NDKContextProvider = ({ children }: { children: ReactNode }) => {
   const publish = async (event: NDKEvent): Promise<string[]> => {
     if (!event.sig) throw new Error('Before publishing first sign the event!')
 
-    return event
-      .publish(undefined, 10000)
-      .then((res) => {
-        const relaysPublishedOn = Array.from(res)
-        return relaysPublishedOn.map((relay) => relay.url)
-      })
-      .catch((err) => {
-        console.error(`An error occurred in publishing event`, err)
-        return []
-      })
+    try {
+      const res = await event.publish(undefined, 10000)
+      const relaysPublishedOn = Array.from(res)
+      return relaysPublishedOn.map((relay) => relay.url)
+    } catch (err) {
+      console.error(`An error occurred in publishing event`, err)
+      return []
+    }
   }
 
   /**

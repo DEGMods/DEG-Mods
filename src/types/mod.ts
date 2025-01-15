@@ -68,6 +68,17 @@ export interface ModPageLoaderResult {
   isRepost: boolean
 }
 
+export type SubmitModActionResult =
+  | { type: 'validation'; error: FormErrors }
+  | {
+      type: 'timeout'
+      data: {
+        dTag: string
+        aTag: string
+        published_at: number
+      }
+    }
+
 export interface FormErrors {
   game?: string
   title?: string

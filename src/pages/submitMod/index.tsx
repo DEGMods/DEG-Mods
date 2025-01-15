@@ -1,4 +1,4 @@
-import { LoadingSpinner } from 'components/LoadingSpinner'
+import { LoadingSpinner, TimerLoadingSpinner } from 'components/LoadingSpinner'
 import { ModForm } from 'components/ModForm'
 import { ProfileSection } from 'components/ProfileSection'
 import { useAppSelector } from 'hooks'
@@ -24,7 +24,9 @@ export const SubmitModPage = () => {
                 <LoadingSpinner desc='Fetching mod details from relays' />
               )}
               {navigation.state === 'submitting' && (
-                <LoadingSpinner desc='Publishing mod to relays' />
+                <TimerLoadingSpinner timeoutMs={10000} countdownMs={30000}>
+                  Publishing mod to relays
+                </TimerLoadingSpinner>
               )}
               <ModForm />
             </div>
