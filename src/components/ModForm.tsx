@@ -434,8 +434,23 @@ export const ModForm = () => {
         </div>
         <p className='labelDescriptionMain'>
           You can upload your game mod to Github, as an example, and keep
-          updating it there (another option is catbox.moe). Also, it's advisable
-          that you hash your package as well with your nostr public key.
+          updating it there (another option is{' '}
+          <a
+            href='https://catbox.moe/'
+            target='_blank'
+            rel='noopener noreferrer'
+          >
+            catbox.moe
+          </a>
+          ). Also, it's advisable that you hash your package as well with your
+          nostr public key. Malware scan service suggestion:{' '}
+          <a
+            href='https://virustotal.com'
+            target='_blank'
+            rel='noopener noreferrer'
+          >
+            https://virustotal.com
+          </a>
         </p>
 
         {formState.downloadUrls.map((download, index) => (

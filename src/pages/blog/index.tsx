@@ -18,6 +18,7 @@ import { toast } from 'react-toastify'
 import { useAppSelector, useBodyScrollDisable } from 'hooks'
 import { ReportPopup } from 'components/ReportPopup'
 import { Viewer } from 'components/Markdown/Viewer'
+import { PostWarnings } from 'components/PostWarning'
 
 const BLOG_REPORT_REASONS = [
   { label: 'Actually CP', key: 'actuallyCP' },
@@ -29,7 +30,7 @@ const BLOG_REPORT_REASONS = [
 ]
 
 export const BlogPage = () => {
-  const { blog, latest, isAddedToNSFW, isBlocked } =
+  const { blog, latest, isAddedToNSFW, isBlocked, postWarning } =
     useLoaderData() as BlogPageLoaderResult
   const userState = useAppSelector((state) => state.user)
   const isAdmin =
@@ -84,6 +85,7 @@ export const BlogPage = () => {
               <>
                 <div className='IBMSMSplitMainBigSide'>
                   <div className='IBMSMSplitMainBigSideSec'>
+                    {postWarning && <PostWarnings type={postWarning} />}
                     <div className='IBMSMSMBSSPost'>
                       <div
                         className='dropdown dropdownMain dropdownMainBlogpost'

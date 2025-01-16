@@ -11,7 +11,7 @@ import {
 import { toast } from 'react-toastify'
 import { BlogCard } from '../../components/BlogCard'
 import { ProfileSection } from '../../components/ProfileSection'
-import { useAppSelector, useBodyScrollDisable } from '../../hooks'
+import { useAppSelector, useBodyScrollDisable, useDidMount } from '../../hooks'
 import { getGamePageRoute, getModsEditPageRoute } from '../../routes'
 import '../../styles/comments.css'
 import '../../styles/downloads.css'
@@ -26,9 +26,11 @@ import '../../styles/write.css'
 import { DownloadUrl, ModPageLoaderResult } from '../../types'
 import {
   capitalizeEachWord,
+  checkUrlForFile,
   copyTextToClipboard,
   downloadFile,
-  getFilenameFromUrl
+  getFilenameFromUrl,
+  isValidUrl
 } from '../../utils'
 import { Comments } from '../../components/comment'
 import { PublishDetails } from 'components/Internal/PublishDetails'
@@ -38,6 +40,7 @@ import { Spinner } from 'components/Spinner'
 import { RouterLoadingSpinner } from 'components/LoadingSpinner'
 import { OriginalAuthor } from 'components/OriginalAuthor'
 import { Viewer } from 'components/Markdown/Viewer'
+import { PostWarnings } from 'components/PostWarning'
 
 const MOD_REPORT_REASONS = [
   { label: 'Actually CP', key: 'actuallyCP' },
@@ -51,7 +54,7 @@ const MOD_REPORT_REASONS = [
 ]
 
 export const ModPage = () => {
-  const { mod } = useLoaderData() as ModPageLoaderResult
+  const { mod, postWarning } = useLoaderData() as ModPageLoaderResult
 
   // We can get author right away from naddr, no need to wait for mod data
   const { naddr } = useParams()
@@ -98,6 +101,7 @@ export const ModPage = () => {
                   <>
                     <div className='IBMSMSplitMainBigSideSec'>
                       <Game />
+                      {postWarning && <PostWarnings type={postWarning} />}
                       <Body
                         featuredImageUrl={mod.featuredImageUrl}
                         title={mod.title}
@@ -125,6 +129,7 @@ export const ModPage = () => {
                         <h4 className='IBMSMSMBSSDownloadsTitle'>
                           Mod Download
                         </h4>
+                        {postWarning && <PostWarnings type={postWarning} />}
                         {mod.downloadUrls.length > 0 && (
                           <div className='IBMSMSMBSSDownloadsPrime'>
                             <Download {...mod.downloadUrls[0]} />
@@ -610,6 +615,24 @@ const Download = ({
   customNote
 }: DownloadUrl) => {
   const [showAuthDetails, setShowAuthDetails] = useState(false)
+  const [showNotice, setShowNotice] = useState(false)
+  const [showScanNotice, setShowCanNotice] = useState(false)
+
+  useDidMount(async () => {
+    const isFile = await checkUrlForFile(url)
+    setShowNotice(!isFile)
+
+    // Check the malware scan url
+    // if it's valid URL
+    // if it contains sha256
+    setShowCanNotice(
+      !(
+        malwareScanLink &&
+        isValidUrl(malwareScanLink) &&
+        /\b[a-fA-F0-9]{64}\b/.test(malwareScanLink)
+      )
+    )
+  })
 
   const handleDownload = () => {
     // Get the filename from the URL
@@ -629,6 +652,25 @@ const Download = ({
           Download
         </button>
       </div>
+      {showNotice && (
+        <div className='IBMSMSMBSSNote'>
+          <p>
+            Notice: The creator has provided a download link that doesn&#39;t
+            download the files immediately, but rather redirects you to a
+            different site.
+            <br />
+          </p>
+        </div>
+      )}
+      {showScanNotice && (
+        <div className='IBMSMSMBSSWarning'>
+          <p>
+            The mod poster hasn't provided a malware scan report for these
+            files. Be careful.
+            <br />
+          </p>
+        </div>
+      )}
       {/*temporarily commented out the WoT rating for download links within a mod post
       <div className='IBMSMSMBSSDownloadsElementInside'>
         <p>Ratings (WIP):</p>

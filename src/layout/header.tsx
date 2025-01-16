@@ -3,7 +3,7 @@ import {
   launch as launchNostrLoginDialog
 } from 'nostr-login'
 import React, { useEffect, useState } from 'react'
-import { Link } from 'react-router-dom'
+import { Link, useRevalidator } from 'react-router-dom'
 import { Banner } from '../components/Banner'
 import { ZapPopUp } from '../components/Zap'
 import {
@@ -27,7 +27,7 @@ export const Header = () => {
   const dispatch = useAppDispatch()
   const { findMetadata } = useNDKContext()
   const userState = useAppSelector((state) => state.user)
-
+  const revalidator = useRevalidator()
   // Track nostr-login extension modal open state
   const [isOpen, setIsOpen] = useState(false)
   const handleOpen = () => setIsOpen(true)
@@ -75,8 +75,12 @@ export const Header = () => {
             }
           })
         }
+
+        // React router - revalidate loader states on auth changes
+        revalidator.revalidate()
       }
     })
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [dispatch, findMetadata])
 
   const handleLogin = () => {
@@ -447,7 +451,9 @@ const RegisterButtonWithDialog = () => {
                       color: '#ffffffbf'
                     }}
                   >
-                    Warning:&nbsp;Make sure you backup your private key somewhere safe. If you lose it or it gets leaked, we actually can't help you.
+                    Warning:&nbsp;Make sure you backup your private key
+                    somewhere safe. If you lose it or it gets leaked, we
+                    actually can't help you.
                   </p>
                   <p
                     className='labelDescriptionMain'

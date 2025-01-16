@@ -66,6 +66,7 @@ export interface ModPageLoaderResult {
   isAddedToNSFW: boolean
   isBlocked: boolean
   isRepost: boolean
+  postWarning?: 'user' | 'admin'
 }
 
 export type SubmitModActionResult =

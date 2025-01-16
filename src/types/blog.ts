@@ -39,6 +39,7 @@ export interface BlogPageLoaderResult {
   latest: Partial<BlogDetails>[]
   isAddedToNSFW: boolean
   isBlocked: boolean
+  postWarning?: 'user' | 'admin'
 }
 
 export interface BlogsFilterOptions {

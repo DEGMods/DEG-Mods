@@ -119,3 +119,105 @@ export const downloadFile = (url: string, filename: string) => {
   // Remove the anchor from the document
   document.body.removeChild(a)
 }
+
+/**
+ * Checks if the url endpoint returns a file
+ * @param url
+ * @returns true if matches a possible file download
+ */
+export const checkUrlForFile = async (url: string) => {
+  try {
+    // HTTP HEAD request to get headers without downloading the full content
+    const response = await fetch(url, { method: 'HEAD' })
+
+    // Check Content-Disposition header
+    const contentDisposition = response.headers.get('content-disposition')
+    if (contentDisposition && contentDisposition.includes('attachment')) {
+      return true
+    }
+
+    //Check Content-Type header
+    const contentType = response.headers.get('content-type')
+    if (
+      contentType &&
+      (contentType.includes('application/') ||
+        contentType.includes('image/') ||
+        contentType.includes('audio/') ||
+        contentType.includes('video/'))
+    ) {
+      return true
+    }
+  } catch {
+    // Ignore
+  }
+
+  // Check if blossom file (link includes sha256 string in the url)
+  // Most likely it's a file that users would directly download
+  const regex = /\/[a-fA-F0-9]{64}(\.[a-zA-Z0-9]+)?$/
+  if (regex.test(url)) {
+    return true
+  }
+
+  // Common mod file extensions
+  const fileExtensions = [
+    '.zip',
+    '.rar',
+    '.7z',
+    '.tar',
+    '.gz',
+    '.bz2',
+    '.xz',
+    '.cab',
+    '.iso', // (can also be considered a disk image)
+    '.tgz', // (tar.gz)
+    '.z', // (compress)
+    '.lz', // (Lempel-Ziv)
+    '.mp3',
+    '.wav',
+    '.aac',
+    '.flac',
+    '.ogg',
+    '.wma',
+    '.m4a',
+    '.opus',
+    '.mp4',
+    '.avi',
+    '.mkv',
+    '.mov',
+    '.wmv',
+    '.flv',
+    '.webm',
+    '.mpeg',
+    '.3gp',
+    '.jpg',
+    '.jpeg',
+    '.png',
+    '.gif',
+    '.bmp',
+    '.tiff',
+    '.tif',
+    '.svg',
+    '.raw',
+    '.heic',
+    '.exe', // (executable files for Windows games)
+    '.apk', // (Android Package)
+    '.ipa', // (iOS App Store Package)
+    '.bin', // (binary file, often used for game data)
+    '.iso', // (disk image, often for console games)
+    '.sav', // (save game file)
+    '.cfg', // (configuration file)
+    '.mod', // (modification file)
+    '.pak', // (package file, often used in games)
+    '.unity', // (Unity game project file)
+    '.game', // (generic game file)
+    '.dmg' // (disk image for macOS applications)
+  ]
+
+  for (const ext of fileExtensions) {
+    if (url.endsWith(ext)) {
+      return true
+    }
+  }
+
+  return false
+}

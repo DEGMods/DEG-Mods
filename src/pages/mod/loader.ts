@@ -50,6 +50,7 @@ export const modRouteLoader =
     const userState = store.getState().user
     const loggedInUserPubkey =
       (userState?.user?.pubkey as string | undefined) || getFallbackPubkey()
+    const isAdmin = userState.user?.npub === import.meta.env.VITE_REPORTING_NPUB
 
     // Check if editing and the user is the original author
     // Redirect if NOT
@@ -146,10 +147,27 @@ export const modRouteLoader =
       if (muteLists.status === 'fulfilled' && muteLists.value) {
         if (muteLists && muteLists.value) {
           if (result.mod && result.mod.aTag) {
+            // Show user or admin post warning if any mute list includes either post or author
+            if (
+              muteLists.value.user.replaceableEvents.includes(
+                result.mod.aTag
+              ) ||
+              muteLists.value.user.authors.includes(result.mod.author)
+            ) {
+              result.postWarning = 'user'
+            }
+
             if (
               muteLists.value.admin.replaceableEvents.includes(
                 result.mod.aTag
               ) ||
+              muteLists.value.admin.authors.includes(result.mod.author)
+            ) {
+              result.postWarning = 'admin'
+            }
+
+            // Check if user has blocked this profile
+            if (
               muteLists.value.user.replaceableEvents.includes(result.mod.aTag)
             ) {
               result.isBlocked = true
@@ -157,8 +175,6 @@ export const modRouteLoader =
           }
 
           // Moderate the latest
-          const isAdmin =
-            userState.user?.npub === import.meta.env.VITE_REPORTING_NPUB
           const isOwner =
             userState.user?.pubkey && userState.user.pubkey === pubkey
           const isUnmoderatedFully =
