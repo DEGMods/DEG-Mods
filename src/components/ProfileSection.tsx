@@ -155,7 +155,7 @@ export const Profile = ({ pubkey }: ProfileProps) => {
                 <div className='IBMSMSMSSS_Author_TopWrapper'>
                   <p className='IBMSMSMSSS_Author_Top_Name'>{displayName}</p>
                   {/* Nip05 can sometimes be an empty object '{}' which causes the error */}
-                  {typeof nip05 === 'string' && (
+                  {typeof nip05 === 'string' && nip05 !== '' && (
                     <p className='IBMSMSMSSS_Author_Top_Handle'>{nip05}</p>
                   )}
                 </div>
@@ -191,7 +191,7 @@ export const Profile = ({ pubkey }: ProfileProps) => {
               {typeof nprofile !== 'undefined' && (
                 <ProfileQRButtonWithPopUp nprofile={nprofile} />
               )}
-              {typeof lud16 !== 'undefined' && (
+              {typeof lud16 !== 'undefined' && lud16 !== '' && (
                 <ZapButtonWithPopUp pubkey={pubkey} />
               )}
             </div>

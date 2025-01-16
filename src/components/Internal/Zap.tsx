@@ -1,3 +1,4 @@
+import { Dots } from 'components/Spinner'
 import { ZapSplit } from 'components/Zap'
 import {
   useAppSelector,
@@ -8,7 +9,7 @@ import {
 import { useState } from 'react'
 import { toast } from 'react-toastify'
 import { Addressable } from 'types'
-import { abbreviateNumber } from 'utils'
+import { abbreviateNumber, log, LogType } from 'utils'
 
 type ZapProps = {
   addressable: Addressable
@@ -16,15 +17,25 @@ type ZapProps = {
 
 export const Zap = ({ addressable }: ZapProps) => {
   const [isOpen, setIsOpen] = useState(false)
+  const [isLoading, setIsLoading] = useState(true)
+  const [isAvailable, setIsAvailable] = useState(false)
   const [totalZappedAmount, setTotalZappedAmount] = useState(0)
   const [hasZapped, setHasZapped] = useState(false)
 
   const userState = useAppSelector((state) => state.user)
-  const { getTotalZapAmount } = useNDKContext()
+  const { getTotalZapAmount, findMetadata } = useNDKContext()
 
   useBodyScrollDisable(isOpen)
 
   useDidMount(() => {
+    findMetadata(addressable.author)
+      .then((res) => {
+        setIsAvailable(typeof res?.lud16 !== 'undefined' && res.lud16 !== '')
+      })
+      .catch((err) => {
+        log(true, LogType.Error, err.message || err)
+      })
+
     getTotalZapAmount(
       addressable.author,
       addressable.id,
@@ -38,7 +49,13 @@ export const Zap = ({ addressable }: ZapProps) => {
       .catch((err) => {
         toast.error(err.message || err)
       })
+      .finally(() => {
+        setIsLoading(false)
+      })
   })
+
+  // Hide button if the author hasn't set lud16
+  if (!isAvailable) return null
 
   return (
     <>
@@ -47,7 +64,7 @@ export const Zap = ({ addressable }: ZapProps) => {
         className={`IBMSMSMBSS_Details_Card IBMSMSMBSS_D_CBolt ${
           hasZapped ? 'IBMSMSMBSS_D_CBActive' : ''
         }`}
-        onClick={() => setIsOpen(true)}
+        onClick={isLoading ? undefined : () => setIsOpen(true)}
       >
         <div className='IBMSMSMBSS_Details_CardVisual'>
           <svg
@@ -62,7 +79,7 @@ export const Zap = ({ addressable }: ZapProps) => {
           </svg>
         </div>
         <p className='IBMSMSMBSS_Details_CardText'>
-          {abbreviateNumber(totalZappedAmount)}
+          {isLoading ? <Dots /> : abbreviateNumber(totalZappedAmount)}
         </p>
         <div className='IBMSMSMBSSCL_CAElementLoadWrapper'>
           <div className='IBMSMSMBSSCL_CAElementLoad'></div>

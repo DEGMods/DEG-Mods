@@ -14,7 +14,8 @@ import {
   useLocalStorage,
   useMuteLists,
   useNDKContext,
-  useNSFWList
+  useNSFWList,
+  useRepostList
 } from '../hooks'
 import { appRoutes, getModPageRoute } from '../routes'
 import { BlogCardDetails, ModDetails, NSFWFilter, SortBy } from '../types'
@@ -257,18 +258,14 @@ const DisplayLatestMods = () => {
 
   const muteLists = useMuteLists()
   const nsfwList = useNSFWList()
+  const repostList = useRepostList()
 
   useDidMount(() => {
     fetchMods({ source: window.location.host })
       .then((mods) => {
         // Sort by the latest (published_at descending)
         mods.sort((a, b) => b.published_at - a.published_at)
-        const wotFilteredMods = mods.filter(
-          (mod) =>
-            isInWoT(siteWot, siteWotLevel, mod.author) ||
-            isInWoT(userWot, userWotLevel, mod.author)
-        )
-        setLatestMods(wotFilteredMods)
+        setLatestMods(mods)
       })
       .finally(() => {
         setIsFetchingLatestMods(false)
@@ -287,11 +284,36 @@ const DisplayLatestMods = () => {
         !mutedAuthors.includes(mod.author) &&
         !mutedEvents.includes(mod.aTag) &&
         !nsfwList.includes(mod.aTag) &&
-        !mod.nsfw
+        !mod.nsfw &&
+        (isInWoT(siteWot, siteWotLevel, mod.author) ||
+          isInWoT(userWot, userWotLevel, mod.author))
     )
 
+    // Add repost tag if missing
+    for (let i = 0; i < filtered.length; i++) {
+      const mod = filtered[i]
+      const isMissingRepostTag =
+        !mod.repost && mod.aTag && repostList.includes(mod.aTag)
+
+      if (isMissingRepostTag) {
+        mod.repost = true
+      }
+    }
+
     return filtered.slice(0, 4)
-  }, [muteLists, nsfwList, latestMods])
+  }, [
+    latestMods,
+    muteLists.admin.authors,
+    muteLists.admin.replaceableEvents,
+    muteLists.user.authors,
+    muteLists.user.replaceableEvents,
+    nsfwList,
+    repostList,
+    siteWot,
+    siteWotLevel,
+    userWot,
+    userWotLevel
+  ])
 
   return (
     <div className='IBMSecMain IBMSMListWrapper'>
