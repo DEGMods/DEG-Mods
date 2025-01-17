@@ -625,11 +625,13 @@ const Download = ({
     // Check the malware scan url
     // if it's valid URL
     // if it contains sha256
+    // if it differs from download link
     setShowCanNotice(
       !(
         malwareScanLink &&
         isValidUrl(malwareScanLink) &&
-        /\b[a-fA-F0-9]{64}\b/.test(malwareScanLink)
+        /\b[a-fA-F0-9]{64}\b/.test(malwareScanLink) &&
+        malwareScanLink !== url
       )
     )
   })
