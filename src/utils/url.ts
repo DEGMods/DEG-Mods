@@ -127,8 +127,15 @@ export const downloadFile = (url: string, filename: string) => {
  */
 export const checkUrlForFile = async (url: string) => {
   try {
+    const controller = new AbortController()
+    const timeoutId = setTimeout(() => controller.abort(), 2000)
+
     // HTTP HEAD request to get headers without downloading the full content
-    const response = await fetch(url, { method: 'HEAD' })
+    const response = await fetch(url, {
+      method: 'HEAD',
+      signal: controller.signal
+    })
+    clearTimeout(timeoutId)
 
     // Check Content-Disposition header
     const contentDisposition = response.headers.get('content-disposition')
