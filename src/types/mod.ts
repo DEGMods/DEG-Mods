@@ -41,11 +41,13 @@ export interface ModFormState {
 
 export interface DownloadUrl {
   url: string
+  title?: string
   hash: string
   signatureKey: string
   malwareScanLink: string
   modVersion: string
   customNote: string
+  mediaUrl?: string
 }
 
 export interface ModDetails extends Omit<ModFormState, 'tags'> {

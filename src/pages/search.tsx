@@ -174,12 +174,15 @@ const Filters = React.memo(() => {
               </button>
               <div className='dropdown-menu dropdownMainMenu'>
                 {Object.values(ModeratedFilter).map((item, index) => {
-                  if (item === ModeratedFilter.Unmoderated_Fully) {
-                    const isAdmin =
-                      userState.user?.npub ===
-                      import.meta.env.VITE_REPORTING_NPUB
+                  const isAdmin =
+                    userState.user?.npub === import.meta.env.VITE_REPORTING_NPUB
 
-                    if (!isAdmin) return null
+                  if (item === ModeratedFilter.Only_Blocked && !isAdmin) {
+                    return null
+                  }
+
+                  if (item === ModeratedFilter.Unmoderated_Fully && !isAdmin) {
+                    return null
                   }
 
                   return (
@@ -439,9 +442,16 @@ const UsersResult = ({
     const isAdmin = userState.user?.npub === import.meta.env.VITE_REPORTING_NPUB
     const isUnmoderatedFully =
       moderationFilter === ModeratedFilter.Unmoderated_Fully
+    const isOnlyBlocked = moderationFilter === ModeratedFilter.Only_Blocked
 
-    // Only apply filtering if the user is not an admin or the admin has not selected "Unmoderated Fully"
-    if (!(isAdmin && isUnmoderatedFully)) {
+    if (isOnlyBlocked && isAdmin) {
+      filtered = filtered.filter((profile) =>
+        muteLists.admin.authors.includes(profile.pubkey as string)
+      )
+    } else if (isUnmoderatedFully && isAdmin) {
+      // Only apply filtering if the user is not an admin
+      // or the admin has not selected "Unmoderated Fully"
+    } else {
       filtered = filtered.filter(
         (profile) => !muteLists.admin.authors.includes(profile.pubkey as string)
       )

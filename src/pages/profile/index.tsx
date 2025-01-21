@@ -767,6 +767,8 @@ const ProfileTabBlogs = () => {
       userState.user?.pubkey && userState.user.pubkey === profilePubkey
     const isUnmoderatedFully =
       filterOptions.moderated === ModeratedFilter.Unmoderated_Fully
+    const isOnlyBlocked =
+      filterOptions.moderated === ModeratedFilter.Only_Blocked
 
     // Add nsfw tag to blogs included in nsfwList
     if (filterOptions.nsfw !== NSFWFilter.Hide_NSFW) {
@@ -782,9 +784,16 @@ const ProfileTabBlogs = () => {
       (b) => !(b.nsfw && filterOptions.nsfw === NSFWFilter.Hide_NSFW)
     )
 
-    // Only apply filtering if the user is not an admin or the admin has not selected "Unmoderated Fully"
-    // Allow "Unmoderated Fully" when author visits own profile
-    if (!((isAdmin || isOwner) && isUnmoderatedFully)) {
+    if (isOnlyBlocked && isAdmin) {
+      _blogs = _blogs.filter(
+        (b) =>
+          muteLists.admin.authors.includes(b.author!) ||
+          muteLists.admin.replaceableEvents.includes(b.aTag!)
+      )
+    } else if (isUnmoderatedFully && (isAdmin || isOwner)) {
+      // Only apply filtering if the user is not an admin or the admin has not selected "Unmoderated Fully"
+      // Allow "Unmoderated Fully" when author visits own profile
+    } else {
       _blogs = _blogs.filter(
         (b) =>
           !muteLists.admin.authors.includes(b.author!) &&

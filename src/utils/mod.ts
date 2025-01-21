@@ -138,12 +138,14 @@ export const initializeFormState = (
     ? _.cloneDeep(existingModData.downloadUrls)
     : [
         {
+          title: '',
           url: '',
           hash: '',
           signatureKey: '',
           malwareScanLink: '',
           modVersion: '',
-          customNote: ''
+          customNote: '',
+          mediaUrl: ''
         }
       ]
 })

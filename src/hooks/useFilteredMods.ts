@@ -128,10 +128,19 @@ export const useFilteredMods = (
       npubToHex(userState.user.npub as string) === author
     const isUnmoderatedFully =
       filterOptions.moderated === ModeratedFilter.Unmoderated_Fully
+    const isOnlyBlocked =
+      filterOptions.moderated === ModeratedFilter.Only_Blocked
 
-    // Only apply filtering if the user is not an admin or the admin has not selected "Unmoderated Fully"
-    // Allow "Unmoderated Fully" when author visits own profile
-    if (!((isAdmin || isOwner) && isUnmoderatedFully)) {
+    if (isOnlyBlocked && isAdmin) {
+      filtered = filtered.filter(
+        (mod) =>
+          muteLists.admin.authors.includes(mod.author) ||
+          muteLists.admin.replaceableEvents.includes(mod.aTag)
+      )
+    } else if (isUnmoderatedFully && (isAdmin || isOwner)) {
+      // Only apply filtering if the user is not an admin or the admin has not selected "Unmoderated Fully"
+      // Allow "Unmoderated Fully" when author visits own profile
+    } else {
       filtered = filtered.filter(
         (mod) =>
           !muteLists.admin.authors.includes(mod.author) &&

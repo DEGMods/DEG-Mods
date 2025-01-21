@@ -129,7 +129,7 @@ export const modRouteLoader =
         throw new Error('We are unable to find the mod on the relays')
       }
 
-      // Check the lateast blog events
+      // Check the latest blog events
       const fetchEventsResult = settled[1]
       if (fetchEventsResult.status === 'fulfilled' && fetchEventsResult.value) {
         // Extract the blog card details from the events

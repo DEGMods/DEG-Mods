@@ -41,6 +41,7 @@ import { RouterLoadingSpinner } from 'components/LoadingSpinner'
 import { OriginalAuthor } from 'components/OriginalAuthor'
 import { Viewer } from 'components/Markdown/Viewer'
 import { PostWarnings } from 'components/PostWarning'
+import { DownloadDetailsPopup } from 'components/DownloadDetailsPopup'
 
 const MOD_REPORT_REASONS = [
   { label: 'Actually CP', key: 'actuallyCP' },
@@ -69,25 +70,6 @@ export const ModPage = () => {
   }
 
   const [commentCount, setCommentCount] = useState(0)
-
-  const oldDownloadListRef = useRef<HTMLDivElement>(null)
-
-  const handleViewOldLinks = () => {
-    if (oldDownloadListRef.current) {
-      // Toggle styles
-      if (oldDownloadListRef.current.style.height === '0px') {
-        // Enable styles
-        oldDownloadListRef.current.style.padding = ''
-        oldDownloadListRef.current.style.height = ''
-        oldDownloadListRef.current.style.border = ''
-      } else {
-        // Disable styles
-        oldDownloadListRef.current.style.padding = '0'
-        oldDownloadListRef.current.style.height = '0'
-        oldDownloadListRef.current.style.border = 'unset'
-      }
-    }
-  }
 
   return (
     <>
@@ -136,37 +118,16 @@ export const ModPage = () => {
                           </div>
                         )}
                         {mod.downloadUrls.length > 1 && (
-                          <>
-                            <div className='IBMSMSMBSSDownloadsActions'>
-                              <button
-                                className='btn btnMain'
-                                id='viewOldLinks'
-                                type='button'
-                                onClick={handleViewOldLinks}
-                              >
-                                View other links
-                              </button>
-                            </div>
-                            <div
-                              ref={oldDownloadListRef}
-                              id='oldDownloadList'
-                              className='IBMSMSMBSSDownloads'
-                              style={{
-                                padding: 0,
-                                height: '0px',
-                                border: 'unset'
-                              }}
-                            >
-                              {mod.downloadUrls
-                                .slice(1)
-                                .map((download, index) => (
-                                  <Download
-                                    key={`downloadUrl-${index}`}
-                                    {...download}
-                                  />
-                                ))}
-                            </div>
-                          </>
+                          <div className='IBMSMSMBSSDownloads'>
+                            {mod.downloadUrls
+                              .slice(1)
+                              .map((download, index) => (
+                                <Download
+                                  key={`downloadUrl-${index}`}
+                                  {...download}
+                                />
+                              ))}
+                          </div>
                         )}
                       </div>
                     </div>
@@ -606,14 +567,8 @@ const Body = ({
   )
 }
 
-const Download = ({
-  url,
-  hash,
-  signatureKey,
-  malwareScanLink,
-  modVersion,
-  customNote
-}: DownloadUrl) => {
+const Download = (props: DownloadUrl) => {
+  const { url, title, malwareScanLink } = props
   const [showAuthDetails, setShowAuthDetails] = useState(false)
   const [showNotice, setShowNotice] = useState(false)
   const [showScanNotice, setShowCanNotice] = useState(false)
@@ -645,6 +600,9 @@ const Download = ({
 
   return (
     <div className='IBMSMSMBSSDownloadsElement'>
+      {typeof title !== 'undefined' && title !== '' && (
+        <span className='IBMSMSMBSSDownloadsElementDtitle'>{title}</span>
+      )}
       <div className='IBMSMSMBSSDownloadsElementInside'>
         <button
           className='btn btnMain IBMSMSMBSSDownloadsElementBtn'
@@ -847,56 +805,10 @@ const Download = ({
           Authentication Details
         </p>
         {showAuthDetails && (
-          <div className='IBMSMSMBSSDownloadsElementInsideAltTable'>
-            <div className='IBMSMSMBSSDownloadsElementInsideAltTableRow'>
-              <div className='IBMSMSMBSSDownloadsElementInsideAltTableRowCol IBMSMSMBSSDownloadsElementInsideAltTableRowColFirst'>
-                <p>Download URL</p>
-              </div>
-              <div className='IBMSMSMBSSDownloadsElementInsideAltTableRowCol'>
-                <p>{url}</p>
-              </div>
-            </div>
-            <div className='IBMSMSMBSSDownloadsElementInsideAltTableRow'>
-              <div className='IBMSMSMBSSDownloadsElementInsideAltTableRowCol IBMSMSMBSSDownloadsElementInsideAltTableRowColFirst'>
-                <p>SHA-256 hash</p>
-              </div>
-              <div className='IBMSMSMBSSDownloadsElementInsideAltTableRowCol'>
-                <p>{hash}</p>
-              </div>
-            </div>
-            <div className='IBMSMSMBSSDownloadsElementInsideAltTableRow'>
-              <div className='IBMSMSMBSSDownloadsElementInsideAltTableRowCol IBMSMSMBSSDownloadsElementInsideAltTableRowColFirst'>
-                <p>Signature from</p>
-              </div>
-              <div className='IBMSMSMBSSDownloadsElementInsideAltTableRowCol'>
-                <p>{signatureKey}</p>
-              </div>
-            </div>
-            <div className='IBMSMSMBSSDownloadsElementInsideAltTableRow'>
-              <div className='IBMSMSMBSSDownloadsElementInsideAltTableRowCol IBMSMSMBSSDownloadsElementInsideAltTableRowColFirst'>
-                <p>Scan</p>
-              </div>
-              <div className='IBMSMSMBSSDownloadsElementInsideAltTableRowCol'>
-                <p>{malwareScanLink}</p>
-              </div>
-            </div>
-            <div className='IBMSMSMBSSDownloadsElementInsideAltTableRow'>
-              <div className='IBMSMSMBSSDownloadsElementInsideAltTableRowCol IBMSMSMBSSDownloadsElementInsideAltTableRowColFirst'>
-                <p>Mod Version</p>
-              </div>
-              <div className='IBMSMSMBSSDownloadsElementInsideAltTableRowCol'>
-                <p>{modVersion}</p>
-              </div>
-            </div>
-            <div className='IBMSMSMBSSDownloadsElementInsideAltTableRow'>
-              <div className='IBMSMSMBSSDownloadsElementInsideAltTableRowCol IBMSMSMBSSDownloadsElementInsideAltTableRowColFirst'>
-                <p>Note</p>
-              </div>
-              <div className='IBMSMSMBSSDownloadsElementInsideAltTableRowCol'>
-                <p>{customNote}</p>
-              </div>
-            </div>
-          </div>
+          <DownloadDetailsPopup
+            {...props}
+            handleClose={() => setShowAuthDetails(false)}
+          />
         )}
       </div>
     </div>

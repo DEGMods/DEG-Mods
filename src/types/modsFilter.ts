@@ -14,7 +14,8 @@ export enum NSFWFilter {
 export enum ModeratedFilter {
   Moderated = 'Moderated',
   Unmoderated = 'Unmoderated',
-  Unmoderated_Fully = 'Unmoderated Fully'
+  Unmoderated_Fully = 'Unmoderated Fully',
+  Only_Blocked = 'Only Moderated'
 }
 
 export enum WOTFilterOptions {

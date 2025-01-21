@@ -9,9 +9,9 @@
   width: 100%;
   border-radius: 10px;
   display: grid;
-  grid-template-columns: 1fr;
+  grid-template-columns: 1fr 1fr;
   grid-gap: 15px;
-  border: solid 1px rgba(255,255,255,0.05);
+  border: solid 1px rgba(255, 255, 255, 0.05);
   overflow: auto;
   max-height: 550px;
   padding: 15px;
@@ -27,7 +27,7 @@
 }
 
 .IBMSMSMBSSDownloadsTitle {
-  color: rgba(255,255,255,0.5);
+  color: rgba(255, 255, 255, 0.5);
 }
 
 .IBMSMSMBSSDownloadsElement {
@@ -36,11 +36,11 @@
   display: grid;
   grid-template-columns: 1fr;
   grid-gap: 10px;
-  border: solid 1px rgba(255,255,255,0);
-  background: rgba(255,255,255,0.05);
+  border: solid 1px rgba(255, 255, 255, 0);
+  background: rgba(255, 255, 255, 0.05);
   padding: 10px;
   border-radius: 10px;
-  box-shadow: 0 0 8px 0 rgb(0,0,0,0.1);
+  box-shadow: 0 0 8px 0 rgb(0, 0, 0, 0.1);
 }
 
 @media (max-width: 768px) {
@@ -50,7 +50,7 @@
 }
 
 .btnMain.IBMSMSMBSSDownloadsElementBtn {
-  background: rgba(255,255,255,0.05);
+  background: rgba(255, 255, 255, 0.05);
   border-radius: 10px;
   width: 100%;
 }
@@ -62,8 +62,8 @@
 }
 
 .btnMain.IBMSMSMBSSDownloadsElementBtn:hover {
-  background: rgba(255,255,255,0.1);
-  box-shadow: 0 0 8px 0 rgb(0,0,0,0.1);
+  background: rgba(255, 255, 255, 0.1);
+  box-shadow: 0 0 8px 0 rgb(0, 0, 0, 0.1);
 }
 
 .IBMSMSMBSSDownloadsElementInside {
@@ -71,7 +71,7 @@
   flex-direction: column;
   justify-content: start;
   align-items: start;
-  color: rgba(255,255,255,0.5);
+  color: rgba(255, 255, 255, 0.5);
   grid-gap: 10px;
 }
 
@@ -97,27 +97,30 @@
   justify-content: center;
   align-items: center;
   width: 100%;
-  background: rgba(255,255,255,0);
+  background: rgba(255, 255, 255, 0);
   overflow: hidden;
   border-radius: 10px;
-  border: solid 1px rgba(255,255,255,0.05);
+  border: solid 1px rgba(255, 255, 255, 0.05);
   cursor: pointer;
 }
 
 .IBMSMSMBSSDEIReactionsElement:hover {
   transition: ease 0.4s;
-  background: rgba(255,255,255,0.05);
-  color: rgba(255,255,255,0.75);
-  border: solid 1px rgba(255,255,255,0);
+  background: rgba(255, 255, 255, 0.05);
+  color: rgba(255, 255, 255, 0.75);
+  border: solid 1px rgba(255, 255, 255, 0);
 }
 
-.IBMSMSMBSSDEIReactionsElement:hover > .IBMSMSMBSSDEIReactionsElementIconWrapper {
+.IBMSMSMBSSDEIReactionsElement:hover
+  > .IBMSMSMBSSDEIReactionsElementIconWrapper {
   transition: ease 0.4s;
-  background: rgba(255,255,255,0.05);
-  border-right: solid 1px rgba(255,255,255,0);
+  background: rgba(255, 255, 255, 0.05);
+  border-right: solid 1px rgba(255, 255, 255, 0);
 }
 
-.IBMSMSMBSSDEIReactionsElement:hover > .IBMSMSMBSSDEIReactionsElementIconWrapper > .IBMSMSMBSSDEIReactionsElementIcon {
+.IBMSMSMBSSDEIReactionsElement:hover
+  > .IBMSMSMBSSDEIReactionsElementIconWrapper
+  > .IBMSMSMBSSDEIReactionsElementIcon {
   transform: scale(1.1);
 }
 
@@ -147,9 +150,9 @@
   justify-content: center;
   align-items: center;
   height: 100%;
-  background: rgba(255,255,255,0);
+  background: rgba(255, 255, 255, 0);
   padding: 10px 5px;
-  border-right: solid 1px rgba(255,255,255,0.05);
+  border-right: solid 1px rgba(255, 255, 255, 0.05);
 }
 
 .IBMSMSMBSSDownloadsElementInsideDetails {
@@ -160,17 +163,20 @@
 }
 
 .IBMSMSMBSSDEIReactionsElement.IBMSMSMBSSDEIReactionsElementActive {
-  background: rgba(255,255,255,0.05);
-  border: solid 1px rgba(255,255,255,0);
+  background: rgba(255, 255, 255, 0.05);
+  border: solid 1px rgba(255, 255, 255, 0);
 }
 
-.IBMSMSMBSSDEIReactionsElement.IBMSMSMBSSDEIReactionsElementActive > .IBMSMSMBSSDEIReactionsElementIconWrapper {
-  background: rgba(255,255,255,0.05);
-  border-right: solid 1px rgba(255,255,255,0);
+.IBMSMSMBSSDEIReactionsElement.IBMSMSMBSSDEIReactionsElementActive
+  > .IBMSMSMBSSDEIReactionsElementIconWrapper {
+  background: rgba(255, 255, 255, 0.05);
+  border-right: solid 1px rgba(255, 255, 255, 0);
 }
 
-.IBMSMSMBSSDEIReactionsElement.IBMSMSMBSSDEIReactionsElementActive > .IBMSMSMBSSDEIReactionsElementIconWrapper > .IBMSMSMBSSDEIReactionsElementIcon {
-  color: rgba(255,255,255,0.75);
+.IBMSMSMBSSDEIReactionsElement.IBMSMSMBSSDEIReactionsElementActive
+  > .IBMSMSMBSSDEIReactionsElementIconWrapper
+  > .IBMSMSMBSSDEIReactionsElementIcon {
+  color: rgba(255, 255, 255, 0.75);
 }
 
 .IBMSMSMBSSDownloadsActions {
@@ -188,7 +194,7 @@
   display: flex;
   flex-direction: column;
   border-radius: 10px;
-  border: solid 1px rgba(255,255,255,0.1);
+  border: solid 1px rgba(255, 255, 255, 0.1);
   overflow: auto;
   grid-gap: 1px;
 }
@@ -202,7 +208,7 @@
 
 .IBMSMSMBSSDownloadsElementInsideAltTableRow:hover {
   transition: ease 0.4s;
-  background: rgba(255,255,255,0.05);
+  background: rgba(255, 255, 255, 0.05);
 }
 
 @media (max-width: 576px) {
@@ -216,12 +222,17 @@
   text-align: start;
   padding: 10px 15px;
 }
+.IBMSMSMBSSDownloadsElementInsideAltTableRowCol_Img {
+  width: 100%;
+  max-width: 300px;
+  border-radius: 6px;
+}
 
 .IBMSMSMBSSDownloadsElementInsideAltTableRowCol.IBMSMSMBSSDownloadsElementInsideAltTableRowColFirst {
   text-align: center;
   font-weight: bold;
   max-width: 200px;
-  background: rgba(255,255,255,0.05);
+  background: rgba(255, 255, 255, 0.05);
   display: flex;
   justify-content: center;
   align-items: center;
@@ -237,13 +248,16 @@
   transition: ease 0.4s;
   cursor: pointer;
   font-weight: 400;
-  color: rgba(255,255,255,0.25);
+  color: rgba(255, 255, 255, 0.25);
 }
 
 .IBMSMSMBSSDownloadsElementInsideAltText:hover {
   transition: ease 0.4s;
   cursor: pointer;
   font-weight: 600;
-  color: rgba(255,255,255,0.75);
+  color: rgba(255, 255, 255, 0.75);
 }
 
+.IBMSMSMBSSDownloadsElementDtitle {
+  color: rgb(255,255,255,0.5);
+}

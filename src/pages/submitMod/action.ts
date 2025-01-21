@@ -256,6 +256,19 @@ const validateState = async (
 
         errors.downloadUrls![i] = 'Download url must be valid and reachable'
       }
+
+      if (
+        downloadUrl.mediaUrl &&
+        downloadUrl.mediaUrl.trim() !== '' &&
+        (!isValidUrl(downloadUrl.mediaUrl) ||
+          !isValidImageUrl(downloadUrl.mediaUrl) ||
+          !(await isReachable(downloadUrl.mediaUrl)))
+      ) {
+        if (!errors.downloadUrls)
+          errors.downloadUrls = Array(formState.downloadUrls.length)
+
+        errors.downloadUrls![i] = 'Media URLs must be valid and reachable image'
+      }
     }
   }
 
