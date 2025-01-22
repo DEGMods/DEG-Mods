@@ -8,6 +8,7 @@ import { store } from 'store'
 import {
   FormErrors,
   ModFormState,
+  MODPERMISSIONS_CONF,
   SubmitModActionResult,
   TimeoutError
 } from 'types'
@@ -95,8 +96,41 @@ export const submitModRouteAction =
           ...formState.downloadUrls.map((downloadUrl) =>
             JSON.stringify(downloadUrl)
           )
-        ]
+        ],
+        [
+          'otherAssets',
+          formState.otherAssets?.toString() ??
+            MODPERMISSIONS_CONF.otherAssets.default.toString()
+        ],
+        [
+          'uploadPermission',
+          formState.uploadPermission?.toString() ??
+            MODPERMISSIONS_CONF.uploadPermission.toString()
+        ],
+        [
+          'modPermission',
+          formState.modPermission?.toString() ??
+            MODPERMISSIONS_CONF.modPermission.toString()
+        ],
+        [
+          'convPermission',
+          formState.convPermission?.toString() ??
+            MODPERMISSIONS_CONF.convPermission.toString()
+        ],
+        [
+          'assetUsePermission',
+          formState.assetUsePermission?.toString() ??
+            MODPERMISSIONS_CONF.assetUsePermission.toString()
+        ],
+        [
+          'assetUseComPermission',
+          formState.assetUseComPermission?.toString() ??
+            MODPERMISSIONS_CONF.assetUseComPermission.toString()
+        ],
+        ['publisherNotes', formState.publisherNotes ?? ''],
+        ['extraCredits', formState.extraCredits ?? '']
       ]
+
       if (formState.repost && formState.originalAuthor) {
         tags.push(['originalAuthor', formState.originalAuthor])
       }

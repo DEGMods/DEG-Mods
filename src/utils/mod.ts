@@ -2,7 +2,7 @@ import _ from 'lodash'
 import { NDKEvent } from '@nostr-dev-kit/ndk'
 import { Event } from 'nostr-tools'
 import { ModDetails, ModFormState } from '../types'
-import { getTagValue, getTagValues } from './nostr'
+import { getTagValue, getTagValues, getFirstTagValue as _getFirstTagValue } from './nostr'
 
 /**
  * Extracts and normalizes mod data from an event.
@@ -25,6 +25,14 @@ export const extractModData = (event: Event | NDKEvent): ModDetails => {
     const tagValue = getTagValue(event, tagIdentifier)
     return tagValue ? parseInt(tagValue[0], 10) : defaultValue
   }
+
+  // Optional mod values
+  const otherAssets = _getFirstTagValue(event, 'otherAssets')
+  const uploadPermission = _getFirstTagValue(event, 'uploadPermission')
+  const modPermission = _getFirstTagValue(event, 'modPermission')
+  const convPermission = _getFirstTagValue(event, 'convPermission')
+  const assetUsePermission = _getFirstTagValue(event, 'assetUsePermission')
+  const assetUseComPermission = _getFirstTagValue(event, 'assetUseComPermission')
 
   return {
     id: event.id,
@@ -52,7 +60,15 @@ export const extractModData = (event: Event | NDKEvent): ModDetails => {
     ),
     downloadUrls: (getTagValue(event, 'downloadUrls') || []).map((item) =>
       JSON.parse(item)
-    )
+    ),
+    otherAssets: otherAssets ? otherAssets === 'true' : undefined,
+    uploadPermission: uploadPermission ? uploadPermission === 'true' : undefined,
+    modPermission: modPermission ? modPermission === 'true' : undefined,
+    convPermission: convPermission ? convPermission === 'true' : undefined,
+    assetUsePermission: assetUsePermission ? assetUsePermission === 'true' : undefined,
+    assetUseComPermission: assetUseComPermission ? assetUseComPermission === 'true' : undefined,
+    publisherNotes: _getFirstTagValue(event, 'publisherNotes'),
+    extraCredits: _getFirstTagValue(event, 'extraCredits')
   }
 }
 
@@ -147,7 +163,15 @@ export const initializeFormState = (
           customNote: '',
           mediaUrl: ''
         }
-      ]
+      ],
+  otherAssets: existingModData?.otherAssets ?? true,
+  uploadPermission: existingModData?.uploadPermission ?? true,
+  modPermission: existingModData?.modPermission ?? true,
+  convPermission:existingModData?.convPermission ?? true,
+  assetUsePermission:existingModData?.assetUsePermission ?? true,
+  assetUseComPermission:existingModData?.assetUseComPermission ?? false,
+  publisherNotes:existingModData?.publisherNotes || '',
+  extraCredits:existingModData?.extraCredits || ''
 })
 
 export const MOD_DRAFT_CACHE_KEY = 'draft-mod'

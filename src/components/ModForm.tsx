@@ -20,6 +20,9 @@ import {
   DownloadUrl,
   ModFormState,
   ModPageLoaderResult,
+  ModPermissions,
+  MODPERMISSIONS_CONF,
+  MODPERMISSIONS_DESC,
   SubmitModActionResult
 } from '../types'
 import {
@@ -113,6 +116,13 @@ export const ModForm = () => {
     },
     []
   )
+
+  const handleRadioChange = useCallback((name: string, value: boolean) => {
+    setFormState((prevState) => ({
+      ...prevState,
+      [name]: value
+    }))
+  }, [])
 
   const addScreenshotUrl = useCallback(() => {
     setFormState((prevState) => ({
@@ -242,6 +252,17 @@ export const ModForm = () => {
     },
     [formState, isEditing, submit]
   )
+
+  const extraBoxRef = useRef<HTMLDivElement>(null)
+  const handleExtraBoxButtonClick = () => {
+    if (extraBoxRef.current) {
+      if (extraBoxRef.current.style.display === '') {
+        extraBoxRef.current.style.display = 'none'
+      } else {
+        extraBoxRef.current.style.display = ''
+      }
+    }
+  }
 
   return (
     <form className='IBMSMSMBS_Write' onSubmit={handlePublish}>
@@ -478,6 +499,131 @@ export const ModForm = () => {
           formErrors?.downloadUrls[0] && (
             <InputError message={formErrors?.downloadUrls[0]} />
           )}
+      </div>
+      <div className='IBMSMSMBSSExtra'>
+        <button
+          className='btn btnMain IBMSMSMBSSExtraBtn'
+          type='button'
+          onClick={handleExtraBoxButtonClick}
+        >
+          Permissions &amp; Details
+        </button>
+        <div
+          className='IBMSMSMBSSExtraBox'
+          ref={extraBoxRef}
+          style={{
+            display: 'none'
+          }}
+        >
+          <p
+            className='labelDescriptionMain'
+            style={{ marginBottom: `10px`, textAlign: `center` }}
+          >
+            What permissions users have with your published mod/post
+          </p>
+          <div className='IBMSMSMBSSExtraBoxElementWrapper'>
+            {Object.keys(MODPERMISSIONS_CONF).map((k) => {
+              const permKey = k as keyof ModPermissions
+              const confKey = k as keyof typeof MODPERMISSIONS_CONF
+              const modPermission = MODPERMISSIONS_CONF[confKey]
+              const value = formState[permKey]
+
+              return (
+                <div className='IBMSMSMBSSExtraBoxElement' key={k}>
+                  <div className='IBMSMSMBSSExtraBoxElementCol IBMSMSMBSSExtraBoxElementColStart'>
+                    <p>{modPermission.header}</p>
+                  </div>
+                  <div className='IBMSMSMBSSExtraBoxElementCol IBMSMSMBSSExtraBoxElementColSecond'>
+                    <label
+                      htmlFor={`${permKey}_true`}
+                      className='IBMSMSMBSSExtraBoxElementColChoice'
+                    >
+                      <p>
+                        {MODPERMISSIONS_DESC[`${permKey}_true`]}
+                        <br />
+                      </p>
+                      <input
+                        className='IBMSMSMBSSExtraBoxElementColChoiceRadio'
+                        type='radio'
+                        name={permKey}
+                        id={`${permKey}_true`}
+                        value={'true'}
+                        checked={
+                          typeof value !== 'undefined'
+                            ? value === true
+                            : modPermission.default === true
+                        }
+                        onChange={(e) =>
+                          handleRadioChange(
+                            permKey,
+                            e.currentTarget.value === 'true'
+                          )
+                        }
+                      />
+                      <div className='IBMSMSMBSSExtraBoxElementColChoiceBox'></div>
+                    </label>
+                    <label
+                      htmlFor={`${permKey}_false`}
+                      className='IBMSMSMBSSExtraBoxElementColChoice'
+                    >
+                      <p>
+                        {MODPERMISSIONS_DESC[`${permKey}_false`]}
+                        <br />
+                      </p>
+                      <input
+                        className='IBMSMSMBSSExtraBoxElementColChoiceRadio'
+                        type='radio'
+                        id={`${permKey}_false`}
+                        value={'false'}
+                        name={permKey}
+                        checked={
+                          typeof value !== 'undefined'
+                            ? value === false
+                            : modPermission.default === false
+                        }
+                        onChange={(e) =>
+                          handleRadioChange(
+                            permKey,
+                            e.currentTarget.value === 'true'
+                          )
+                        }
+                      />
+                      <div className='IBMSMSMBSSExtraBoxElementColChoiceBox'></div>
+                    </label>
+                  </div>
+                </div>
+              )
+            })}
+            <div className='IBMSMSMBSSExtraBoxElement'>
+              <div className='IBMSMSMBSSExtraBoxElementCol IBMSMSMBSSExtraBoxElementColStart'>
+                <p>Publisher Notes</p>
+              </div>
+              <div className='IBMSMSMBSSExtraBoxElementCol IBMSMSMBSSExtraBoxElementColSecond'>
+                <textarea
+                  className='inputMain'
+                  value={formState.publisherNotes || ''}
+                  onChange={(e) =>
+                    handleInputChange('publisherNotes', e.currentTarget.value)
+                  }
+                />
+              </div>
+            </div>
+            <div className='IBMSMSMBSSExtraBoxElement'>
+              <div className='IBMSMSMBSSExtraBoxElementCol IBMSMSMBSSExtraBoxElementColStart'>
+                <p>Extra Credits</p>
+              </div>
+              <div className='IBMSMSMBSSExtraBoxElementCol IBMSMSMBSSExtraBoxElementColSecond'>
+                <textarea
+                  className='inputMain'
+                  value={formState.extraCredits || ''}
+                  onChange={(e) =>
+                    handleInputChange('extraCredits', e.currentTarget.value)
+                  }
+                />
+              </div>
+            </div>
+          </div>
+        </div>
       </div>
       <div className='IBMSMSMBS_WriteAction'>
         <button
@@ -731,7 +877,10 @@ const DownloadUrlFields = React.memo(
           </div>
           <div
             style={{
-              width: '100%'
+              width: '100%',
+              display: 'flex',
+              flexDirection: 'column',
+              gap: '10px'
             }}
           >
             <ImageUpload

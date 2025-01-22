@@ -37,7 +37,28 @@ export interface ModFormState {
   lTags: string[]
   downloadUrls: DownloadUrl[]
   published_at: number
+
+  // Permissions and details
+  otherAssets?: boolean
+  uploadPermission?: boolean
+  modPermission?: boolean
+  convPermission?: boolean
+  assetUsePermission?: boolean
+  assetUseComPermission?: boolean
+  publisherNotes?: string
+  extraCredits?: string
 }
+
+// Permissions
+export type ModPermissions = Pick<
+  ModFormState,
+  | 'otherAssets'
+  | 'uploadPermission'
+  | 'modPermission'
+  | 'convPermission'
+  | 'assetUsePermission'
+  | 'assetUseComPermission'
+>
 
 export interface DownloadUrl {
   url: string
@@ -94,4 +115,62 @@ export interface FormErrors {
   downloadUrls?: string[]
   author?: string
   originalAuthor?: string
+}
+
+type ModPermissionsKeys = keyof ModPermissions
+type ModPermissionsOpts = 'true' | 'false'
+type ModPermissionsKeysOpts = `${ModPermissionsKeys}_${ModPermissionsOpts}`
+type ModPermissionsDesc = {
+  [k in ModPermissionsKeysOpts]: string
+}
+type ModPermissionsConf = {
+  [k in ModPermissionsKeys]: {
+    header: string
+    default: boolean
+  }
+}
+export const MODPERMISSIONS_CONF: ModPermissionsConf = {
+  otherAssets: {
+    header: `Others' Assets`,
+    default: true
+  },
+  uploadPermission: {
+    header: `Redistribution Permission`,
+    default: true
+  },
+  modPermission: {
+    header: `Modification Permission`,
+    default: true
+  },
+  convPermission: {
+    header: `Conversion Permission`,
+    default: true
+  },
+  assetUsePermission: {
+    header: `Asset Use Permission`,
+    default: true
+  },
+  assetUseComPermission: {
+    header: `Asset Use Permission for Commercial Mods`,
+    default: false
+  }
+}
+export const MODPERMISSIONS_DESC: ModPermissionsDesc = {
+  otherAssets_true: `All assets in this file are either owned by the publisher or sourced from free-to-use modder's resources.`,
+  otherAssets_false: `Not all assets in this file are owned by the publisher or sourced from free-to-use modder's resources; some assets may be.`,
+
+  uploadPermission_true: `You are allowed to upload this file to other sites, but you must give credit to me as the creator (unless indicated otherwise).`,
+  uploadPermission_false: `You are not allowed to upload this file to other sites without explicit permission.`,
+
+  modPermission_true: `You may modify my files and release bug fixes or enhancements, provided that you credit me as the original creator.`,
+  modPermission_false: `You are not allowed to convert this file for use with other games without explicit permission.`,
+
+  convPermission_true: `You are permitted to convert this file for use with other games, as long as you credit me as the creator.`,
+  convPermission_false: `You are not permitted to convert this file for use with other games without explicit permission.`,
+
+  assetUsePermission_true: `You may use the assets in this file without needing permission, provided you give me credit.`,
+  assetUsePermission_false: `You must obtain explicit permission to use the assets in this file.`,
+
+  assetUseComPermission_true: `You are allowed to use assets from this file in mods or files that are sold for money on Steam Workshop or other platforms.`,
+  assetUseComPermission_false: `You are prohibited from using assets from this file in any mods or files that are sold for money on Steam Workshop or other platforms, unless given explicit permission.`
 }
