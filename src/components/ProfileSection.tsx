@@ -383,7 +383,12 @@ const FollowButton = ({ pubkey }: FollowButtonProps) => {
     if (userState.auth && userState.user?.pubkey) {
       return userState.user.pubkey as string
     } else {
-      return (await window.nostr?.getPublicKey()) as string
+      try {
+        return (await window.nostr?.getPublicKey()) as string
+      } catch (error) {
+        log(true, LogType.Error, `Could not get pubkey`, error)
+        return null
+      }
     }
   }
 

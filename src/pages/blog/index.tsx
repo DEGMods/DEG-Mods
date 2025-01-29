@@ -3,7 +3,9 @@ import {
   useLoaderData,
   Link as ReactRouterLink,
   useNavigation,
-  useSubmit
+  useSubmit,
+  Outlet,
+  useParams
 } from 'react-router-dom'
 import { LoadingSpinner } from 'components/LoadingSpinner'
 import { ProfileSection } from 'components/ProfileSection'
@@ -30,6 +32,7 @@ const BLOG_REPORT_REASONS = [
 ]
 
 export const BlogPage = () => {
+  const { nevent } = useParams()
   const { blog, latest, isAddedToNSFW, isBlocked, postWarning } =
     useLoaderData() as BlogPageLoaderResult
   const userState = useAppSelector((state) => state.user)
@@ -312,6 +315,7 @@ export const BlogPage = () => {
               </>
             )}
             {!!blog?.author && <ProfileSection pubkey={blog.author} />}
+            <Outlet key={nevent} />
           </div>
         </div>
       </div>

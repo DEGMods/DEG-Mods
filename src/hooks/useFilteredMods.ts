@@ -112,7 +112,7 @@ export const useFilteredMods = (
         case WOTFilterOptions.Site_And_Mine:
           return mods.filter(
             (mod) =>
-              isInWoT(siteWot, siteWotLevel, mod.author) ||
+              isInWoT(siteWot, siteWotLevel, mod.author) &&
               isInWoT(userWot, userWotLevel, mod.author)
           )
       }

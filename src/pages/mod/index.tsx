@@ -2,6 +2,7 @@ import FsLightbox from 'fslightbox-react'
 import { nip19 } from 'nostr-tools'
 import { useEffect, useRef, useState } from 'react'
 import {
+  Outlet,
   Link as ReactRouterLink,
   useLoaderData,
   useNavigation,
@@ -66,7 +67,7 @@ export const ModPage = () => {
   const { mod, postWarning } = useLoaderData() as ModPageLoaderResult
 
   // We can get author right away from naddr, no need to wait for mod data
-  const { naddr } = useParams()
+  const { naddr, nevent } = useParams()
   let author = mod?.author
   if (naddr && !author) {
     try {
@@ -143,6 +144,7 @@ export const ModPage = () => {
               {typeof author !== 'undefined' && (
                 <ProfileSection pubkey={author} />
               )}
+              <Outlet key={nevent} />
             </div>
           </div>
         </div>

@@ -123,3 +123,4 @@ export const FALLBACK_PROFILE_IMAGE =
   'https://image.nostr.build/a305f4b43f74af3c6dcda42e6a798105a56ac1e3e7b74d7bef171896b3ba7520.png'
 
 export const PROFILE_BLOG_FILTER_LIMIT = 20
+export const MAX_VISIBLE_TEXT_PER_COMMENT = 500

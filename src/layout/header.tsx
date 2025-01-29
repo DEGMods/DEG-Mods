@@ -22,10 +22,11 @@ import { npubToHex } from '../utils'
 import logo from '../assets/img/DEG Mods Logo With Text.svg'
 import placeholder from '../assets/img/DEG Mods Default PP.png'
 import { resetUserWot } from 'store/reducers/wot'
+import { NDKNip07Signer } from '@nostr-dev-kit/ndk'
 
 export const Header = () => {
   const dispatch = useAppDispatch()
-  const { findMetadata } = useNDKContext()
+  const { findMetadata, ndk } = useNDKContext()
   const userState = useAppSelector((state) => state.user)
   const revalidator = useRevalidator()
   // Track nostr-login extension modal open state
@@ -50,6 +51,7 @@ export const Header = () => {
           dispatch(setAuth(null))
           dispatch(setUser(null))
           dispatch(resetUserWot())
+          ndk.signer = undefined
         } else {
           dispatch(
             setAuth({
@@ -63,6 +65,7 @@ export const Header = () => {
               pubkey: npubToHex(npub)!
             })
           )
+          ndk.signer = new NDKNip07Signer()
           findMetadata(npub).then((userProfile) => {
             if (userProfile) {
               dispatch(

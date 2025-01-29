@@ -30,17 +30,19 @@ import { blogRouteAction } from '../pages/blog/action'
 import { reportRouteAction } from '../actions/report'
 import { BackupPage } from 'pages/backup'
 import { SupportersPage } from 'pages/supporters'
+import { commentsLoader } from 'loaders/comment'
+import { CommentsPopup } from 'components/comment/CommentsPopup'
 
 export const appRoutes = {
   home: '/',
   games: '/games',
   game: '/game/:name',
   mods: '/mods',
-  mod: '/mod/:naddr',
+  mod: '/mod/:naddr/',
   modReport_actionOnly: '/mod/:naddr/report',
   about: '/about',
   blogs: '/blog',
-  blog: '/blog/:naddr',
+  blog: '/blog/:naddr/',
   blogEdit: '/blog/:naddr/edit',
   blogReport_actionOnly: '/blog/:naddr/report',
   submitMod: '/submit-mod',
@@ -98,6 +100,13 @@ export const routerWithNdkContext = (context: NDKContextType) =>
         {
           path: appRoutes.mod,
           element: <ModPage />,
+          children: [
+            {
+              path: ':nevent',
+              element: <CommentsPopup />,
+              loader: commentsLoader(context)
+            }
+          ],
           loader: modRouteLoader(context),
           action: modRouteAction(context),
           errorElement: <NotFoundPage title={'Something went wrong.'} />
@@ -118,6 +127,13 @@ export const routerWithNdkContext = (context: NDKContextType) =>
         {
           path: appRoutes.blog,
           element: <BlogPage />,
+          children: [
+            {
+              path: ':nevent',
+              element: <CommentsPopup />,
+              loader: commentsLoader(context)
+            }
+          ],
           loader: blogRouteLoader(context),
           action: blogRouteAction(context),
           errorElement: <NotFoundPage title={'Something went wrong.'} />

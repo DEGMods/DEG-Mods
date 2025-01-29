@@ -2,7 +2,7 @@ import axios, { isAxiosError } from 'axios'
 import { NostrEvent, NDKKind } from '@nostr-dev-kit/ndk'
 import { type MediaOperations } from '.'
 import { store } from 'store'
-import { now } from 'utils'
+import { log, LogType, now } from 'utils'
 import { BaseError, handleError } from 'types'
 
 // https://github.com/quentintaranpino/nostrcheck-server/blob/main/DOCS.md#media-post
@@ -124,12 +124,16 @@ export class NostrCheckServer implements MediaOperations {
     try {
       const url = `${this.#url}${this.#media}`
 
-      let hexPubkey: string
+      let hexPubkey: string | undefined
       const userState = store.getState().user
       if (userState.auth && userState.user?.pubkey) {
         hexPubkey = userState.user.pubkey as string
       } else {
-        hexPubkey = (await window.nostr?.getPublicKey()) as string
+        try {
+          hexPubkey = (await window.nostr?.getPublicKey()) as string
+        } catch (error) {
+          log(true, LogType.Error, `Could not get pubkey`, error)
+        }
       }
 
       if (!hexPubkey) {

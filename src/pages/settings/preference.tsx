@@ -55,12 +55,16 @@ export const PreferencesSetting = () => {
   const handleSave = async () => {
     setIsSaving(true)
 
-    let hexPubkey: string
+    let hexPubkey: string | undefined
 
     if (user?.pubkey) {
       hexPubkey = user.pubkey as string
     } else {
-      hexPubkey = (await window.nostr?.getPublicKey()) as string
+      try {
+        hexPubkey = (await window.nostr?.getPublicKey()) as string
+      } catch (error) {
+        log(true, LogType.Error, `Could not get pubkey`, error)
+      }
     }
 
     if (!hexPubkey) {

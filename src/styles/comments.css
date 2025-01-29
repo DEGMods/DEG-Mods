@@ -475,6 +475,8 @@ hover {
 }
 
 .IBMSMSMBSSCL_CommentNoteRepliesTitle {
+  width: 100%;
+  margin: 0 0 15px 0;
   color: rgba(255, 255, 255, 0.5);
 }
 

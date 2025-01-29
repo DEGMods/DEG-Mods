@@ -1,3 +1,4 @@
+import { NDKEvent } from '@nostr-dev-kit/ndk'
 import { SortBy, NSFWFilter, ModeratedFilter } from './modsFilter'
 
 export interface BlogForm {
@@ -36,6 +37,7 @@ export interface BlogCardDetails extends BlogDetails {
 
 export interface BlogPageLoaderResult {
   blog: Partial<BlogDetails> | undefined
+  event: NDKEvent | undefined
   latest: Partial<BlogDetails>[]
   isAddedToNSFW: boolean
   isBlocked: boolean

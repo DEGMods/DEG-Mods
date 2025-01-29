@@ -13,14 +13,15 @@ import { useNDKContext } from './useNDKContext'
 
 export const useComments = (
   author: string | undefined,
-  aTag: string | undefined
+  aTag: string | undefined,
+  eTag?: string | undefined
 ) => {
   const { ndk } = useNDKContext()
   const [commentEvents, setCommentEvents] = useState<CommentEvent[]>([])
 
   useEffect(() => {
-    if (!(author && aTag)) {
-      // Author and aTag are required
+    if (!(author && (aTag || eTag))) {
+      // Author and aTag/eTag are required
       return
     }
 
@@ -48,8 +49,17 @@ export const useComments = (
         })
 
       const filter: NDKFilter = {
-        kinds: [NDKKind.Text],
-        '#a': [aTag]
+        kinds: [NDKKind.Text, NDKKind.GenericReply],
+        ...(aTag
+          ? {
+              '#a': [aTag]
+            }
+          : {}),
+        ...(eTag
+          ? {
+              '#e': [eTag]
+            }
+          : {})
       }
 
       const relayUrls = new Set<string>()
@@ -73,21 +83,11 @@ export const useComments = (
 
       subscription.on('event', (ndkEvent) => {
         setCommentEvents((prev) => {
-          if (prev.find((e) => e.id === ndkEvent.id)) {
+          if (prev.find((e) => e.event.id === ndkEvent.id)) {
             return [...prev]
           }
 
-          const commentEvent: CommentEvent = {
-            kind: NDKKind.Text,
-            tags: ndkEvent.tags,
-            content: ndkEvent.content,
-            created_at: ndkEvent.created_at!,
-            pubkey: ndkEvent.pubkey,
-            id: ndkEvent.id,
-            sig: ndkEvent.sig!
-          }
-
-          return [commentEvent, ...prev]
+          return [{ event: ndkEvent }, ...prev]
         })
       })
 
@@ -102,7 +102,7 @@ export const useComments = (
         subscription.stop()
       }
     }
-  }, [aTag, author, ndk])
+  }, [aTag, author, eTag, ndk])
 
   return {
     commentEvents,

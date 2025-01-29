@@ -103,6 +103,7 @@ export const modRouteLoader =
 
       const result: ModPageLoaderResult = {
         mod: undefined,
+        event: undefined,
         latest: [],
         isAddedToNSFW: false,
         isBlocked: false,
@@ -112,6 +113,9 @@ export const modRouteLoader =
       // Check the mod event result
       const fetchEventResult = settled[0]
       if (fetchEventResult.status === 'fulfilled' && fetchEventResult.value) {
+        // Save original event
+        result.event = fetchEventResult.value
+
         // Extract the mod data from the event
         result.mod = extractModData(fetchEventResult.value)
       } else if (fetchEventResult.status === 'rejected') {

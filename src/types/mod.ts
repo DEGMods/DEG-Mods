@@ -1,4 +1,4 @@
-import { Event } from 'nostr-tools'
+import { NDKEvent } from '@nostr-dev-kit/ndk'
 import { BlogDetails } from 'types'
 
 export enum CommentEventStatus {
@@ -7,7 +7,8 @@ export enum CommentEventStatus {
   Failed = 'Failed to publish comment.'
 }
 
-export interface CommentEvent extends Event {
+export interface CommentEvent {
+  event: NDKEvent
   status?: CommentEventStatus
 }
 
@@ -85,6 +86,7 @@ export interface MuteLists {
 
 export interface ModPageLoaderResult {
   mod: ModDetails | undefined
+  event: NDKEvent | undefined
   latest: Partial<BlogDetails>[]
   isAddedToNSFW: boolean
   isBlocked: boolean

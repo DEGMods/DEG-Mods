@@ -70,12 +70,16 @@ export const useReactions = (params: UseReactionsParams) => {
   }, [reactionEvents, userState])
 
   const getPubkey = async () => {
-    let hexPubkey: string
+    let hexPubkey: string | undefined
 
     if (userState.auth && userState.user?.pubkey) {
       hexPubkey = userState.user.pubkey as string
     } else {
-      hexPubkey = (await window.nostr?.getPublicKey()) as string
+      try {
+        hexPubkey = (await window.nostr?.getPublicKey()) as string
+      } catch (error) {
+        log(true, LogType.Error, `Could not get pubkey`, error)
+      }
     }
 
     if (!hexPubkey) {

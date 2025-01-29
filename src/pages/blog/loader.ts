@@ -94,6 +94,7 @@ export const blogRouteLoader =
       ])
       const result: BlogPageLoaderResult = {
         blog: undefined,
+        event: undefined,
         latest: [],
         isAddedToNSFW: false,
         isBlocked: false
@@ -102,6 +103,9 @@ export const blogRouteLoader =
       // Check the blog event result
       const fetchEventResult = settled[0]
       if (fetchEventResult.status === 'fulfilled' && fetchEventResult.value) {
+        // Save original event
+        result.event = fetchEventResult.value
+
         // Extract the blog details from the event
         result.blog = extractBlogDetails(fetchEventResult.value)
       } else if (fetchEventResult.status === 'rejected') {

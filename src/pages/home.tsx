@@ -285,8 +285,8 @@ const DisplayLatestMods = () => {
         !mutedEvents.includes(mod.aTag) &&
         !nsfwList.includes(mod.aTag) &&
         !mod.nsfw &&
-        (isInWoT(siteWot, siteWotLevel, mod.author) ||
-          isInWoT(userWot, userWotLevel, mod.author))
+        isInWoT(siteWot, siteWotLevel, mod.author) &&
+        isInWoT(userWot, userWotLevel, mod.author)
     )
 
     // Add repost tag if missing

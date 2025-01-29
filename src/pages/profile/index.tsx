@@ -30,6 +30,8 @@ import {
   copyTextToClipboard,
   DEFAULT_FILTER_OPTIONS,
   extractBlogCardDetails,
+  log,
+  LogType,
   now,
   npubToHex,
   scrollIntoView,
@@ -72,7 +74,7 @@ export const ProfilePage = () => {
       return
     }
 
-    let userHexKey: string
+    let userHexKey: string | undefined
 
     setIsLoading(true)
     setLoadingSpinnerDesc('Getting user pubkey')
@@ -80,7 +82,11 @@ export const ProfilePage = () => {
     if (userState.auth && userState.user?.pubkey) {
       userHexKey = userState.user.pubkey as string
     } else {
-      userHexKey = (await window.nostr?.getPublicKey()) as string
+      try {
+        userHexKey = (await window.nostr?.getPublicKey()) as string
+      } catch (error) {
+        log(true, LogType.Error, `Could not get pubkey`, error)
+      }
     }
 
     if (!userHexKey) {
@@ -512,11 +518,15 @@ const ReportUserPopup = ({
 
     setIsLoading(true)
     setLoadingSpinnerDesc('Getting user pubkey')
-    let userHexKey: string
+    let userHexKey: string | undefined
     if (userState.auth && userState.user?.pubkey) {
       userHexKey = userState.user.pubkey as string
     } else {
-      userHexKey = (await window.nostr?.getPublicKey()) as string
+      try {
+        userHexKey = (await window.nostr?.getPublicKey()) as string
+      } catch (error) {
+        log(true, LogType.Error, `Could not get pubkey`, error)
+      }
     }
 
     if (!userHexKey) {

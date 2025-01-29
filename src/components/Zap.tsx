@@ -19,6 +19,9 @@ import {
   formatNumber,
   getTagValue,
   getZapAmount,
+  log,
+  LogType,
+  timeout,
   unformatNumber
 } from '../utils'
 import { LoadingSpinner } from './LoadingSpinner'
@@ -268,7 +271,7 @@ export const ZapPopUp = ({
 
   const generatePaymentRequest =
     useCallback(async (): Promise<PaymentRequest | null> => {
-      let userHexKey: string
+      let userHexKey: string | undefined
 
       setIsLoading(true)
       setLoadingSpinnerDesc('Getting user pubkey')
@@ -276,7 +279,11 @@ export const ZapPopUp = ({
       if (userState.auth && userState.user?.pubkey) {
         userHexKey = userState.user.pubkey as string
       } else {
-        userHexKey = (await window.nostr?.getPublicKey()) as string
+        try {
+          userHexKey = (await window.nostr?.getPublicKey()) as string
+        } catch (error) {
+          log(true, LogType.Error, `Could not get pubkey`, error)
+        }
       }
 
       if (!userHexKey) {
@@ -285,7 +292,7 @@ export const ZapPopUp = ({
         return null
       }
 
-      setLoadingSpinnerDesc('finding receiver metadata')
+      setLoadingSpinnerDesc('Finding receiver metadata')
 
       const receiverMetadata = await findMetadata(receiver)
 
@@ -297,12 +304,15 @@ export const ZapPopUp = ({
 
       if (!receiverMetadata?.pubkey) {
         setIsLoading(false)
-        toast.error('pubkey is missing in receiver metadata!')
+        toast.error('Pubkey is missing in receiver metadata!')
         return null
       }
 
       // Find the receiver's read relays.
-      const receiverRelays = await getRelayListForUser(receiver, ndk)
+      const receiverRelays = await Promise.race([
+        getRelayListForUser(receiver, ndk),
+        timeout(2000)
+      ])
         .then((ndkRelayList) => {
           if (ndkRelayList) return ndkRelayList.readRelayUrls
           return [] // Return an empty array if ndkRelayList is undefined
@@ -548,7 +558,7 @@ export const ZapSplit = ({
   const generatePaymentInvoices = async () => {
     if (!amount) return null
 
-    let userHexKey: string
+    let userHexKey: string | undefined
 
     setIsLoading(true)
     setLoadingSpinnerDesc('Getting user pubkey')
@@ -556,7 +566,11 @@ export const ZapSplit = ({
     if (userState.auth && userState.user?.pubkey) {
       userHexKey = userState.user.pubkey as string
     } else {
-      userHexKey = (await window.nostr?.getPublicKey()) as string
+      try {
+        userHexKey = (await window.nostr?.getPublicKey()) as string
+      } catch (error) {
+        log(true, LogType.Error, `Could not get pubkey`, error)
+      }
     }
 
     if (!userHexKey) {
@@ -614,7 +628,11 @@ export const ZapSplit = ({
 
     if (adminShare > 0 && admin?.pubkey && admin?.lud16) {
       // Find the receiver's read relays.
-      const adminRelays = await getRelayListForUser(admin.pubkey as string, ndk)
+      // TODO: NDK should have native timeout in a future release
+      const adminRelays = await Promise.race([
+        getRelayListForUser(admin.pubkey as string, ndk),
+        timeout(2000)
+      ])
         .then((ndkRelayList) => {
           if (ndkRelayList) return ndkRelayList.readRelayUrls
           return [] // Return an empty array if ndkRelayList is undefined
@@ -715,6 +733,8 @@ export const ZapSplit = ({
       toast.warn('Webln is not present. Use QR code to send zap.')
       setInvoices(paymentInvoices)
     }
+
+    setIsLoading(false)
   }
 
   const removeInvoice = (key: string) => {

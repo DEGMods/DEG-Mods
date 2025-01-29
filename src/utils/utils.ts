@@ -193,3 +193,8 @@ export function mergeWithInitialValue<T>(storedValue: T, initialValue: T): T {
   }
   return storedValue
 }
+
+export function adjustTextareaHeight(textarea: HTMLTextAreaElement) {
+  textarea.style.height = 'auto'
+  textarea.style.height = `${textarea.scrollHeight}px`
+}

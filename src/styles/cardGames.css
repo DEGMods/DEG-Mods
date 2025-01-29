@@ -7,7 +7,7 @@
   cursor: pointer;
   border-radius: 15px;
   overflow: hidden;
-  padding: 5px;
+  padding: 5px 5px 10px 5px;
 }
 
 .cardGameMainWrapperLink:hover {
@@ -41,7 +41,7 @@
 .cardGameMainTitle {
   transition: ease 0.4s;
   color: rgba(255, 255, 255, 0.5);
-  padding: 0 10px 10px 10px;
+  padding: 0 10px;
   font-weight: bold;
   display: -webkit-box;
   -webkit-box-orient: vertical;
