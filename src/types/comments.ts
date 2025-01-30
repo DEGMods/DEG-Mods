@@ -2,7 +2,6 @@ import { NDKEvent } from '@nostr-dev-kit/ndk'
 
 export interface CommentsLoaderResult {
   event: NDKEvent
-  parents: NDKEvent[]
 }
 
 export enum SortByEnum {

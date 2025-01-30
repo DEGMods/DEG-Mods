@@ -738,3 +738,11 @@ a:hover {
   grid-gap: 10px;
   cursor: pointer;
 }
+
+.inputLabelWrapperMain.inputLabelWrapperMainQR {
+    align-items: center;
+    padding: 25px;
+    background: rgb(0 0 0 / 10%);
+    border-radius: 10px;
+    border: solid 1px rgb(255 255 255 / 10%);
+}

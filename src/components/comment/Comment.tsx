@@ -99,7 +99,7 @@ export const Comment = ({ comment }: CommentProps) => {
       <div className='IBMSMSMBSSCL_CommentActions'>
         <div className='IBMSMSMBSSCL_CommentActionsInside'>
           <Reactions {...comment.event.rawEvent()} />
-          <div
+          {/* <div
             className='IBMSMSMBSSCL_CAElement IBMSMSMBSSCL_CAERepost'
             style={{ cursor: 'not-allowed' }}
           >
@@ -117,7 +117,7 @@ export const Comment = ({ comment }: CommentProps) => {
             <div className='IBMSMSMBSSCL_CAElementLoadWrapper'>
               <div className='IBMSMSMBSSCL_CAElementLoad'></div>
             </div>
-          </div>
+          </div> */}
           {typeof profile?.lud16 !== 'undefined' && profile.lud16 !== '' && (
             <Zap {...comment.event.rawEvent()} />
           )}

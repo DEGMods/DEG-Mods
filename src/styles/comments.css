@@ -59,6 +59,7 @@
 }
 
 .IBMSMSMBSSCL_CBText {
+  white-space: pre-line;
 }
 
 .IBMSMSMBSSCL_CBTextStatus {
@@ -478,6 +479,13 @@ hover {
   width: 100%;
   margin: 0 0 15px 0;
   color: rgba(255, 255, 255, 0.5);
+  display: flex;
+  flex-direction: row;
+  justify-content: space-between;
+}
+
+.IBMSMSMBSSCL_CommentNoteRepliesTitleBtn {
+ font-size: 16px;
 }
 
 .IBMSMSMBSSCL_CAElementLoadWrapper {

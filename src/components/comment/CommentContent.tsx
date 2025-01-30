@@ -7,7 +7,7 @@ export const CommentContent = ({ content }: CommentContentProps) => {
 
   return (
     <>
-      <p className='IBMSMSMBSSCL_CBText'>{text} </p>
+      <p className='IBMSMSMBSSCL_CBText'>{text}</p>
       {isTextOverflowing && (
         <div className='IBMSMSMBSSCL_CBExpand' onClick={toggle}>
           <p>{isExpanded ? 'Hide' : 'View'} full post</p>

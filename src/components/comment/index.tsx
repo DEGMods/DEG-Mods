@@ -1,4 +1,4 @@
-import { Spinner } from 'components/Spinner'
+import { Dots } from 'components/Spinner'
 import { useNDKContext } from 'hooks'
 import { useComments } from 'hooks/useComments'
 import { Dispatch, SetStateAction, useEffect, useMemo, useState } from 'react'
@@ -48,12 +48,16 @@ export const Comments = ({ addressable, setCommentCount }: Props) => {
     setCommentCount(commentEvents.length)
   }, [commentEvents, setCommentCount])
 
-  const handleSubmit = handleCommentSubmit(event, setCommentEvents, ndk)
-
   const handleDiscoveredClick = () => {
     setVisible(commentEvents)
   }
   const [visible, setVisible] = useState<CommentEvent[]>([])
+  const handleSubmit = handleCommentSubmit(
+    event,
+    setCommentEvents,
+    setVisible,
+    ndk
+  )
   useEffect(() => {
     if (isLoading) {
       setVisible(commentEvents)
@@ -93,17 +97,24 @@ export const Comments = ({ addressable, setCommentCount }: Props) => {
         {/* Hide comment form if aTag is missing */}
         {!!addressable.aTag && <CommentForm handleSubmit={handleSubmit} />}
         <div>
-          {isLoading ? (
-            <Spinner />
-          ) : (
-            <button
-              type='button'
-              className='btnMain'
-              onClick={discoveredCount ? handleDiscoveredClick : undefined}
-            >
-              <span>Load {discoveredCount} discovered comments</span>
-            </button>
-          )}
+          <button
+            type='button'
+            className='btnMain'
+            onClick={discoveredCount ? handleDiscoveredClick : undefined}
+          >
+            <span>
+              {isLoading ? (
+                <>
+                  Discovering comments
+                  <Dots />
+                </>
+              ) : discoveredCount ? (
+                <>Load {discoveredCount} discovered comments</>
+              ) : (
+                <>No new comments</>
+              )}
+            </span>
+          </button>
         </div>
         <Filter
           filterOptions={filterOptions}

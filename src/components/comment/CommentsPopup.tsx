@@ -1,5 +1,5 @@
 import { formatDate } from 'date-fns'
-import { useBodyScrollDisable, useNDKContext } from 'hooks'
+import { useBodyScrollDisable, useNDKContext, useReplies } from 'hooks'
 import { nip19 } from 'nostr-tools'
 import { ChangeEvent, useCallback, useEffect, useMemo, useState } from 'react'
 import {
@@ -10,7 +10,7 @@ import {
   useParams
 } from 'react-router-dom'
 import { getBlogPageRoute, getModPageRoute, getProfilePageRoute } from 'routes'
-import { UserProfile } from 'types'
+import { CommentEvent, UserProfile } from 'types'
 import { CommentsLoaderResult } from 'types/comments'
 import { adjustTextareaHeight, handleCommentSubmit, hexToNpub } from 'utils'
 import { Reactions } from './Reactions'
@@ -19,6 +19,7 @@ import { NDKKind } from '@nostr-dev-kit/ndk'
 import { Comment } from './Comment'
 import { useComments } from 'hooks/useComments'
 import { CommentContent } from './CommentContent'
+import { Dots } from 'components/Spinner'
 
 export const CommentsPopup = () => {
   const { naddr } = useParams()
@@ -35,7 +36,13 @@ export const CommentsPopup = () => {
       : undefined
     : undefined
 
-  const { event, parents } = useLoaderData() as CommentsLoaderResult
+  const { event } = useLoaderData() as CommentsLoaderResult
+  const {
+    size,
+    parent: replyEvent,
+    isComplete,
+    root: rootEvent
+  } = useReplies(event.tagValue('e'))
   const isRoot = event.tagValue('a') === event.tagValue('A')
   const [profile, setProfile] = useState<UserProfile>()
   const { commentEvents, setCommentEvents } = useComments(
@@ -56,7 +63,6 @@ export const CommentsPopup = () => {
     [event.pubkey]
   )
 
-  const replyEvent = parents.length > 0 ? parents[0] : undefined
   const navigate = useNavigate()
 
   const [isSubmitting, setIsSubmitting] = useState(false)
@@ -68,7 +74,30 @@ export const CommentsPopup = () => {
     adjustTextareaHeight(e.currentTarget)
   }, [])
 
-  const handleSubmit = handleCommentSubmit(event, setCommentEvents, ndk)
+  const [visible, setVisible] = useState<CommentEvent[]>([])
+  const discoveredCount = commentEvents.length - visible.length
+  const [isLoading, setIsLoading] = useState(true)
+  useEffect(() => {
+    // Initial loading to indicate comments fetching (stop after 5 seconds)
+    const t = window.setTimeout(() => setIsLoading(false), 5000)
+    return () => {
+      window.clearTimeout(t)
+    }
+  }, [])
+  useEffect(() => {
+    if (isLoading) {
+      setVisible(commentEvents)
+    }
+  }, [commentEvents, isLoading])
+  const handleDiscoveredClick = () => {
+    setVisible(commentEvents)
+  }
+  const handleSubmit = handleCommentSubmit(
+    event,
+    setCommentEvents,
+    setVisible,
+    ndk
+  )
 
   const handleComment = async () => {
     setIsSubmitting(true)
@@ -110,6 +139,9 @@ export const CommentsPopup = () => {
                     <div className='IBMSMSMBSSCL_CTO'>
                       {replyEvent && (
                         <Link
+                          style={{
+                            ...(!isComplete ? { pointerEvents: 'none' } : {})
+                          }}
                           className='IBMSMSMBSSCL_CTOLink'
                           to={baseUrl + replyEvent.encode()}
                         >
@@ -126,16 +158,20 @@ export const CommentsPopup = () => {
                         </Link>
                       )}
                       <p className='IBMSMSMBSSCL_CTOText'>
-                        Reply Depth:&nbsp;<span>{parents.length}</span>
+                        Reply Depth:&nbsp;<span>{size}</span>
+                        {!isComplete && <Dots />}
                       </p>
                     </div>
-                    {!isRoot && (
+                    {!isRoot && rootEvent && (
                       <Link
+                        style={{
+                          ...(!isComplete ? { pointerEvents: 'none' } : {})
+                        }}
                         className='btn btnMain IBMSMSMBSSCL_CTOBtn'
                         type='button'
-                        to={'..'}
+                        to={baseUrl + rootEvent.encode()}
                       >
-                        Main Post
+                        Main Post {!isComplete && <Dots />}
                       </Link>
                     )}
                   </div>
@@ -185,7 +221,7 @@ export const CommentsPopup = () => {
                     <div className='IBMSMSMBSSCL_CommentActionsInside'>
                       <Reactions {...event.rawEvent()} />
 
-                      <div
+                      {/* <div
                         className='IBMSMSMBSSCL_CAElement IBMSMSMBSSCL_CAERepost'
                         style={{ cursor: 'not-allowed' }}
                       >
@@ -203,7 +239,7 @@ export const CommentsPopup = () => {
                         <div className='IBMSMSMBSSCL_CAElementLoadWrapper'>
                           <div className='IBMSMSMBSSCL_CAElementLoad'></div>
                         </div>
-                      </div>
+                      </div> */}
 
                       {typeof profile?.lud16 !== 'undefined' &&
                         profile.lud16 !== '' && <Zap {...event.rawEvent()} />}
@@ -262,6 +298,26 @@ export const CommentsPopup = () => {
                 <>
                   <h3 className='IBMSMSMBSSCL_CommentNoteRepliesTitle'>
                     Replies
+                    <button
+                      type='button'
+                      className='btnMain IBMSMSMBSSCL_CommentNoteRepliesTitleBtn'
+                      onClick={
+                        discoveredCount ? handleDiscoveredClick : undefined
+                      }
+                    >
+                      <span>
+                        {isLoading ? (
+                          <>
+                            Discovering replies
+                            <Dots />
+                          </>
+                        ) : discoveredCount ? (
+                          <>Load {discoveredCount} discovered replies</>
+                        ) : (
+                          <>No new replies</>
+                        )}
+                      </span>
+                    </button>
                   </h3>
                   <div className='pUMCB_RepliesToPrime'>
                     {commentEvents.map((reply) => (
