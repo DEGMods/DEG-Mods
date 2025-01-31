@@ -5,7 +5,8 @@ import {
   useNavigation,
   useSubmit,
   Outlet,
-  useParams
+  useParams,
+  useNavigate
 } from 'react-router-dom'
 import { LoadingSpinner } from 'components/LoadingSpinner'
 import { ProfileSection } from 'components/ProfileSection'
@@ -17,10 +18,12 @@ import { Interactions } from 'components/Internal/Interactions'
 import { BlogCard } from 'components/BlogCard'
 import { copyTextToClipboard } from 'utils'
 import { toast } from 'react-toastify'
-import { useAppSelector, useBodyScrollDisable } from 'hooks'
+import { useAppSelector, useBodyScrollDisable, useLocalStorage } from 'hooks'
 import { ReportPopup } from 'components/ReportPopup'
 import { Viewer } from 'components/Markdown/Viewer'
 import { PostWarnings } from 'components/PostWarning'
+import { appRoutes } from 'routes'
+import { NsfwAlertPopup } from 'components/NsfwAlertPopup'
 
 const BLOG_REPORT_REASONS = [
   { label: 'Actually CP', key: 'actuallyCP' },
@@ -76,6 +79,17 @@ export const BlogPage = () => {
           encType: 'application/json'
         }
       )
+    }
+  }
+
+  const navigate = useNavigate()
+  const [confirmNsfw] = useLocalStorage<boolean>('confirm-nsfw', false)
+  const [showNsfwPopup, setShowNsfwPopup] = useState<boolean>(
+    (blog?.nsfw ?? false) && !confirmNsfw
+  )
+  const handleConfirm = (confirm: boolean) => {
+    if (!confirm) {
+      navigate(appRoutes.home)
     }
   }
 
@@ -316,6 +330,12 @@ export const BlogPage = () => {
             )}
             {!!blog?.author && <ProfileSection pubkey={blog.author} />}
             <Outlet key={nevent} />
+            {showNsfwPopup && (
+              <NsfwAlertPopup
+                handleConfirm={handleConfirm}
+                handleClose={() => setShowNsfwPopup(false)}
+              />
+            )}
           </div>
         </div>
       </div>

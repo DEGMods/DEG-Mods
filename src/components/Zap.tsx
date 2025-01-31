@@ -2,6 +2,7 @@ import { getRelayListForUser } from '@nostr-dev-kit/ndk'
 import { QRCodeSVG } from 'qrcode.react'
 import React, {
   Dispatch,
+  PropsWithChildren,
   ReactNode,
   SetStateAction,
   useCallback,
@@ -127,6 +128,7 @@ type ZapQRProps = {
   handleQRExpiry: () => void
   setTotalZapAmount?: Dispatch<SetStateAction<number>>
   setHasZapped?: Dispatch<SetStateAction<boolean>>
+  profileImage?: string
 }
 
 export const ZapQR = React.memo(
@@ -135,8 +137,10 @@ export const ZapQR = React.memo(
     handleClose,
     handleQRExpiry,
     setTotalZapAmount,
-    setHasZapped
-  }: ZapQRProps) => {
+    setHasZapped,
+    profileImage,
+    children
+  }: PropsWithChildren<ZapQRProps>) => {
     const { ndk } = useNDKContext()
 
     useDidMount(() => {
@@ -176,7 +180,10 @@ export const ZapQR = React.memo(
     }
 
     return (
-      <div className='inputLabelWrapperMain' style={{ alignItems: 'center' }}>
+      <div
+        className='inputLabelWrapperMain inputLabelWrapperMainQR'
+        style={{ alignItems: 'center' }}
+      >
         <QRCodeSVG
           className='popUpMainCardBottomQR'
           onClick={onQrCodeClicked}
@@ -184,6 +191,21 @@ export const ZapQR = React.memo(
           height={235}
           width={235}
         />
+        {profileImage && (
+          <div style={{ marginTop: '-20px' }}>
+            <img
+              src={profileImage}
+              alt='Profile Avatar'
+              style={{
+                width: '100%',
+                maxWidth: '50px',
+                borderRadius: '8px',
+                border: 'solid 2px #494949',
+                boxShadow: '0 0 4px 0 rgb(0, 0, 0, 0.1)'
+              }}
+            />
+          </div>
+        )}
         <label
           className='popUpMainCardBottomLnurl'
           onClick={() => {
@@ -195,6 +217,7 @@ export const ZapQR = React.memo(
           {paymentRequest.pr}
         </label>
         <Timer onTimerExpired={handleQRExpiry} />
+        {children}
       </div>
     )
   }
@@ -261,7 +284,7 @@ export const ZapPopUp = ({
   const [amount, setAmount] = useState<number>(0)
   const [message, setMessage] = useState('')
   const [paymentRequest, setPaymentRequest] = useState<PaymentRequest>()
-
+  const [receiverMetadata, setRecieverMetadata] = useState<UserProfile>()
   const userState = useAppSelector((state) => state.user)
 
   const handleAmountChange = (event: React.ChangeEvent<HTMLInputElement>) => {
@@ -307,6 +330,8 @@ export const ZapPopUp = ({
         toast.error('Pubkey is missing in receiver metadata!')
         return null
       }
+
+      setRecieverMetadata(receiverMetadata)
 
       // Find the receiver's read relays.
       const receiverRelays = await Promise.race([
@@ -478,6 +503,7 @@ export const ZapPopUp = ({
                       handleQRExpiry={handleQRExpiry}
                       setTotalZapAmount={setTotalZapAmount}
                       setHasZapped={setHasZapped}
+                      profileImage={receiverMetadata?.image}
                     />
                   )}
                   {lastNode}
@@ -749,6 +775,56 @@ export const ZapSplit = ({
     if (!invoices) return null
 
     const authorInvoice = invoices.get('author')
+    const feedback = (isFirst: boolean) => (
+      <div
+        style={{
+          display: 'flex',
+          flexDirection: 'row',
+          width: '100%',
+          flexWrap: 'wrap',
+          gridGap: '10px'
+        }}
+      >
+        <div
+          className='btn btnMain'
+          style={{
+            flexGrow: 1,
+            cursor: 'default',
+            background: isFirst ? undefined : 'unset'
+          }}
+        >
+          <svg
+            xmlns='http://www.w3.org/2000/svg'
+            viewBox='-64 0 512 512'
+            width='1em'
+            height='1em'
+            fill='currentColor'
+          >
+            <path d='M240.5 224H352C365.3 224 377.3 232.3 381.1 244.7C386.6 257.2 383.1 271.3 373.1 280.1L117.1 504.1C105.8 513.9 89.27 514.7 77.19 505.9C65.1 497.1 60.7 481.1 66.59 467.4L143.5 288H31.1C18.67 288 6.733 279.7 2.044 267.3C-2.645 254.8 .8944 240.7 10.93 231.9L266.9 7.918C278.2-1.92 294.7-2.669 306.8 6.114C318.9 14.9 323.3 30.87 317.4 44.61L240.5 224z'></path>
+          </svg>
+          1st Invoice
+        </div>
+        <div
+          className='btn btnMain'
+          style={{
+            flexGrow: 1,
+            cursor: 'default',
+            background: isFirst ? 'unset' : undefined
+          }}
+        >
+          <svg
+            xmlns='http://www.w3.org/2000/svg'
+            viewBox='-64 0 512 512'
+            width='1em'
+            height='1em'
+            fill='currentColor'
+          >
+            <path d='M240.5 224H352C365.3 224 377.3 232.3 381.1 244.7C386.6 257.2 383.1 271.3 373.1 280.1L117.1 504.1C105.8 513.9 89.27 514.7 77.19 505.9C65.1 497.1 60.7 481.1 66.59 467.4L143.5 288H31.1C18.67 288 6.733 279.7 2.044 267.3C-2.645 254.8 .8944 240.7 10.93 231.9L266.9 7.918C278.2-1.92 294.7-2.669 306.8 6.114C318.9 14.9 323.3 30.87 317.4 44.61L240.5 224z'></path>
+          </svg>
+          2nd Invoice
+        </div>
+      </div>
+    )
     if (authorInvoice) {
       return (
         <ZapQR
@@ -758,7 +834,10 @@ export const ZapSplit = ({
           handleQRExpiry={() => removeInvoice('author')}
           setTotalZapAmount={setTotalZapAmount}
           setHasZapped={setHasZapped}
-        />
+          profileImage={author?.image}
+        >
+          {feedback(true)}
+        </ZapQR>
       )
     }
 
@@ -773,7 +852,10 @@ export const ZapSplit = ({
             handleClose()
           }}
           handleQRExpiry={() => removeInvoice('admin')}
-        />
+          profileImage={admin?.image}
+        >
+          {feedback(false)}
+        </ZapQR>
       )
     }
 

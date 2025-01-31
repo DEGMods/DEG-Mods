@@ -5,6 +5,7 @@ import {
   Outlet,
   Link as ReactRouterLink,
   useLoaderData,
+  useNavigate,
   useNavigation,
   useParams,
   useSubmit
@@ -12,8 +13,13 @@ import {
 import { toast } from 'react-toastify'
 import { BlogCard } from '../../components/BlogCard'
 import { ProfileSection } from '../../components/ProfileSection'
-import { useAppSelector, useBodyScrollDisable, useDidMount } from '../../hooks'
-import { getGamePageRoute, getModsEditPageRoute } from '../../routes'
+import {
+  useAppSelector,
+  useBodyScrollDisable,
+  useDidMount,
+  useLocalStorage
+} from '../../hooks'
+import { appRoutes, getGamePageRoute, getModsEditPageRoute } from '../../routes'
 import '../../styles/comments.css'
 import '../../styles/downloads.css'
 import '../../styles/innerPage.css'
@@ -51,6 +57,7 @@ import { OriginalAuthor } from 'components/OriginalAuthor'
 import { Viewer } from 'components/Markdown/Viewer'
 import { PostWarnings } from 'components/PostWarning'
 import { DownloadDetailsPopup } from 'components/DownloadDetailsPopup'
+import { NsfwAlertPopup } from 'components/NsfwAlertPopup'
 
 const MOD_REPORT_REASONS = [
   { label: 'Actually CP', key: 'actuallyCP' },
@@ -79,6 +86,17 @@ export const ModPage = () => {
   }
 
   const [commentCount, setCommentCount] = useState(0)
+
+  const navigate = useNavigate()
+  const [confirmNsfw] = useLocalStorage<boolean>('confirm-nsfw', false)
+  const [showNsfwPopup, setShowNsfwPopup] = useState<boolean>(
+    (mod?.nsfw ?? false) && !confirmNsfw
+  )
+  const handleConfirm = (confirm: boolean) => {
+    if (!confirm) {
+      navigate(appRoutes.home)
+    }
+  }
 
   return (
     <>
@@ -145,6 +163,12 @@ export const ModPage = () => {
                 <ProfileSection pubkey={author} />
               )}
               <Outlet key={nevent} />
+              {showNsfwPopup && (
+                <NsfwAlertPopup
+                  handleConfirm={handleConfirm}
+                  handleClose={() => setShowNsfwPopup(false)}
+                />
+              )}
             </div>
           </div>
         </div>

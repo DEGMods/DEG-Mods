@@ -24,7 +24,10 @@ export const NsfwAlertPopup = ({
       <AlertPopup
         header='Confirm'
         label='Are you above 18 years of age?'
-        handleClose={handleClose}
+        handleClose={() => {
+          handleConfirm(false)
+          handleClose()
+        }}
         handleConfirm={(confirm: boolean) => {
           setConfirmNsfw(confirm)
           handleConfirm(confirm)
