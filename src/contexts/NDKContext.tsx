@@ -6,6 +6,7 @@ import NDK, {
   NDKList,
   NDKRelaySet,
   NDKSubscriptionCacheUsage,
+  NDKSubscriptionOptions,
   NDKUser,
   zapInvoiceFromEvent
 } from '@nostr-dev-kit/ndk'
@@ -48,7 +49,10 @@ export interface NDKContextType {
     hexKey: string,
     userRelaysType: UserRelaysType
   ) => Promise<NDKEvent | null>
-  findMetadata: (pubkey: string) => Promise<UserProfile>
+  findMetadata: (
+    pubkey: string,
+    opts?: NDKSubscriptionOptions
+  ) => Promise<UserProfile>
   getTotalZapAmount: (
     user: string,
     eTag: string,
@@ -111,7 +115,12 @@ export const NDKContextProvider = ({ children }: { children: ReactNode }) => {
   }
 
   const ndk = useMemo(() => {
-    localStorage.removeItem('debug')
+    if (import.meta.env.MODE === 'development') {
+      localStorage.setItem('debug', '*')
+    } else {
+      localStorage.removeItem('debug')
+    }
+
     const dexieAdapter = new NDKCacheAdapterDexie({ dbName: 'degmod-db' })
     dexieAdapter.locking = true
     const ndk = new NDK({
@@ -309,13 +318,16 @@ export const NDKContextProvider = ({ children }: { children: ReactNode }) => {
    * @param hexKey - The pubkey to search for metadata.
    * @returns A promise that resolves to the metadata event.
    */
-  const findMetadata = async (pubkey: string): Promise<UserProfile> => {
+  const findMetadata = async (
+    pubkey: string,
+    opts?: NDKSubscriptionOptions
+  ): Promise<UserProfile> => {
     const npub = hexToNpub(pubkey)
 
     const user = new NDKUser({ npub })
     user.ndk = ndk
 
-    const userProfile = await user.fetchProfile()
+    const userProfile = await user.fetchProfile(opts)
 
     return userProfile
   }

@@ -26,7 +26,7 @@ import {
 import { LoadingSpinner } from './LoadingSpinner'
 import { ZapPopUp } from './Zap'
 import placeholder from '../assets/img/DEGMods Placeholder Img.png'
-import { NDKEvent } from '@nostr-dev-kit/ndk'
+import { NDKEvent, NDKSubscriptionCacheUsage } from '@nostr-dev-kit/ndk'
 import { useProfile } from 'hooks/useProfile'
 
 type Props = {
@@ -93,7 +93,9 @@ type ProfileProps = {
 }
 
 export const Profile = ({ pubkey }: ProfileProps) => {
-  const profile = useProfile(pubkey)
+  const profile = useProfile(pubkey, {
+    cacheUsage: NDKSubscriptionCacheUsage.PARALLEL
+  })
 
   const displayName =
     profile?.displayName || profile?.name || '[name not set up]'

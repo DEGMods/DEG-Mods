@@ -22,7 +22,7 @@ import { npubToHex } from '../utils'
 import logo from '../assets/img/DEG Mods Logo With Text.svg'
 import placeholder from '../assets/img/DEG Mods Default PP.png'
 import { resetUserWot } from 'store/reducers/wot'
-import { NDKNip07Signer } from '@nostr-dev-kit/ndk'
+import { NDKNip07Signer, NDKSubscriptionCacheUsage } from '@nostr-dev-kit/ndk'
 
 export const Header = () => {
   const dispatch = useAppDispatch()
@@ -66,7 +66,9 @@ export const Header = () => {
             })
           )
           ndk.signer = new NDKNip07Signer()
-          findMetadata(npub).then((userProfile) => {
+          findMetadata(npub, {
+            cacheUsage: NDKSubscriptionCacheUsage.ONLY_RELAY
+          }).then((userProfile) => {
             if (userProfile) {
               dispatch(
                 setUser({

@@ -123,12 +123,13 @@ export const ProfileSettings = () => {
   }
 
   const handlePublish = async () => {
-    if (!userState.auth && !userState.user?.pubkey) return
+    if (!userState.auth || !userState.user?.pubkey) return
 
     setIsPublishing(true)
 
     const prevProfile = userState.user as NDKUserProfile
-    const updatedProfile = {
+    const createdAt = now()
+    const updatedProfile: NDKUserProfile = {
       ...prevProfile,
       name: formState.name,
       displayName: formState.displayName,
@@ -136,16 +137,16 @@ export const ProfileSettings = () => {
       picture: formState.picture,
       banner: formState.banner,
       nip05: formState.nip05,
-      lud16: formState.lud16
+      lud16: formState.lud16,
+      created_at: createdAt
     }
-
     const serializedProfile = serializeProfile(updatedProfile)
 
     const unsignedEvent: UnsignedEvent = {
       kind: kinds.Metadata,
       tags: [],
       content: serializedProfile,
-      created_at: now(),
+      created_at: createdAt,
       pubkey: userState.user?.pubkey as string
     }
 
@@ -176,7 +177,6 @@ export const ProfileSettings = () => {
         )}`
       )
 
-      const ndkEvent = new NDKEvent(undefined, signedEvent)
       const userProfile = profileFromEvent(ndkEvent)
       dispatch(setUser(userProfile))
     }

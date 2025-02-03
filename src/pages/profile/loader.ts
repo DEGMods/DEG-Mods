@@ -1,3 +1,4 @@
+import { NDKSubscriptionCacheUsage } from '@nostr-dev-kit/ndk'
 import { NDKContextType } from 'contexts/NDKContext'
 import { nip19 } from 'nostr-tools'
 import { LoaderFunctionArgs, redirect } from 'react-router-dom'
@@ -94,7 +95,9 @@ export const profileRouteLoader =
     }
 
     const settled = await Promise.allSettled([
-      ndkContext.findMetadata(profilePubkey),
+      ndkContext.findMetadata(profilePubkey, {
+        cacheUsage: NDKSubscriptionCacheUsage.ONLY_RELAY
+      }),
       ndkContext.getMuteLists(loggedInUserPubkey),
       getReportingSet(CurationSetIdentifiers.NSFW, ndkContext),
       getReportingSet(CurationSetIdentifiers.Repost, ndkContext)
