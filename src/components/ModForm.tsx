@@ -29,7 +29,9 @@ import {
   initializeFormState,
   log,
   LogType,
-  MOD_DRAFT_CACHE_KEY
+  memoizedNormalizeSearchString,
+  MOD_DRAFT_CACHE_KEY,
+  normalizeSearchString
 } from '../utils'
 import { CheckboxField, InputField, InputFieldWithImageUpload } from './Inputs'
 import { OriginalAuthor } from './OriginalAuthor'
@@ -975,10 +977,13 @@ const GameDropdown = ({
   }, [])
 
   const filteredOptions = useMemo(() => {
-    if (debouncedSearchTerm === '') return []
+    const normalizedSearchTerm = normalizeSearchString(debouncedSearchTerm)
+    if (normalizedSearchTerm === '') return []
     else {
       return options.filter((option) =>
-        option.label.toLowerCase().includes(debouncedSearchTerm.toLowerCase())
+        memoizedNormalizeSearchString(option.label).includes(
+          normalizedSearchTerm.toLowerCase()
+        )
       )
     }
   }, [debouncedSearchTerm, options])
