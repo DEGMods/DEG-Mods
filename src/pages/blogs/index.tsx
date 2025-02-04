@@ -9,7 +9,7 @@ import '../../styles/pagination.css'
 import '../../styles/search.css'
 import '../../styles/styles.css'
 import { PaginationWithPageNumbers } from 'components/Pagination'
-import { scrollIntoView } from 'utils'
+import { normalizeSearchString, scrollIntoView } from 'utils'
 import { LoadingSpinner } from 'components/LoadingSpinner'
 import { Filter } from 'components/Filters'
 import { Dropdown } from 'components/Filters/Dropdown'
@@ -63,15 +63,17 @@ export const BlogsPage = () => {
     }
 
     let filtered = blogs?.filter(filterNsfwFn) || []
-    const lowerCaseSearchTerm = searchTerm.toLowerCase()
+    const normalizedSearchTerm = normalizeSearchString(searchTerm)
 
-    if (searchTerm !== '') {
+    if (normalizedSearchTerm !== '') {
       const filterSearchTermFn = (blog: Partial<BlogCardDetails>) =>
-        (blog.title || '').toLowerCase().includes(lowerCaseSearchTerm) ||
-        (blog.summary || '').toLowerCase().includes(lowerCaseSearchTerm) ||
-        (blog.content || '').toLowerCase().includes(lowerCaseSearchTerm) ||
+        normalizeSearchString(blog.title || '').includes(
+          normalizedSearchTerm
+        ) ||
+        (blog.summary || '').toLowerCase().includes(normalizedSearchTerm) ||
+        (blog.content || '').toLowerCase().includes(normalizedSearchTerm) ||
         (blog.tTags || []).findIndex((tag) =>
-          tag.toLowerCase().includes(lowerCaseSearchTerm)
+          tag.toLowerCase().includes(normalizedSearchTerm)
         ) > -1
       filtered = filtered.filter(filterSearchTermFn)
     }

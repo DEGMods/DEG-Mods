@@ -5,11 +5,14 @@ import { Game } from 'types'
 import { log, LogType } from 'utils'
 import gameFiles from '../utils/games'
 
+let cachedGamesData: Game[] | null = null
+
 export const useGames = () => {
   const hasProcessedFiles = useRef(false)
-  const [games, setGames] = useState<Game[]>([])
+  const [games, setGames] = useState<Game[]>(cachedGamesData || [])
 
   useEffect(() => {
+    if (cachedGamesData) return
     if (hasProcessedFiles.current) return
 
     hasProcessedFiles.current = true
@@ -52,6 +55,7 @@ export const useGames = () => {
         })
 
         await Promise.all(promises)
+        cachedGamesData = uniqueGames
         setGames(uniqueGames)
       } catch (err) {
         log(

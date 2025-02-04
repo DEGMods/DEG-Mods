@@ -36,6 +36,9 @@ import {
   DEFAULT_FILTER_OPTIONS,
   extractModData,
   isModDataComplete,
+  memoizedNormalizeSearchString,
+  normalizeSearchString,
+  normalizeUserSearchString,
   scrollIntoView
 } from 'utils'
 import { useCuratedSet } from 'hooks/useCuratedSet'
@@ -293,18 +296,17 @@ const ModsResult = ({
   }, [searchTerm])
 
   const filteredMods = useMemo(() => {
+    const normalizedSearchTerm = normalizeSearchString(searchTerm)
     // Search page requires search term
-    if (searchTerm === '') return []
-
-    const lowerCaseSearchTerm = searchTerm.toLowerCase()
+    if (normalizedSearchTerm === '') return []
 
     const filterFn = (mod: ModDetails) =>
-      mod.title.toLowerCase().includes(lowerCaseSearchTerm) ||
-      mod.game.toLowerCase().includes(lowerCaseSearchTerm) ||
-      mod.summary.toLowerCase().includes(lowerCaseSearchTerm) ||
-      mod.body.toLowerCase().includes(lowerCaseSearchTerm) ||
+      normalizeSearchString(mod.title).includes(normalizedSearchTerm) ||
+      memoizedNormalizeSearchString(mod.game).includes(normalizedSearchTerm) ||
+      mod.summary.toLowerCase().includes(normalizedSearchTerm) ||
+      mod.body.toLowerCase().includes(normalizedSearchTerm) ||
       mod.tags.findIndex((tag) =>
-        tag.toLowerCase().includes(lowerCaseSearchTerm)
+        tag.toLowerCase().includes(normalizedSearchTerm)
       ) > -1
 
     const filterSourceFn = (mod: ModDetails) => {
@@ -377,13 +379,14 @@ const UsersResult = ({
   const userState = useAppSelector((state) => state.user)
 
   useEffect(() => {
-    if (searchTerm === '') {
+    const normalizedSearchTerm = normalizeUserSearchString(searchTerm)
+    if (normalizedSearchTerm === '') {
       setProfiles([])
     } else {
       const sub = ndk.subscribe(
         {
           kinds: [NDKKind.Metadata],
-          search: searchTerm
+          search: normalizedSearchTerm
         },
         {
           closeOnEose: true,
@@ -395,7 +398,7 @@ const UsersResult = ({
 
       // Stop the sub after 10 seconds if we are still searching the same term as before
       window.setTimeout(() => {
-        if (sub.filter.search === searchTerm) {
+        if (sub.filter.search === normalizedSearchTerm) {
           sub.stop()
         }
       }, 10000)
@@ -500,12 +503,13 @@ const GamesResult = ({ searchTerm }: GamesResultProps) => {
   }, [searchTerm])
 
   const filteredGames = useMemo(() => {
-    if (searchTerm === '') return []
-
-    const lowerCaseSearchTerm = searchTerm.toLowerCase()
+    const normalizedSearchTerm = normalizeSearchString(searchTerm)
+    if (normalizedSearchTerm === '') return []
 
     return games.filter((game) =>
-      game['Game Name'].toLowerCase().includes(lowerCaseSearchTerm)
+      memoizedNormalizeSearchString(game['Game Name']).includes(
+        normalizedSearchTerm
+      )
     )
   }, [searchTerm, games])
 

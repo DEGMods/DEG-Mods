@@ -198,3 +198,78 @@ export function adjustTextareaHeight(textarea: HTMLTextAreaElement) {
   textarea.style.height = 'auto'
   textarea.style.height = `${textarea.scrollHeight}px`
 }
+
+// Normalizing search terms
+const removeAccents = (str: string): string => {
+  return str.normalize('NFD').replace(/[\u0300-\u036f]/g, '')
+}
+
+const removeSpecialCharacters = (str: string): string => {
+  return str.replace(/[.,/#!$%^&*;:{}=\-_`~()&\s]/g, '')
+}
+
+// Replace Roman numerals with their Arabic counterparts
+const ROMAN_TO_ARABIC_MAP: { [key: string]: string } = {
+  i: '1',
+  ii: '2',
+  iii: '3',
+  iv: '4',
+  v: '5',
+  vi: '6',
+  vii: '7',
+  viii: '8',
+  ix: '9',
+  x: '10',
+  xi: '11',
+  xii: '12',
+  xiii: '13',
+  xiv: '14',
+  xv: '15',
+  xvi: '16',
+  xvii: '17',
+  xviii: '18',
+  xix: '19',
+  xx: '20'
+}
+
+const romanRegex = new RegExp(
+  `\\b(${Object.keys(ROMAN_TO_ARABIC_MAP).join('|')})\\b`,
+  'g'
+)
+
+export const normalizeSearchString = (str: string): string => {
+  str = str.trim()
+  str = str.toLowerCase()
+  str = str.replace(romanRegex, (match) => ROMAN_TO_ARABIC_MAP[match])
+  str = removeAccents(str)
+  str = removeSpecialCharacters(str)
+  return str
+}
+
+// Memoization function to cache normalized results
+const memoizeNormalize = (func: (str: string) => string) => {
+  const cache: { [key: string]: string } = {}
+  return (str: string): string => {
+    if (cache[str] !== undefined) {
+      return cache[str]
+    }
+    const result = func(str)
+    cache[str] = result
+    return result
+  }
+}
+
+/**
+ * Memoize normalized search strings
+ * Should only be used for games (large list)
+ */
+export const memoizedNormalizeSearchString = memoizeNormalize(
+  normalizeSearchString
+)
+
+export const normalizeUserSearchString = (str: string): string => {
+  str = str.trim()
+  str = str.toLowerCase()
+  str = removeAccents(str)
+  return str
+}
