@@ -1,3 +1,3 @@
 export const NotificationsPage = () => {
-  return <h2>Notifications</h2>
+  return <h2>WIP: Notifications</h2>
 }

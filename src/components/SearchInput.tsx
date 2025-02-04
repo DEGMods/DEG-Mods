@@ -3,10 +3,11 @@ import { forwardRef } from 'react'
 interface SearchInputProps {
   handleKeyDown: (event: React.KeyboardEvent<HTMLInputElement>) => void
   handleSearch: () => void
+  handleChange?: (event: React.ChangeEvent<HTMLInputElement>) => void
 }
 
 export const SearchInput = forwardRef<HTMLInputElement, SearchInputProps>(
-  ({ handleKeyDown, handleSearch }, ref) => (
+  ({ handleKeyDown, handleSearch, handleChange }, ref) => (
     <div className='SearchMain'>
       <div className='SearchMainInside'>
         <div className='SearchMainInsideWrapper'>
@@ -15,6 +16,7 @@ export const SearchInput = forwardRef<HTMLInputElement, SearchInputProps>(
             className='SMIWInput'
             ref={ref}
             onKeyDown={handleKeyDown}
+            onChange={handleChange}
             placeholder='Enter search term'
           />
           <button

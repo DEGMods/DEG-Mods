@@ -19,6 +19,7 @@ import { NotFoundPage } from '../pages/404'
 import { submitModRouteAction } from 'pages/submitMod/action'
 import { FeedLayout } from '../layout/feed'
 import { FeedPage } from '../pages/feed'
+import { feedPageLoader } from 'pages/feed/loader'
 import { NotificationsPage } from '../pages/notifications'
 import { WritePage } from '../pages/write'
 import { writeRouteAction } from '../pages/write/action'
@@ -197,7 +198,8 @@ export const routerWithNdkContext = (context: NDKContextType) =>
           children: [
             {
               path: appRoutes.feed,
-              element: <FeedPage />
+              element: <FeedPage />,
+              loader: feedPageLoader(context)
             },
             {
               path: appRoutes.notifications,

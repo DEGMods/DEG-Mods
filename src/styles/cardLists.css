@@ -77,11 +77,11 @@
 
 .IBMSMList.IBMSMListFeed {
   grid-template-columns: 1fr 1fr;
+  grid-gap: 15px;
 }
 
-@media (max-width: 1200px) {
+@media (max-width: 576px) {
   .IBMSMList.IBMSMListFeed {
     grid-template-columns: 1fr;
   }
 }
-

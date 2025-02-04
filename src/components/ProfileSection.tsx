@@ -381,6 +381,15 @@ const FollowButton = ({ pubkey }: FollowButtonProps) => {
     }
   })
 
+  // Hide follow if own profile
+  if (
+    userState.auth &&
+    userState.user?.pubkey &&
+    userState.user?.pubkey === pubkey
+  ) {
+    return null
+  }
+
   const getUserPubKey = async (): Promise<string | null> => {
     if (userState.auth && userState.user?.pubkey) {
       return userState.user.pubkey as string

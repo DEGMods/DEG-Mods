@@ -1,4 +1,4 @@
-import { useMemo, useRef, useState } from 'react'
+import { useEffect, useMemo, useRef, useState } from 'react'
 import { useLoaderData, useNavigation, useSearchParams } from 'react-router-dom'
 import { useLocalStorage } from 'hooks'
 import { BlogCardDetails, NSFWFilter, SortBy } from 'types'
@@ -28,9 +28,15 @@ export const BlogsPage = () => {
   // Search
   const searchTermRef = useRef<HTMLInputElement>(null)
   const [searchParams, setSearchParams] = useSearchParams()
-  const [searchTerm, setSearchTerm] = useState(searchParams.get('q') || '')
+  useEffect(() => {
+    // Keep the states synced with the URL
+    const q = searchParams.get('q')
+    if (searchTermRef.current) searchTermRef.current.value = q ?? ''
+    setSearchTerm(q ?? '')
+  }, [searchParams])
+  const [searchTerm, setSearchTerm] = useState('')
   const handleSearch = () => {
-    const value = searchTermRef.current?.value || '' // Access the input value from the ref
+    const value = searchTermRef.current?.value ?? '' // Access the input value from the ref
     setSearchTerm(value)
 
     if (value) {
@@ -42,6 +48,17 @@ export const BlogsPage = () => {
     setSearchParams(searchParams, {
       replace: true
     })
+  }
+  // Reset search automatically when deleting last entry
+  const handleChange = () => {
+    const value = searchTermRef.current?.value ?? '' // Access the input value from the ref
+    if (!value && searchParams.get('q')) {
+      searchParams.delete('q')
+      setSearchParams(searchParams, {
+        replace: true
+      })
+      handleSearch()
+    }
   }
   const handleKeyDown = (event: React.KeyboardEvent<HTMLInputElement>) => {
     if (event.key === 'Enter') {
@@ -126,6 +143,7 @@ export const BlogsPage = () => {
                 ref={searchTermRef}
                 handleKeyDown={handleKeyDown}
                 handleSearch={handleSearch}
+                handleChange={handleChange}
               />
             </div>
           </div>

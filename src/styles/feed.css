@@ -5,7 +5,7 @@
   grid-gap: 25px;
 }
 
-@media (max-width: 992px) {
+@media (max-width: 1200px) {
   .IBMSMSplitMainFullSideFeedWrapper {
     grid-template-columns: 1fr;
   }
@@ -27,7 +27,7 @@
   position: relative;
 }
 
-@media (max-width: 992px) {
+@media (max-width: 1200px) {
   .IBMSMSplitMainFullSideFWMid {
     grid-row-start: 1;
   }
@@ -119,3 +119,27 @@
   padding-top: 15px;
 }
 
+.IBMSMListFeedLoadMore {
+  display: flex;
+  flex-direction: row;
+  justify-content: center;
+  align-items: center;
+}
+
+.btnMain.IBMSMListFeedLoadMoreBtn {
+  width: 100%;
+  max-width: 300px;
+}
+
+.IBMSMListFeedNoPosts {
+  width: 100%;
+  padding: 10px;
+  border-radius: 10px;
+  border: solid 1px rgba(255,255,255,0.1);
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  align-items: center;
+  color: rgba(255,255,255,0.25);
+  font-weight: 500;
+}
