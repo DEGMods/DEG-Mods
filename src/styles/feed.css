@@ -143,3 +143,39 @@
   color: rgba(255,255,255,0.25);
   font-weight: 500;
 }
+
+.feedPostsPostPreview {
+  width: 100%;
+  border-radius: 10px;
+  padding: 10px;
+  display: flex;
+  flex-direction: column;
+  border: solid 1px rgba(255,255,255,0.1);
+  align-items: center;
+}
+
+.feedPostsPostPreviewNote {
+  width: 100%;
+  max-width: 200px;
+  display: flex;
+  flex-direction: row;
+  justify-content: center;
+  align-items: center;
+  margin: 0 0 10px 0;
+  background: rgba(255,255,255,0.1);
+  padding: 5px;
+  border-radius: 6px;
+  color: rgba(255,255,255,0.25);
+}
+
+.imgFeedRender {
+  width: 100%;
+  border-radius: 10px;
+  box-shadow: 0 0 8px 0 rgb(0,0,0,0.25);
+}
+
+.videoFeedRender {
+  width: 100%;
+  border-radius: 10px;
+  box-shadow: 0 0 8px 0 rgb(0,0,0,0.25);
+}

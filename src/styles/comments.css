@@ -17,6 +17,8 @@
   display: grid;
   grid-template-columns: 1fr;
   grid-gap: 20px;
+  border-bottom: solid 1px rgba(255,255,255,0.1);
+  padding: 0 0 15px 0;
 }
 
 .IBMSMSMBSSCL_CommentTop {
@@ -25,6 +27,7 @@
   flex-direction: row;
   grid-gap: 15px;
   padding: 0;
+  flex-wrap: wrap;
 }
 
 .IBMSMSMBSSCL_CommentTopPP {
@@ -41,6 +44,7 @@
 }
 
 .IBMSMSMBSSCL_CommentBottom {
+  width: 100%;
   padding: 20px;
   color: rgba(255, 255, 255, 0.75);
   background: linear-gradient(to top right, #262626, #292929, #262626);
@@ -263,7 +267,7 @@
 }
 
 .IBMSMSMBSSCL_CommentTopDetailsWrapper {
-  width: 100%;
+  flex-grow: 1;
   display: grid;
   grid-template-columns: 1fr 1fr;
   grid-gap: 15px;
@@ -578,8 +582,18 @@ hover {
   cursor: pointer;
 }
 
+.IBMSMSMBSSCL_CBExpand.IBMSMSMBSSCL_CBExpandAlt {
+  position: sticky;
+  top: 10px;
+}
+
 .IBMSMSMBSSCL_CBExpand:hover {
   transition: ease 0.3s;
   background: rgba(255,255,255,0.05);
   color: rgba(255,255,255,0.25);
+}
+
+.IBMSMSMBSSCL_Comment.IBMSMSMBSSCL_CommentAlt {
+  border: unset;
+  padding: unset;
 }
