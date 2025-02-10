@@ -16,13 +16,11 @@ export const FeedLayout = () => {
               <div className='IBMSMSplitMainFullSideFeedWrapper'>
                 <div className='IBMSMSplitMainFullSideFWSide'>
                   {userState.auth && userState.user?.pubkey && (
-                    <div className='IBMSMSplitMainSmallSide'>
                       <div className='IBMSMSplitMainSmallSideSecWrapper'>
                         <div className='IBMSMSplitMainSmallSideSec'>
                           <Profile pubkey={userState.user.pubkey as string} />
                         </div>
                       </div>
-                    </div>
                   )}
                 </div>
                 <div className='IBMSMSplitMainFullSideFWMid'>

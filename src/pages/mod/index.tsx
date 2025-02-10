@@ -587,7 +587,7 @@ const Body = ({
                         key={`separator-${i}`}
                         className='IBMSMSMBSSCategoriesBoxSeparator'
                       >
-                        <p>&gt;</p>
+                        <i className='fas fa-chevron-right'></i>
                       </div>,
                       curr
                     ])

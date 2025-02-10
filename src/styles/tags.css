@@ -56,39 +56,55 @@
 }
 
 .IBMSMSMBSSCategories {
-  width: 100%;
-  display: flex;
-  flex-direction: column;
-  grid-gap: 5px;
+    width: 100%;
+    display: flex;
+    flex-direction: column;
+    grid-gap: 10px;
+    max-height: 300px;
+    overflow: auto;
+    padding: 10px;
+    background: #00000029;
+    border-radius: 10px;
+    border: solid 1px #ffffff14;
 }
 
 .IBMSMSMBSSCategoriesBox {
     width: 100%;
     display: flex;
     flex-direction: row;
-    grid-gap: 2px;
-    background: hsl(0deg 0% 100% / 0%);
-    border-radius: 5px;
-    overflow: hidden;
+    grid-gap: 5px;
+    background: hsl(0deg 0% 0% / 10%);
+    border-radius: 10px;
     white-space: nowrap;
     flex-wrap: wrap;
+    padding: 10px;
+    border: solid 1px hsl(0deg 0% 100% / 10%);
 }
 
 .IBMSMSMBSSCategoriesBoxItem {
+    transition: ease 0.3s;
     padding: 10px 15px;
     line-height: 1;
-    color: hsl(0deg 0% 100% / 35%);
-    background: hsl(0deg 0% 100% / 10%);
+    color: #ffffff59;
+    background: #ffffff1a;
     flex-grow: 1;
+    border-radius: 5px;
+}
+
+.IBMSMSMBSSCategoriesBoxItem:hover {
+    text-decoration: unset;
+    color: white;
+    background: rgb(255 255 255 / 15%);
 }
 
 .IBMSMSMBSSCategoriesBoxSeparator {
-    padding: 5px;
+    padding: 5px 5px 5px 7px;
     line-height: 1;
-    color: hsl(0deg 0% 100% / 35%);
-    background: hsl(0deg 0% 100% / 10%);
+    color: #ffffff59;
+    background: #ffffff1a;
     display: flex;
     flex-direction: column;
     justify-content: center;
     align-items: center;
+    border-radius: 5px;
 }

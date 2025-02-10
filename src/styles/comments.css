@@ -597,3 +597,13 @@ hover {
   border: unset;
   padding: unset;
 }
+
+.pUMCB_PrimeComment > *:last-child {
+    border: unset;
+    padding: unset;
+}
+
+.IBMSMSMBSSCommentsList > * {
+    border: unset;
+    padding: unset;
+}

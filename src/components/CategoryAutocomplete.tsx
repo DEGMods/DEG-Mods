@@ -209,7 +209,7 @@ export const CategoryAutocomplete = ({
   return (
     <div className='inputLabelWrapperMain'>
       <label className='form-label labelMain'>Categories</label>
-      <p className='labelDescriptionMain'>You can select multiple categories</p>
+      <p className='labelDescriptionMain'>You can select multiple categories, or even add your own custom category (ex: custom &gt; custom sub)</p>
       <div className='dropdown dropdownMain'>
         <div className='inputWrapperMain inputWrapperMainAlt'>
           <input

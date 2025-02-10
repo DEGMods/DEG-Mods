@@ -28,6 +28,7 @@ import { ZapPopUp } from './Zap'
 import placeholder from '../assets/img/DEGMods Placeholder Img.png'
 import { NDKEvent, NDKSubscriptionCacheUsage } from '@nostr-dev-kit/ndk'
 import { useProfile } from 'hooks/useProfile'
+import { createPortal } from 'react-dom'
 
 type Props = {
   pubkey: string
@@ -250,15 +251,6 @@ export const ProfileQRButtonWithPopUp = ({
 
   useBodyScrollDisable(isOpen)
 
-  const onQrCodeClicked = async () => {
-    const href = `https://njump.me/${nprofile}`
-    const a = document.createElement('a')
-    a.href = href
-    a.target = '_blank' // Open in a new tab
-    a.rel = 'noopener noreferrer' // Recommended for security reasons
-    a.click()
-  }
-
   return (
     <>
       <div
@@ -278,45 +270,65 @@ export const ProfileQRButtonWithPopUp = ({
       </div>
 
       {isOpen && (
-        <div className='popUpMain'>
-          <div className='ContainerMain'>
-            <div className='popUpMainCardWrapper'>
-              <div className='popUpMainCard popUpMainCardQR'>
-                <div className='popUpMainCardTop'>
-                  <div className='popUpMainCardTopInfo'>
-                    <h3>Nostr Address</h3>
-                  </div>
-                  <div
-                    className='popUpMainCardTopClose'
-                    onClick={() => setIsOpen(false)}
-                  >
-                    <svg
-                      xmlns='http://www.w3.org/2000/svg'
-                      viewBox='-96 0 512 512'
-                      width='1em'
-                      height='1em'
-                      fill='currentColor'
-                      style={{ zIndex: 1 }}
-                    >
-                      <path d='M310.6 361.4c12.5 12.5 12.5 32.75 0 45.25C304.4 412.9 296.2 416 288 416s-16.38-3.125-22.62-9.375L160 301.3L54.63 406.6C48.38 412.9 40.19 416 32 416S15.63 412.9 9.375 406.6c-12.5-12.5-12.5-32.75 0-45.25l105.4-105.4L9.375 150.6c-12.5-12.5-12.5-32.75 0-45.25s32.75-12.5 45.25 0L160 210.8l105.4-105.4c12.5-12.5 32.75-12.5 45.25 0s12.5 32.75 0 45.25l-105.4 105.4L310.6 361.4z'></path>
-                    </svg>
-                  </div>
-                </div>
-                <div className='popUpMainCardBottom'>
-                  <QRCodeSVG
-                    className='popUpMainCardBottomQR'
-                    onClick={onQrCodeClicked}
-                    value={nprofile}
-                    height={235}
-                    width={235}
-                  />
-                </div>
+        <ProfileQRPopup
+          nprofile={nprofile}
+          handleClose={() => setIsOpen(false)}
+        />
+      )}
+    </>
+  )
+}
+interface ProfileQRPopupProps {
+  nprofile: string
+  handleClose: () => void
+}
+
+const ProfileQRPopup = ({ nprofile, handleClose }: ProfileQRPopupProps) => {
+  const onQrCodeClicked = async () => {
+    const href = `https://njump.me/${nprofile}`
+    const a = document.createElement('a')
+    a.href = href
+    a.target = '_blank' // Open in a new tab
+    a.rel = 'noopener noreferrer' // Recommended for security reasons
+    a.click()
+  }
+
+  return createPortal(
+    <div className='popUpMain'>
+      <div className='ContainerMain'>
+        <div className='popUpMainCardWrapper'>
+          <div className='popUpMainCard popUpMainCardQR'>
+            <div className='popUpMainCardTop'>
+              <div className='popUpMainCardTopInfo'>
+                <h3>Nostr Address</h3>
               </div>
+              <div className='popUpMainCardTopClose' onClick={handleClose}>
+                <svg
+                  xmlns='http://www.w3.org/2000/svg'
+                  viewBox='-96 0 512 512'
+                  width='1em'
+                  height='1em'
+                  fill='currentColor'
+                  style={{ zIndex: 1 }}
+                >
+                  <path d='M310.6 361.4c12.5 12.5 12.5 32.75 0 45.25C304.4 412.9 296.2 416 288 416s-16.38-3.125-22.62-9.375L160 301.3L54.63 406.6C48.38 412.9 40.19 416 32 416S15.63 412.9 9.375 406.6c-12.5-12.5-12.5-32.75 0-45.25l105.4-105.4L9.375 150.6c-12.5-12.5-12.5-32.75 0-45.25s32.75-12.5 45.25 0L160 210.8l105.4-105.4c12.5-12.5 32.75-12.5 45.25 0s12.5 32.75 0 45.25l-105.4 105.4L310.6 361.4z'></path>
+                </svg>
+              </div>
+            </div>
+            <div className='popUpMainCardBottom'>
+              <QRCodeSVG
+                className='popUpMainCardBottomQR'
+                onClick={onQrCodeClicked}
+                value={nprofile}
+                height={235}
+                width={235}
+              />
             </div>
           </div>
         </div>
-      )}
-    </>
+      </div>
+    </div>,
+    document.body
   )
 }
 

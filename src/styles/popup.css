@@ -439,3 +439,8 @@
     font-weight: normal;
     color: #ffffff25;
 }
+
+.IBMSMSMBSSCommentsList > * {
+    border: unset;
+    padding: unset;
+}

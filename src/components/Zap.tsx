@@ -27,6 +27,7 @@ import {
 } from '../utils'
 import { LoadingSpinner } from './LoadingSpinner'
 import { FALLBACK_PROFILE_IMAGE } from 'constants.ts'
+import { createPortal } from 'react-dom'
 
 type PresetAmountProps = {
   label: string
@@ -436,7 +437,7 @@ export const ZapPopUp = ({
     }
   }, [notCloseAfterZap, handleClose])
 
-  return (
+  return createPortal(
     <>
       {isLoading && <LoadingSpinner desc={loadingSpinnerDesc} />}
       <div className='popUpMain'>
@@ -513,7 +514,8 @@ export const ZapPopUp = ({
           </div>
         </div>
       </div>
-    </>
+    </>,
+    document.body
   )
 }
 
