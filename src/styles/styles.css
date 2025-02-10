@@ -746,3 +746,11 @@ a:hover {
     border-radius: 10px;
     border: solid 1px rgb(255 255 255 / 10%);
 }
+
+iframe {
+    border: 0;
+    width: 100%;
+    border-radius: 8px;
+    aspect-ratio: 16 / 9;
+    height: unset;
+}
