@@ -39,64 +39,13 @@ export const FeedTabMods = () => {
   const [isLoadMoreVisible, setIsLoadMoreVisible] = useState(true)
   const [showing, setShowing] = useState(SHOWING_STEP)
 
-  const handleLoadMore = () => {
-    const LOAD_MORE_STEP = SHOWING_STEP * 2
-    setShowing((prev) => prev + SHOWING_STEP)
-    const lastMod = filteredModList[filteredModList.length - 1]
-    const filter: NDKFilter = {
-      authors: [...followList],
-      kinds: [NDKKind.Classified],
-      limit: LOAD_MORE_STEP
-    }
-
-    if (filterOptions.source === window.location.host) {
-      filter['#r'] = [window.location.host]
-    }
-
-    if (filterOptions.sort === SortBy.Latest) {
-      filter.until = lastMod.published_at
-    } else if (filterOptions.sort === SortBy.Oldest) {
-      filter.since = lastMod.published_at
-    }
-
-    setIsFetching(true)
-    ndk
-      .fetchEvents(filter, {
-        closeOnEose: true,
-        cacheUsage: NDKSubscriptionCacheUsage.PARALLEL
-      })
-      .then((ndkEventSet) => {
-        const ndkEvents = Array.from(ndkEventSet)
-        orderEventsChronologically(
-          ndkEvents,
-          filterOptions.sort === SortBy.Latest
-        )
-        setMods((prevMods) => {
-          const newMods = constructModListFromEvents(ndkEvents)
-          const combinedMods = [...prevMods, ...newMods]
-          const uniqueMods = Array.from(
-            new Set(combinedMods.map((mod) => mod.id))
-          )
-            .map((id) => combinedMods.find((mod) => mod.id === id))
-            .filter((mod): mod is ModDetails => mod !== undefined)
-
-          if (newMods.length < LOAD_MORE_STEP) {
-            setIsLoadMoreVisible(false)
-          }
-
-          return uniqueMods
-        })
-      })
-      .finally(() => {
-        setIsFetching(false)
-      })
-  }
-
   useEffect(() => {
+    if (!userPubkey) return
+
     setIsFetching(true)
     setIsLoadMoreVisible(true)
     const filter: NDKFilter = {
-      authors: [...followList],
+      authors: [...followList, userPubkey],
       kinds: [NDKKind.Classified],
       limit: 50
     }
@@ -117,7 +66,7 @@ export const FeedTabMods = () => {
       .finally(() => {
         setIsFetching(false)
       })
-  }, [filterOptions.source, followList, ndk])
+  }, [filterOptions.source, followList, ndk, userPubkey])
 
   const filteredModList = useMemo(() => {
     const nsfwFilter = (mods: ModDetails[]) => {
@@ -198,6 +147,60 @@ export const FeedTabMods = () => {
   ])
 
   if (!userPubkey) return null
+
+  const handleLoadMore = () => {
+    const LOAD_MORE_STEP = SHOWING_STEP * 2
+    setShowing((prev) => prev + SHOWING_STEP)
+    const lastMod = filteredModList[filteredModList.length - 1]
+    const filter: NDKFilter = {
+      authors: [...followList, userPubkey],
+      kinds: [NDKKind.Classified],
+      limit: LOAD_MORE_STEP
+    }
+
+    if (filterOptions.source === window.location.host) {
+      filter['#r'] = [window.location.host]
+    }
+
+    if (filterOptions.sort === SortBy.Latest) {
+      filter.until = lastMod.published_at
+    } else if (filterOptions.sort === SortBy.Oldest) {
+      filter.since = lastMod.published_at
+    }
+
+    setIsFetching(true)
+    ndk
+      .fetchEvents(filter, {
+        closeOnEose: true,
+        cacheUsage: NDKSubscriptionCacheUsage.PARALLEL
+      })
+      .then((ndkEventSet) => {
+        const ndkEvents = Array.from(ndkEventSet)
+        orderEventsChronologically(
+          ndkEvents,
+          filterOptions.sort === SortBy.Latest
+        )
+        setMods((prevMods) => {
+          const newMods = constructModListFromEvents(ndkEvents)
+          const combinedMods = [...prevMods, ...newMods]
+          const uniqueMods = Array.from(
+            new Set(combinedMods.map((mod) => mod.id))
+          )
+            .map((id) => combinedMods.find((mod) => mod.id === id))
+            .filter((mod): mod is ModDetails => mod !== undefined)
+
+          if (newMods.length < LOAD_MORE_STEP) {
+            setIsLoadMoreVisible(false)
+          }
+
+          return uniqueMods
+        })
+      })
+      .finally(() => {
+        setIsFetching(false)
+      })
+  }
+
   return (
     <>
       {isFetching && <LoadingSpinner desc='Fetching mod details from relays' />}

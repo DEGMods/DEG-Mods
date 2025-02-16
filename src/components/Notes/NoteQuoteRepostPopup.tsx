@@ -1,24 +1,27 @@
 import { createPortal } from 'react-dom'
 import { PropsWithChildren } from 'react'
-import { AlertPopupProps } from 'types'
+import { NDKEvent } from '@nostr-dev-kit/ndk'
+import { NoteSubmit } from './NoteSubmit'
 
-export const AlertPopup = ({
-  header,
-  label,
-  handleConfirm,
-  handleClose,
-  yesButtonLabel = 'Yes',
-  noButtonLabel = 'No',
-  children
-}: PropsWithChildren<AlertPopupProps>) => {
+interface NoteQuoteRepostPopup {
+  ndkEvent: NDKEvent
+  handleClose: () => void
+}
+
+export const NoteQuoteRepostPopup = ({
+  ndkEvent,
+  handleClose
+}: PropsWithChildren<NoteQuoteRepostPopup>) => {
+  const content = `nostr:${ndkEvent.encode()}`
+
   return createPortal(
     <div className='popUpMain'>
       <div className='ContainerMain'>
         <div className='popUpMainCardWrapper'>
-          <div className='popUpMainCard popUpMainCardQR'>
+          <div className='popUpMainCard'>
             <div className='popUpMainCardTop'>
               <div className='popUpMainCardTopInfo'>
-                <h3>{header}</h3>
+                <h3>Quote Repost</h3>
               </div>
               <div className='popUpMainCardTopClose' onClick={handleClose}>
                 <svg
@@ -40,31 +43,12 @@ export const AlertPopup = ({
                     className='form-label labelMain'
                     style={{ fontWeight: 'bold' }}
                   >
-                    {label}
+                    Quote repost this?
                   </label>
-                  {children}
-                </div>
-                <div
-                  style={{
-                    display: 'flex',
-                    width: '100%',
-                    gap: '10px'
-                  }}
-                >
-                  <button
-                    className='btn btnMain btnMainPopup'
-                    type='button'
-                    onPointerDown={() => handleConfirm(true)}
-                  >
-                    {yesButtonLabel}
-                  </button>
-                  <button
-                    className='btn btnMain btnMainPopup'
-                    type='button'
-                    onPointerDown={() => handleConfirm(false)}
-                  >
-                    {noButtonLabel}
-                  </button>
+                  <NoteSubmit
+                    initialContent={`\n\n:${content}`}
+                    handleClose={handleClose}
+                  />
                 </div>
               </div>
             </div>

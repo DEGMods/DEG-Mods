@@ -6,15 +6,19 @@ import { log, LogType } from 'utils'
 export const commentsLoader =
   (ndkContext: NDKContextType) =>
   async ({ params }: LoaderFunctionArgs) => {
-    const { nevent } = params
-
-    if (!nevent) {
-      log(true, LogType.Error, 'Required nevent.')
+    const { nevent, note } = params
+    const target = nevent || note
+    if (!target) {
+      log(
+        true,
+        LogType.Error,
+        'Missing event parameter in the URL (nevent, note).'
+      )
       return redirect('..')
     }
 
     try {
-      const replyEvent = await ndkContext.ndk.fetchEvent(nevent)
+      const replyEvent = await ndkContext.ndk.fetchEvent(target)
 
       if (!replyEvent) {
         throw new Error('We are unable to find the comment on the relays')

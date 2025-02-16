@@ -273,3 +273,9 @@ export const normalizeUserSearchString = (str: string): string => {
   str = removeAccents(str)
   return str
 }
+
+export const truncate = (npub: string): string => {
+  const start = npub.substring(0, 4)
+  const end = npub.substring(npub.length - 4, npub.length)
+  return start + '…' + end
+}

@@ -21,7 +21,8 @@ import {
   log,
   LogType,
   now,
-  npubToHex
+  npubToHex,
+  truncate
 } from '../utils'
 import { LoadingSpinner } from './LoadingSpinner'
 import { ZapPopUp } from './Zap'
@@ -574,4 +575,34 @@ const FollowButton = ({ pubkey }: FollowButtonProps) => {
       {isLoading && <LoadingSpinner desc={loadingSpinnerDesc} />}
     </>
   )
+}
+
+export const ProfileLink = ({ pubkey }: Props) => {
+  let hexPubkey: string | null = null
+  let profileRoute: string | undefined = appRoutes.home
+  let nprofile: string | undefined
+  const npub = hexToNpub(pubkey)
+
+  try {
+    hexPubkey = npubToHex(pubkey)
+
+    if (hexPubkey) {
+      nprofile = hexPubkey
+        ? nip19.nprofileEncode({
+            pubkey: hexPubkey
+          })
+        : undefined
+    }
+  } catch (error) {
+    // Silently ignore
+    log(true, LogType.Error, 'Failed to encode profile.', error)
+  }
+
+  profileRoute = nprofile ? getProfilePageRoute(nprofile) : appRoutes.home
+  const profile = useProfile(hexPubkey!, {
+    cacheUsage: NDKSubscriptionCacheUsage.PARALLEL
+  })
+
+  const displayName = profile?.displayName || profile?.name || truncate(npub)
+  return <Link to={profileRoute}>@{displayName}</Link>
 }

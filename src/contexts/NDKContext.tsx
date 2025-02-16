@@ -11,7 +11,12 @@ import NDK, {
   zapInvoiceFromEvent
 } from '@nostr-dev-kit/ndk'
 import NDKCacheAdapterDexie from '@nostr-dev-kit/ndk-cache-dexie'
-import { MOD_FILTER_LIMIT, T_TAG_VALUE } from 'constants.ts'
+import {
+  CLIENT_NAME_VALUE,
+  CLIENT_TAG_VALUE,
+  MOD_FILTER_LIMIT,
+  T_TAG_VALUE
+} from 'constants.ts'
 import { Dexie } from 'dexie'
 import { createContext, ReactNode, useEffect, useMemo } from 'react'
 import { toast } from 'react-toastify'
@@ -127,6 +132,8 @@ export const NDKContextProvider = ({ children }: { children: ReactNode }) => {
       enableOutboxModel: true,
       autoConnectUserRelays: true,
       autoFetchUserMutelist: true,
+      clientName: CLIENT_NAME_VALUE,
+      clientNip89: CLIENT_TAG_VALUE,
       explicitRelayUrls: [
         'wss://user.kindpag.es',
         'wss://purplepag.es',

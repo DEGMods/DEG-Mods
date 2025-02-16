@@ -33,6 +33,7 @@ import { BackupPage } from 'pages/backup'
 import { SupportersPage } from 'pages/supporters'
 import { commentsLoader } from 'loaders/comment'
 import { CommentsPopup } from 'components/comment/CommentsPopup'
+import { feedPostRouteAction } from 'pages/feed/action'
 
 export const appRoutes = {
   home: '/',
@@ -56,6 +57,7 @@ export const appRoutes = {
   settingsAdmin: '/settings-admin',
   profile: '/profile/:nprofile?',
   feed: '/feed',
+  note: '/feed/:note',
   notifications: '/notifications',
   backup: '/backup',
   supporters: '/supporters'
@@ -75,6 +77,9 @@ export const getBlogPageRoute = (eventId: string) =>
 
 export const getProfilePageRoute = (nprofile: string) =>
   appRoutes.profile.replace(':nprofile', nprofile)
+
+export const getFeedNotePageRoute = (note: string) =>
+  appRoutes.note.replace(':note', note)
 
 export const routerWithNdkContext = (context: NDKContextType) =>
   createBrowserRouter([
@@ -199,7 +204,15 @@ export const routerWithNdkContext = (context: NDKContextType) =>
             {
               path: appRoutes.feed,
               element: <FeedPage />,
-              loader: feedPageLoader(context)
+              loader: feedPageLoader(context),
+              action: feedPostRouteAction(context),
+              children: [
+                {
+                  path: ':note',
+                  element: <CommentsPopup />,
+                  loader: commentsLoader(context)
+                }
+              ]
             },
             {
               path: appRoutes.notifications,

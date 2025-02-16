@@ -108,6 +108,10 @@
   grid-gap: 25px;
 }
 
+.IBMSMSMFSSContentPosts > *:last-child > * {
+    border-bottom:unset;
+}
+
 .btnMain.IBMSMSMFSSNavBtn.IBMSMSMFSSNavBtnAlt {
   padding: 5px 10px;
 }

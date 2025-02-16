@@ -29,12 +29,91 @@ export const FeedTabBlogs = () => {
   const [isLoadMoreVisible, setIsLoadMoreVisible] = useState(true)
   const [showing, setShowing] = useState(SHOWING_STEP)
 
+  useEffect(() => {
+    if (!userPubkey) return
+
+    setIsFetching(true)
+    setIsLoadMoreVisible(true)
+    const filter: NDKFilter = {
+      authors: [...followList, userPubkey],
+      kinds: [NDKKind.Article],
+      limit: 50
+    }
+
+    if (filterOptions.nsfw === NSFWFilter.Only_NSFW) {
+      filter['#L'] = ['content-warning']
+    }
+
+    if (filterOptions.source === window.location.host) {
+      filter['#r'] = [window.location.host]
+    }
+
+    ndk
+      .fetchEvents(filter, {
+        closeOnEose: true,
+        cacheUsage: NDKSubscriptionCacheUsage.PARALLEL
+      })
+      .then((ndkEventSet) => {
+        const ndkEvents = Array.from(ndkEventSet)
+        setBlogs(ndkEvents.map(extractBlogCardDetails))
+      })
+      .finally(() => {
+        setIsFetching(false)
+      })
+  }, [filterOptions.nsfw, filterOptions.source, followList, ndk, userPubkey])
+
+  const filteredBlogs = useMemo(() => {
+    let _blogs = blogs || []
+
+    // Add nsfw tag to blogs included in nsfwList
+    if (filterOptions.nsfw !== NSFWFilter.Hide_NSFW) {
+      _blogs = _blogs.map((b) => {
+        return !b.nsfw && b.aTag && nsfwList.includes(b.aTag)
+          ? { ...b, nsfw: true }
+          : b
+      })
+    }
+    // Filter nsfw (Hide_NSFW option)
+    _blogs = _blogs.filter(
+      (b) => !(b.nsfw && filterOptions.nsfw === NSFWFilter.Hide_NSFW)
+    )
+
+    _blogs = _blogs.filter(
+      (b) =>
+        !muteLists.admin.authors.includes(b.author!) &&
+        !muteLists.admin.replaceableEvents.includes(b.aTag!)
+    )
+
+    if (filterOptions.sort === SortBy.Latest) {
+      _blogs.sort((a, b) =>
+        a.published_at && b.published_at ? b.published_at - a.published_at : 0
+      )
+    } else if (filterOptions.sort === SortBy.Oldest) {
+      _blogs.sort((a, b) =>
+        a.published_at && b.published_at ? a.published_at - b.published_at : 0
+      )
+    }
+
+    showing > 0 && _blogs.splice(showing)
+    return _blogs
+  }, [
+    blogs,
+    filterOptions.nsfw,
+    filterOptions.sort,
+    muteLists.admin.authors,
+    muteLists.admin.replaceableEvents,
+    nsfwList,
+    showing
+  ])
+
+  if (!userPubkey) return null
+
   const handleLoadMore = () => {
     const LOAD_MORE_STEP = SHOWING_STEP * 2
     setShowing((prev) => prev + SHOWING_STEP)
     const lastBlog = filteredBlogs[filteredBlogs.length - 1]
     const filter: NDKFilter = {
-      authors: [...followList],
+      authors: [...followList, userPubkey],
       kinds: [NDKKind.Article],
       limit: LOAD_MORE_STEP
     }
@@ -84,82 +163,6 @@ export const FeedTabBlogs = () => {
       })
   }
 
-  useEffect(() => {
-    setIsFetching(true)
-    setIsLoadMoreVisible(true)
-    const filter: NDKFilter = {
-      authors: [...followList],
-      kinds: [NDKKind.Article],
-      limit: 50
-    }
-
-    if (filterOptions.nsfw === NSFWFilter.Only_NSFW) {
-      filter['#L'] = ['content-warning']
-    }
-
-    if (filterOptions.source === window.location.host) {
-      filter['#r'] = [window.location.host]
-    }
-
-    ndk
-      .fetchEvents(filter, {
-        closeOnEose: true,
-        cacheUsage: NDKSubscriptionCacheUsage.PARALLEL
-      })
-      .then((ndkEventSet) => {
-        const ndkEvents = Array.from(ndkEventSet)
-        setBlogs(ndkEvents.map(extractBlogCardDetails))
-      })
-      .finally(() => {
-        setIsFetching(false)
-      })
-  }, [filterOptions.nsfw, filterOptions.source, followList, ndk])
-
-  const filteredBlogs = useMemo(() => {
-    let _blogs = blogs || []
-
-    // Add nsfw tag to blogs included in nsfwList
-    if (filterOptions.nsfw !== NSFWFilter.Hide_NSFW) {
-      _blogs = _blogs.map((b) => {
-        return !b.nsfw && b.aTag && nsfwList.includes(b.aTag)
-          ? { ...b, nsfw: true }
-          : b
-      })
-    }
-    // Filter nsfw (Hide_NSFW option)
-    _blogs = _blogs.filter(
-      (b) => !(b.nsfw && filterOptions.nsfw === NSFWFilter.Hide_NSFW)
-    )
-
-    _blogs = _blogs.filter(
-      (b) =>
-        !muteLists.admin.authors.includes(b.author!) &&
-        !muteLists.admin.replaceableEvents.includes(b.aTag!)
-    )
-
-    if (filterOptions.sort === SortBy.Latest) {
-      _blogs.sort((a, b) =>
-        a.published_at && b.published_at ? b.published_at - a.published_at : 0
-      )
-    } else if (filterOptions.sort === SortBy.Oldest) {
-      _blogs.sort((a, b) =>
-        a.published_at && b.published_at ? a.published_at - b.published_at : 0
-      )
-    }
-
-    showing > 0 && _blogs.splice(showing)
-    return _blogs
-  }, [
-    blogs,
-    filterOptions.nsfw,
-    filterOptions.sort,
-    muteLists.admin.authors,
-    muteLists.admin.replaceableEvents,
-    nsfwList,
-    showing
-  ])
-
-  if (!userPubkey) return null
   return (
     <>
       {isFetching && (
