@@ -26,7 +26,11 @@ export const FeedLayout = () => {
                 <div className='IBMSMSplitMainFullSideFWMid'>
                   <Outlet />
                 </div>
-                <div className='IBMSMSplitMainFullSideFWSide'></div>
+                <div className='IBMSMSplitMainFullSideFWSide'>
+                  <div className='IBMSMSplitMainSmallSideSecWrapper'>
+                    <div className='IBMSMSplitMainSmallSideSecBox'><p>This is a box</p></div>
+                  </div>
+                </div>
               </div>
             </div>
           </div>
