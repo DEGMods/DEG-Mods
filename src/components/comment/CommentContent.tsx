@@ -3,9 +3,13 @@ import { useTextLimit } from 'hooks'
 
 interface CommentContentProps {
   content: string
+  isNsfw?: boolean
 }
 
-export const CommentContent = ({ content }: CommentContentProps) => {
+export const CommentContent = ({
+  content,
+  isNsfw = false
+}: CommentContentProps) => {
   const { text, isTextOverflowing, isExpanded, toggle } = useTextLimit(content)
 
   return (
@@ -18,12 +22,17 @@ export const CommentContent = ({ content }: CommentContentProps) => {
           <p>Hide full post</p>
         </div>
       )}
-      <p className='IBMSMSMBSSCL_CBText'>
+      <div className='IBMSMSMBSSCL_CBText'>
         <NoteRender content={text} />
-      </p>
-      {isTextOverflowing && (
+      </div>
+      {isTextOverflowing && !isExpanded && (
         <div className='IBMSMSMBSSCL_CBExpand' onClick={toggle}>
-          <p>{isExpanded ? 'Hide' : 'View'} full post</p>
+          <p>View full post</p>
+        </div>
+      )}
+      {isNsfw && (
+        <div className='IBMSMSMBSSCL_CommentNSWFTag'>
+          <p>NSFW</p>
         </div>
       )}
     </>

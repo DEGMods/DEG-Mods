@@ -2,10 +2,16 @@ import { useEffect } from 'react'
 
 export const useBodyScrollDisable = (disable: boolean) => {
   useEffect(() => {
-    if (disable) document.body.style.overflow = 'hidden'
+    const initialOverflow = document.body.style.overflow
+
+    if (disable && initialOverflow !== 'hidden') {
+      document.body.style.overflow = 'hidden'
+    }
 
     return () => {
-      document.body.style.overflow = ''
+      if (initialOverflow !== 'hidden') {
+        document.body.style.overflow = initialOverflow
+      }
     }
   }, [disable])
 }

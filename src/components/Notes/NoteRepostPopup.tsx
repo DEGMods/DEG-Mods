@@ -7,7 +7,7 @@ import { CommentContent } from 'components/comment/CommentContent'
 import { getProfilePageRoute } from 'routes'
 import { nip19 } from 'nostr-tools'
 import { UserProfile } from 'types'
-import { hexToNpub } from 'utils'
+import { hexToNpub, log, LogType } from 'utils'
 import { formatDate } from 'date-fns'
 
 interface NoteRepostProps {
@@ -28,8 +28,16 @@ export const NoteRepostPopup = ({
 
   useDidMount(async () => {
     const repost = await ndkEvent.repost(false)
-    setContent(JSON.parse(repost.content).content)
     ndkEvent.author.fetchProfile().then((res) => setProfile(res))
+    try {
+      setContent(JSON.parse(repost.content).content)
+    } catch (error) {
+      if (error instanceof SyntaxError) {
+        log(true, LogType.Error, 'Repost event content malformed', error)
+      } else {
+        log(true, LogType.Error, error)
+      }
+    }
   })
 
   const profileRoute = getProfilePageRoute(

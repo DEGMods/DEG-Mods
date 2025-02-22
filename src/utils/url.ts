@@ -60,6 +60,16 @@ export const isValidImageUrl = (url: string) => {
   return regex.test(url)
 }
 
+export const isValidVideoUrl = (url: string) => {
+  const regex = /\.(mp4|mkv|webm|mov)$/
+  return regex.test(url)
+}
+
+export const isValidAudioUrl = (url: string) => {
+  const regex = /\.(mp3|wav|ogg|aac)$/
+  return regex.test(url)
+}
+
 export const isReachable = async (url: string) => {
   try {
     const response = await fetch(url, { method: 'HEAD' })

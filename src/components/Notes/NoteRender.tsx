@@ -6,67 +6,108 @@ import { Fragment } from 'react/jsx-runtime'
 import { BlogPreview } from './internal/BlogPreview'
 import { ModPreview } from './internal/ModPreview'
 import { NoteWrapper } from './internal/NoteWrapper'
+import {
+  isValidAudioUrl,
+  isValidImageUrl,
+  isValidUrl,
+  isValidVideoUrl
+} from 'utils'
 
 interface NoteRenderProps {
   content: string
 }
 const link =
-  /(?:https?:\/\/|www\.)(?:[a-zA-Z0-9.-]+\.[a-zA-Z]+(?::\d+)?)(?:[/?#][\p{L}\p{N}\p{M}&.-/?=#\-@%+_,:!~*]*)?/gu
+  /(?:https?:\/\/|www\.)(?:[a-zA-Z0-9.-]+\.[a-zA-Z]+(?::\d+)?)(?:[/?#][\p{L}\p{N}\p{M}&.-/?=#\-@%+_,:!~*]*)?/u
 const nostrMention =
-  /(?:nostr:|@)?(?:npub|note|nprofile|nevent|naddr)1[qpzry9x8gf2tvdw0s3jn54khce6mua7l]{58,}/gi
+  /(?:nostr:|@)?(?:npub|note|nprofile|nevent|naddr)1[qpzry9x8gf2tvdw0s3jn54khce6mua7l]{58,}/i
 const nostrEntity =
-  /(npub|note|nprofile|nevent|naddr)1[qpzry9x8gf2tvdw0s3jn54khce6mua7l]{58,}/gi
+  /(npub|note|nprofile|nevent|naddr)1[qpzry9x8gf2tvdw0s3jn54khce6mua7l]{58,}/i
+const nostrNip05Mention = /(?:nostr:|@)[^\s]{1,64}@[^\s]+\.[^\s]{2,}/i
+const nip05Entity = /(?:nostr:|@)([^\s]{1,64}@[^\s]+\.[^\s]{2,})/i
 
 export const NoteRender = ({ content }: NoteRenderProps) => {
   const _content = useMemo(() => {
     if (!content) return
 
     const parts = content.split(
-      new RegExp(`(${link.source})|(${nostrMention.source})`, 'gui')
+      new RegExp(
+        `(${link.source})|(${nostrMention.source})|(${nostrNip05Mention.source})`,
+        'gui'
+      )
     )
 
-    const _parts = parts.map((part, index) => {
-      if (link.test(part)) {
-        const [href] = part.match(link) || []
-        return (
-          <a key={index} href={href}>
-            {href}
-          </a>
-        )
-      } else if (nostrMention.test(part)) {
-        const [encoded] = part.match(nostrEntity) || []
+    const _parts = parts
+      .filter((p) => typeof p !== 'undefined')
+      .map((part, index) => {
+        const key = `${index}-${part}`
+        if (link.test(part)) {
+          const [href] = part.match(link) || []
 
-        if (!encoded) return part
-
-        try {
-          const decoded = nip19.decode(encoded)
-
-          switch (decoded.type) {
-            case 'nprofile':
-              return <ProfileLink key={index} pubkey={decoded.data.pubkey} />
-            case 'npub':
-              return <ProfileLink key={index} pubkey={decoded.data} />
-            case 'note':
-              return <NoteWrapper key={index} noteEntity={encoded} />
-            case 'nevent':
-              return <NoteWrapper key={index} noteEntity={encoded} />
-            case 'naddr':
+          if (href && isValidUrl(href)) {
+            if (isValidImageUrl(href)) {
+              // Image
               return (
-                <Fragment key={index}>
-                  {handleNaddr(decoded.data, part)}
-                </Fragment>
+                <img key={key} className='imgFeedRender' src={href} alt='' />
               )
-
-            default:
-              return part
+            } else if (isValidVideoUrl(href)) {
+              // Video
+              return (
+                <video
+                  key={key}
+                  className='videoFeedRender'
+                  src={href}
+                  controls
+                />
+              )
+            } else if (isValidAudioUrl(href)) {
+              return <audio key={key} src={href} controls />
+            }
           }
-        } catch (error) {
-          return part
+
+          // Link
+          return (
+            <a key={key} target='_blank' href={href}>
+              {href}
+            </a>
+          )
+        } else if (nostrMention.test(part)) {
+          const [encoded] = part.match(nostrEntity) || []
+
+          if (!encoded) return part
+
+          try {
+            const decoded = nip19.decode(encoded)
+
+            switch (decoded.type) {
+              case 'nprofile':
+                return <ProfileLink key={key} pubkey={decoded.data.pubkey} />
+              case 'npub':
+                return <ProfileLink key={key} pubkey={decoded.data} />
+              case 'note':
+                return <NoteWrapper key={key} noteEntity={encoded} />
+              case 'nevent':
+                return <NoteWrapper key={key} noteEntity={encoded} />
+              case 'naddr':
+                return (
+                  <Fragment key={key}>
+                    {handleNaddr(decoded.data, part)}
+                  </Fragment>
+                )
+
+              default:
+                return part
+            }
+          } catch (error) {
+            return part
+          }
+        } else if (nostrNip05Mention.test(part)) {
+          const matches = nip05Entity.exec(part) || []
+          const nip05 = matches?.[1] || part
+          return <ProfileLink key={key} nip05={nip05} fallback={nip05} />
+        } else {
+          return <Fragment key={key}>{part}</Fragment>
         }
-      } else {
-        return part
-      }
-    })
+      })
     return _parts
   }, [content])
 

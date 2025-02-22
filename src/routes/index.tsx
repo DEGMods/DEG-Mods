@@ -109,7 +109,7 @@ export const routerWithNdkContext = (context: NDKContextType) =>
           children: [
             {
               path: ':nevent',
-              element: <CommentsPopup />,
+              element: <CommentsPopup title='Comment replies' />,
               loader: commentsLoader(context)
             }
           ],
@@ -136,7 +136,7 @@ export const routerWithNdkContext = (context: NDKContextType) =>
           children: [
             {
               path: ':nevent',
-              element: <CommentsPopup />,
+              element: <CommentsPopup title='Comment replies' />,
               loader: commentsLoader(context)
             }
           ],
@@ -209,7 +209,7 @@ export const routerWithNdkContext = (context: NDKContextType) =>
               children: [
                 {
                   path: ':note',
-                  element: <CommentsPopup />,
+                  element: <CommentsPopup title='Note and replies' />,
                   loader: commentsLoader(context)
                 }
               ]

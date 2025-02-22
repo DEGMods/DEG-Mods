@@ -1,11 +1,23 @@
-import { NDKEvent, NDKKind } from '@nostr-dev-kit/ndk'
+import NDK, { NDKEvent, NDKKind, NostrEvent } from '@nostr-dev-kit/ndk'
 import { NDKContextType } from 'contexts/NDKContext'
 import { ActionFunctionArgs, redirect } from 'react-router-dom'
 import { toast } from 'react-toastify'
 import { getFeedNotePageRoute } from 'routes'
 import { store } from 'store'
-import { NoteSubmitForm, NoteSubmitFormErrors } from 'types'
-import { log, LogType, now } from 'utils'
+import {
+  NoteAction,
+  NoteSubmitForm,
+  NoteSubmitFormErrors,
+  TimeoutError
+} from 'types'
+import {
+  log,
+  LogType,
+  NOTE_DRAFT_CACHE_KEY,
+  now,
+  removeLocalStorageItem,
+  timeout
+} from 'utils'
 
 export const feedPostRouteAction =
   (ndkContext: NDKContextType) =>
@@ -32,39 +44,36 @@ export const feedPostRouteAction =
       return null
     }
 
-    const formSubmit = (await request.json()) as NoteSubmitForm
-    const formErrors = validateFormData(formSubmit)
-
-    if (Object.keys(formErrors).length) return formErrors
-
-    const content = decodeURIComponent(formSubmit.content!)
-    const currentTimeStamp = now()
-
-    const ndkEvent = new NDKEvent(ndkContext.ndk, {
-      kind: NDKKind.Text,
-      created_at: currentTimeStamp,
-      content: content,
-      tags: [
-        ['L', 'source'],
-        ['l', window.location.host, 'source']
-      ],
-      pubkey: hexPubkey
-    })
-
+    let action: NoteAction | undefined
     try {
-      if (formSubmit.nsfw) ndkEvent.tags.push(['L', 'content-warning'])
+      action = (await request.json()) as NoteAction
+      switch (action.intent) {
+        case 'submit':
+          return await handleActionSubmit(
+            ndkContext.ndk,
+            action.data,
+            hexPubkey
+          )
 
-      await ndkEvent.sign()
-      const note1 = ndkEvent.encode()
-      const publishedOnRelays = await ndkEvent.publish()
-      if (publishedOnRelays.size === 0) {
-        toast.error('Failed to publish note on any relay')
-        return null
-      } else {
-        toast.success('Note published successfully')
-        return redirect(getFeedNotePageRoute(note1))
+        case 'repost':
+          return await handleActionRepost(
+            ndkContext.ndk,
+            action.data,
+            action.note1
+          )
+
+        default:
+          throw new Error('Unsupported feed action. Intent missing.')
       }
     } catch (error) {
+      if (action && error instanceof TimeoutError) {
+        log(true, LogType.Error, 'Failed to publish note. Try again initiated')
+        const result = {
+          type: 'timeout',
+          action
+        }
+        return result
+      }
       log(true, LogType.Error, 'Failed to publish note', error)
       toast.error('Failed to publish note')
       return null
@@ -79,4 +88,62 @@ const validateFormData = (formSubmit: NoteSubmitForm): NoteSubmitFormErrors => {
   }
 
   return errors
+}
+
+async function handleActionSubmit(
+  ndk: NDK,
+  data: NoteSubmitForm,
+  pubkey: string
+) {
+  const formErrors = validateFormData(data)
+
+  if (Object.keys(formErrors).length)
+    return {
+      type: 'validation',
+      formErrors
+    }
+
+  const content = decodeURIComponent(data.content!)
+  const currentTimeStamp = now()
+
+  const ndkEvent = new NDKEvent(ndk, {
+    kind: NDKKind.Text,
+    created_at: currentTimeStamp,
+    content: content,
+    tags: [
+      ['L', 'source'],
+      ['l', window.location.host, 'source']
+    ],
+    pubkey
+  })
+
+  if (data.nsfw) ndkEvent.tags.push(['L', 'content-warning'])
+
+  await ndkEvent.sign()
+  const note1 = ndkEvent.encode()
+  const publishedOnRelays = await Promise.race([
+    ndkEvent.publish(),
+    timeout(30000)
+  ])
+  if (publishedOnRelays.size === 0) {
+    toast.error('Failed to publish note on any relay')
+    return null
+  } else {
+    toast.success('Note published successfully')
+    removeLocalStorageItem(NOTE_DRAFT_CACHE_KEY)
+    return redirect(getFeedNotePageRoute(note1))
+  }
+}
+async function handleActionRepost(ndk: NDK, data: NostrEvent, note1: string) {
+  const ndkEvent = new NDKEvent(ndk, data)
+  await ndkEvent.sign()
+
+  const publishedOnRelays = await ndkEvent.publish()
+  if (publishedOnRelays.size === 0) {
+    toast.error('Failed to publish note on any relay')
+    return null
+  } else {
+    toast.success('Note published successfully')
+    return redirect(getFeedNotePageRoute(note1))
+  }
 }

@@ -1,7 +1,7 @@
 import { FALLBACK_PROFILE_IMAGE } from 'constants.ts'
 import { Event, Filter, kinds, nip19, UnsignedEvent } from 'nostr-tools'
 import { QRCodeSVG } from 'qrcode.react'
-import { useState } from 'react'
+import { Fragment, useMemo, useState } from 'react'
 import { Link } from 'react-router-dom'
 import { toast } from 'react-toastify'
 import {
@@ -577,32 +577,57 @@ const FollowButton = ({ pubkey }: FollowButtonProps) => {
   )
 }
 
-export const ProfileLink = ({ pubkey }: Props) => {
-  let hexPubkey: string | null = null
-  let profileRoute: string | undefined = appRoutes.home
-  let nprofile: string | undefined
-  const npub = hexToNpub(pubkey)
-
-  try {
-    hexPubkey = npubToHex(pubkey)
-
-    if (hexPubkey) {
-      nprofile = hexPubkey
-        ? nip19.nprofileEncode({
-            pubkey: hexPubkey
-          })
-        : undefined
-    }
-  } catch (error) {
-    // Silently ignore
-    log(true, LogType.Error, 'Failed to encode profile.', error)
-  }
-
-  profileRoute = nprofile ? getProfilePageRoute(nprofile) : appRoutes.home
-  const profile = useProfile(hexPubkey!, {
+type ProfileLinkProps = {
+  pubkey?: string
+  nip05?: string
+  fallback?: string
+}
+export const ProfileLink = ({ pubkey, nip05, fallback }: ProfileLinkProps) => {
+  const { ndk } = useNDKContext()
+  const [hexPubkey, setHexPubkey] = useState<string>()
+  const profile = useProfile(hexPubkey, {
     cacheUsage: NDKSubscriptionCacheUsage.PARALLEL
   })
 
-  const displayName = profile?.displayName || profile?.name || truncate(npub)
+  useDidMount(async () => {
+    if (pubkey) {
+      setHexPubkey(npubToHex(pubkey)!)
+    } else if (nip05) {
+      ndk.getUserFromNip05(nip05).then((user) => {
+        if (user?.pubkey) {
+          setHexPubkey(npubToHex(user.pubkey)!)
+        }
+      })
+    }
+  })
+
+  const profileRoute = useMemo(() => {
+    let nprofile: string | undefined
+    try {
+      if (hexPubkey) {
+        nprofile = hexPubkey
+          ? nip19.nprofileEncode({
+              pubkey: hexPubkey
+            })
+          : undefined
+      }
+    } catch (error) {
+      // Silently ignore
+      log(true, LogType.Error, 'Failed to encode profile.', error)
+    }
+
+    return nprofile ? getProfilePageRoute(nprofile) : undefined
+  }, [hexPubkey])
+
+  const displayName = useMemo(() => {
+    const npub = hexPubkey ? hexToNpub(hexPubkey) : ''
+    const displayName = profile?.displayName || profile?.name || truncate(npub)
+    return displayName
+  }, [hexPubkey, profile?.displayName, profile?.name])
+
+  if (!hexPubkey) return <Fragment>{fallback}</Fragment>
+
+  if (!profileRoute) return <Fragment>@{displayName}</Fragment>
+
   return <Link to={profileRoute}>@{displayName}</Link>
 }

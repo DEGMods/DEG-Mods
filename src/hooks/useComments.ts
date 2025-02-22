@@ -82,11 +82,49 @@ export const useComments = (
       )
 
       subscription.on('event', (ndkEvent) => {
+        const eTags = ndkEvent.getMatchingTags('e')
+        const aTags = ndkEvent.getMatchingTags('a')
+
+        // This event is not a reply to, nor does it refer to any other event
+        if (!aTags.length && !eTags.length) return
+
         setCommentEvents((prev) => {
-          if (prev.find((e) => e.event.id === ndkEvent.id)) {
+          if (ndkEvent.kind === NDKKind.Text) {
+            // Resolve comments with markers and positional "e" tags
+            // https://github.com/nostr-protocol/nips/blob/master/10.md
+            const root = ndkEvent.getMatchingTags('e', 'root')
+            const replies = ndkEvent.getMatchingTags('e', 'reply')
+
+            // This event has reply markers but does not match eTag
+            if (replies.length && !replies.some((e) => eTag === e[1])) {
+              return [...prev]
+            }
+
+            // This event has a single #e tag reference
+            // Checks single marked event (root) and a single positional "e" tags
+            // Allow if either old kind 1 reply to addressable or matches eTag
+            if (eTags.length === 1 && !(aTag || eTag === eTags[0][1])) {
+              return [...prev]
+            }
+
+            // Position "e" tags (no markets)
+            // Multiple e tags, checks the last "e" tag
+            // Last "e" tag does not match eTag
+            if (
+              root.length + replies.length === 0 &&
+              eTags.length > 1 &&
+              eTags[eTags.length - 1][1] !== eTag
+            ) {
+              return [...prev]
+            }
+          }
+
+          // Event is already included
+          if (prev.find((comment) => comment.event.id === ndkEvent.id)) {
             return [...prev]
           }
 
+          // Event is a direct reply
           return [{ event: ndkEvent }, ...prev]
         })
       })

@@ -9,16 +9,22 @@ import { Reactions } from 'components/comment/Reactions'
 import { Zap } from 'components/comment/Zap'
 import { Dots } from 'components/Spinner'
 import { formatDate } from 'date-fns'
-import { useAppSelector, useDidMount, useNDKContext } from 'hooks'
+import {
+  useAppSelector,
+  useDidMount,
+  useLocalStorage,
+  useNDKContext
+} from 'hooks'
 import { useComments } from 'hooks/useComments'
 import { nip19 } from 'nostr-tools'
 import { useState } from 'react'
-import { Link } from 'react-router-dom'
+import { Link, useNavigation, useSubmit } from 'react-router-dom'
 import { appRoutes, getProfilePageRoute } from 'routes'
-import { UserProfile } from 'types'
-import { hexToNpub } from 'utils'
+import { FeedPostsFilter, NSFWFilter, UserProfile } from 'types'
+import { DEFAULT_FILTER_OPTIONS, hexToNpub, log, LogType } from 'utils'
 import { NoteRepostPopup } from './NoteRepostPopup'
 import { NoteQuoteRepostPopup } from './NoteQuoteRepostPopup'
+import { NsfwCommentWrapper } from 'components/NsfwCommentWrapper'
 
 interface NoteProps {
   ndkEvent: NDKEvent
@@ -26,10 +32,20 @@ interface NoteProps {
 
 export const Note = ({ ndkEvent }: NoteProps) => {
   const { ndk } = useNDKContext()
+  const submit = useSubmit()
+  const navigation = useNavigation()
   const userState = useAppSelector((state) => state.user)
   const userPubkey = userState.user?.pubkey as string | undefined
   const [eventProfile, setEventProfile] = useState<UserProfile>()
   const isRepost = ndkEvent.kind === NDKKind.Repost
+  const filterKey = 'filter-feed-2'
+  const [filterOptions] = useLocalStorage<FeedPostsFilter>(
+    filterKey,
+    DEFAULT_FILTER_OPTIONS
+  )
+  const isNsfw = ndkEvent
+    .getMatchingTags('L')
+    .some((t) => t[1] === 'content-warning')
   const [repostEvent, setRepostEvent] = useState<NDKEvent | undefined>()
   const [repostProfile, setRepostProfile] = useState<UserProfile | undefined>()
   const noteEvent = repostEvent ?? ndkEvent
@@ -48,10 +64,26 @@ export const Note = ({ ndkEvent }: NoteProps) => {
     ndkEvent.author.fetchProfile().then((res) => setEventProfile(res))
 
     if (isRepost) {
-      const parsedEvent = JSON.parse(ndkEvent.content)
-      const ndkRepostEvent = new NDKEvent(ndk, parsedEvent)
-      setRepostEvent(ndkRepostEvent)
-      ndkRepostEvent.author.fetchProfile().then((res) => setRepostProfile(res))
+      try {
+        const parsedEvent = JSON.parse(ndkEvent.content)
+        const ndkRepostEvent = new NDKEvent(ndk, parsedEvent)
+        setRepostEvent(ndkRepostEvent)
+        ndkRepostEvent.author
+          .fetchProfile()
+          .then((res) => setRepostProfile(res))
+      } catch (error) {
+        if (error instanceof SyntaxError) {
+          log(
+            true,
+            LogType.Error,
+            'Event content malformed',
+            error,
+            ndkEvent.content
+          )
+        } else {
+          log(true, LogType.Error, error)
+        }
+      }
     }
 
     const repostFilter: NDKFilter = {
@@ -109,8 +141,6 @@ export const Note = ({ ndkEvent }: NoteProps) => {
 
   const baseUrl = appRoutes.feed + '/'
 
-  // Did user already repost this
-
   // Show who reposted the note
   const reposterVisual =
     repostEvent && reposterRoute ? (
@@ -138,13 +168,26 @@ export const Note = ({ ndkEvent }: NoteProps) => {
     ) : null
 
   const handleRepost = async (confirm: boolean) => {
+    if (navigation.state !== 'idle') return
+
     setShowRepostPopup(false)
 
     // Cancel if not confirmed
     if (!confirm) return
 
     const repostNdkEvent = await ndkEvent.repost(false)
-    await repostNdkEvent.sign()
+    const rawEvent = repostNdkEvent.rawEvent()
+    submit(
+      JSON.stringify({
+        intent: 'repost',
+        note1: ndkEvent.encode(),
+        data: rawEvent
+      }),
+      {
+        method: 'post',
+        encType: 'application/json'
+      }
+    )
   }
 
   // Is this user's repost?
@@ -178,19 +221,31 @@ export const Note = ({ ndkEvent }: NoteProps) => {
             </div>
             {noteEvent.created_at && (
               <div className='IBMSMSMBSSCL_CommentActionsDetails'>
-                <a className='IBMSMSMBSSCL_CADTime'>
+                <Link
+                  to={baseUrl + noteEvent.encode()}
+                  className='IBMSMSMBSSCL_CADTime'
+                >
                   {formatDate(noteEvent.created_at * 1000, 'hh:mm aa')}{' '}
-                </a>
-                <a className='IBMSMSMBSSCL_CADDate'>
+                </Link>
+                <Link
+                  to={baseUrl + noteEvent.encode()}
+                  className='IBMSMSMBSSCL_CADDate'
+                >
                   {formatDate(noteEvent.created_at * 1000, 'dd/MM/yyyy')}
-                </a>
+                </Link>
               </div>
             )}
           </div>
         </div>
-        <div className='IBMSMSMBSSCL_CommentBottom'>
-          <CommentContent content={noteEvent.content} />
-        </div>
+        <NsfwCommentWrapper
+          id={ndkEvent.id}
+          isNsfw={isNsfw}
+          hideNsfwActive={NSFWFilter.Hide_NSFW === filterOptions.nsfw}
+        >
+          <div className='IBMSMSMBSSCL_CommentBottom'>
+            <CommentContent content={noteEvent.content} isNsfw={isNsfw} />
+          </div>
+        </NsfwCommentWrapper>
         <div className='IBMSMSMBSSCL_CommentActions'>
           <div className='IBMSMSMBSSCL_CommentActionsInside'>
             <Reactions {...noteEvent.rawEvent()} />

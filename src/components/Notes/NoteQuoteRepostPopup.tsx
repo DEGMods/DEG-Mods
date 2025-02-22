@@ -46,7 +46,7 @@ export const NoteQuoteRepostPopup = ({
                     Quote repost this?
                   </label>
                   <NoteSubmit
-                    initialContent={`\n\n:${content}`}
+                    initialContent={`\n\n${content}`}
                     handleClose={handleClose}
                   />
                 </div>

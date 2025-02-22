@@ -32,6 +32,8 @@ export const NoteWrapper = ({ noteEntity }: NoteWrapperProps) => {
 
   if (!note) return <Dots />
 
+  const baseUrl = appRoutes.feed + '/'
+
   return (
     <div className='IBMSMSMBSSCL_CommentQP'>
       <div className='IBMSMSMBSSCL_Comment'>
@@ -58,12 +60,18 @@ export const NoteWrapper = ({ noteEntity }: NoteWrapperProps) => {
             </div>
             {note.created_at && (
               <div className='IBMSMSMBSSCL_CommentActionsDetails'>
-                <a className='IBMSMSMBSSCL_CADTime'>
+                <Link
+                  to={baseUrl + noteEntity}
+                  className='IBMSMSMBSSCL_CADTime'
+                >
                   {formatDate(note.created_at * 1000, 'hh:mm aa')}{' '}
-                </a>
-                <a className='IBMSMSMBSSCL_CADDate'>
+                </Link>
+                <Link
+                  to={baseUrl + noteEntity}
+                  className='IBMSMSMBSSCL_CADDate'
+                >
                   {formatDate(note.created_at * 1000, 'dd/MM/yyyy')}
-                </a>
+                </Link>
               </div>
             )}
           </div>

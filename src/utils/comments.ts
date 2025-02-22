@@ -104,3 +104,5 @@ export function handleCommentSubmit(
     }
   }
 }
+
+export const NOTE_DRAFT_CACHE_KEY = 'draft-note'

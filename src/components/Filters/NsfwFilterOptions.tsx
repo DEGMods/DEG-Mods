@@ -7,9 +7,13 @@ import { DEFAULT_FILTER_OPTIONS } from 'utils'
 
 interface NsfwFilterOptionsProps {
   filterKey: string
+  skipOnlyNsfw?: boolean
 }
 
-export const NsfwFilterOptions = ({ filterKey }: NsfwFilterOptionsProps) => {
+export const NsfwFilterOptions = ({
+  filterKey,
+  skipOnlyNsfw
+}: NsfwFilterOptionsProps) => {
   const [, setFilterOptions] = useLocalStorage<FilterOptions>(
     filterKey,
     DEFAULT_FILTER_OPTIONS
@@ -30,29 +34,34 @@ export const NsfwFilterOptions = ({ filterKey }: NsfwFilterOptionsProps) => {
 
   return (
     <>
-      {Object.values(NSFWFilter).map((item, index) => (
-        <Option
-          key={`nsfwFilterItem-${index}`}
-          onClick={() => {
-            // Trigger NSFW popup
-            if (
-              (item === NSFWFilter.Only_NSFW ||
-                item === NSFWFilter.Show_NSFW) &&
-              !confirmNsfw
-            ) {
-              setSelectedNsfwOption(item)
-              setShowNsfwPopup(true)
-            } else {
-              setFilterOptions((prev) => ({
-                ...prev,
-                nsfw: item
-              }))
-            }
-          }}
-        >
-          {item}
-        </Option>
-      ))}
+      {Object.values(NSFWFilter).map((item, index) => {
+        // Posts feed filter exception
+        if (item === NSFWFilter.Only_NSFW && skipOnlyNsfw) return null
+
+        return (
+          <Option
+            key={`nsfwFilterItem-${index}`}
+            onClick={() => {
+              // Trigger NSFW popup
+              if (
+                (item === NSFWFilter.Only_NSFW ||
+                  item === NSFWFilter.Show_NSFW) &&
+                !confirmNsfw
+              ) {
+                setSelectedNsfwOption(item)
+                setShowNsfwPopup(true)
+              } else {
+                setFilterOptions((prev) => ({
+                  ...prev,
+                  nsfw: item
+                }))
+              }
+            }}
+          >
+            {item}
+          </Option>
+        )
+      })}
       {showNsfwPopup && (
         <NsfwAlertPopup
           handleConfirm={handleConfirm}

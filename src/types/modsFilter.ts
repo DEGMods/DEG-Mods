@@ -40,3 +40,5 @@ export interface FilterOptions {
   wot: WOTFilterOptions
   repost: RepostFilter
 }
+
+export type FeedPostsFilter = Pick<FilterOptions, 'nsfw' | 'repost'>
