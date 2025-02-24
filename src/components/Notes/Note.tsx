@@ -43,14 +43,18 @@ export const Note = ({ ndkEvent }: NoteProps) => {
     filterKey,
     DEFAULT_FILTER_OPTIONS
   )
-  const isNsfw = ndkEvent
-    .getMatchingTags('L')
-    .some((t) => t[1] === 'content-warning')
   const [repostEvent, setRepostEvent] = useState<NDKEvent | undefined>()
   const [repostProfile, setRepostProfile] = useState<UserProfile | undefined>()
   const noteEvent = repostEvent ?? ndkEvent
+  const isNsfw = noteEvent
+    .getMatchingTags('L')
+    .some((t) => t[1] === 'content-warning')
   const noteProfile = repostProfile ?? eventProfile
-  const { commentEvents } = useComments(ndkEvent.pubkey, undefined, ndkEvent.id)
+  const { commentEvents } = useComments(
+    noteEvent.pubkey,
+    undefined,
+    noteEvent.id
+  )
   const [quoteRepostEvents, setQuoteRepostEvents] = useState<NDKEvent[]>([])
   const [hasQuoted, setHasQuoted] = useState(false)
   const [repostEvents, setRepostEvents] = useState<NDKEvent[]>([])
@@ -175,7 +179,7 @@ export const Note = ({ ndkEvent }: NoteProps) => {
     // Cancel if not confirmed
     if (!confirm) return
 
-    const repostNdkEvent = await ndkEvent.repost(false)
+    const repostNdkEvent = await noteEvent.repost(false)
     const rawEvent = repostNdkEvent.rawEvent()
     submit(
       JSON.stringify({
@@ -238,7 +242,7 @@ export const Note = ({ ndkEvent }: NoteProps) => {
           </div>
         </div>
         <NsfwCommentWrapper
-          id={ndkEvent.id}
+          id={noteEvent.id}
           isNsfw={isNsfw}
           hideNsfwActive={NSFWFilter.Hide_NSFW === filterOptions.nsfw}
         >
@@ -277,7 +281,7 @@ export const Note = ({ ndkEvent }: NoteProps) => {
             </div>
             {showQuoteRepostPopup && (
               <NoteQuoteRepostPopup
-                ndkEvent={repostEvent || ndkEvent}
+                ndkEvent={noteEvent}
                 handleClose={() => setShowQuoteRepostPopup(false)}
               />
             )}
@@ -314,7 +318,7 @@ export const Note = ({ ndkEvent }: NoteProps) => {
             )}
             {showRepostPopup && (
               <NoteRepostPopup
-                ndkEvent={repostEvent || ndkEvent}
+                ndkEvent={noteEvent}
                 handleConfirm={handleRepost}
                 handleClose={() => setShowRepostPopup(false)}
               />

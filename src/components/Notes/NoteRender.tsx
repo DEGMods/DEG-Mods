@@ -7,10 +7,12 @@ import { BlogPreview } from './internal/BlogPreview'
 import { ModPreview } from './internal/ModPreview'
 import { NoteWrapper } from './internal/NoteWrapper'
 import {
+  getIdFromYoutubeLink,
   isValidAudioUrl,
   isValidImageUrl,
   isValidUrl,
-  isValidVideoUrl
+  isValidVideoUrl,
+  isYoutubeLink
 } from 'utils'
 
 interface NoteRenderProps {
@@ -61,6 +63,24 @@ export const NoteRender = ({ content }: NoteRenderProps) => {
               )
             } else if (isValidAudioUrl(href)) {
               return <audio key={key} src={href} controls />
+            } else if (isYoutubeLink(href)) {
+              // Youtube
+              const id = getIdFromYoutubeLink(href)
+              if (id) {
+                return (
+                  <iframe
+                    key={key}
+                    className='videoFeedRender'
+                    title='Video embed'
+                    width='560'
+                    height='315'
+                    src={`https://www.youtube.com/embed/${id}`}
+                    frameBorder='0'
+                    allow='accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share'
+                    allowFullScreen
+                  ></iframe>
+                )
+              }
             }
           }
 

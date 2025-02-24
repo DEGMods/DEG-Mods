@@ -70,6 +70,43 @@ export const isValidAudioUrl = (url: string) => {
   return regex.test(url)
 }
 
+export const isYoutubeLink = (url: string) => {
+  const _url = new URL(url)
+  return [
+    'm.youtube.com',
+    'youtube.com',
+    'www.youtube.com',
+    'youtube-nocookie.com',
+    'www.youtube-nocookie.com',
+    'youtu.be',
+    'music.youtube.com'
+  ].includes(_url.hostname)
+}
+
+const YOUTUBE_SIMPLE_REGEX =
+  /(?:youtube(?:-nocookie)?\.com|youtu\.be)\/(?:(watch|v|e|embed|shorts|live)\/)?(?:attribution_link\?a=.*watch(?:%3Fv%3D))?(?<id>[\w-]+)/
+export const getIdFromYoutubeLink = (url: string): string | null => {
+  if (!isYoutubeLink(url)) return null
+
+  const _url = new URL(url)
+
+  let id = _url.searchParams.get('v')
+
+  if (!id) {
+    // Handle oembed
+    const oembed = _url.searchParams.get('url')
+    if (oembed && isYoutubeLink(oembed)) {
+      id = getIdFromYoutubeLink(oembed)
+    } else if (YOUTUBE_SIMPLE_REGEX.test(url)) {
+      // Handle everything else
+      const matches = url.match(YOUTUBE_SIMPLE_REGEX)
+      if (matches?.groups?.id) id = matches?.groups.id
+    }
+  }
+
+  return id
+}
+
 export const isReachable = async (url: string) => {
   try {
     const response = await fetch(url, { method: 'HEAD' })
