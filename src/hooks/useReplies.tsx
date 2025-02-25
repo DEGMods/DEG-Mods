@@ -3,9 +3,10 @@ import {
   NDKKind,
   NDKSubscriptionCacheUsage
 } from '@nostr-dev-kit/ndk'
-import { useState } from 'react'
+import { useMemo, useState } from 'react'
 import { useNDKContext } from './useNDKContext'
 import { useDidMount } from './useDidMount'
+import _ from 'lodash'
 
 export const useReplies = (eTag: string | undefined) => {
   const { ndk } = useNDKContext()
@@ -34,9 +35,10 @@ export const useReplies = (eTag: string | undefined) => {
           if (p.findIndex((p) => p.id === previousReply.id) === -1) {
             p.push(previousReply)
           }
-          return p
+          return [...p]
         })
-        eDepth = previousReply.tagValue('e')
+        const eTags = previousReply.getMatchingTags('e')
+        eDepth = _.last(eTags)?.[1]
       } else {
         eDepth = undefined
       }
@@ -44,10 +46,35 @@ export const useReplies = (eTag: string | undefined) => {
     setIsComplete(true)
   })
 
+  const rootEvent = useMemo(() => {
+    let rootETag: string | undefined
+    for (const r of replies) {
+      const root = r.getMatchingTags('e', 'root')
+      if (root.length) {
+        rootETag = root[0][1]
+        break
+      }
+    }
+    const rootEvent = replies.find((r) => r.id === rootETag)
+
+    // Root: first reply/comment, target of "Main Post"
+    // - addr: first comment
+    // - notes: root comment (marker)
+    return rootEvent
+      ? rootEvent
+      : isComplete
+      ? replies[replies.length - 1]
+      : undefined
+  }, [isComplete, replies])
+
+  const parentEvent = useMemo(() => {
+    return replies.length > 0 ? replies[0] : undefined
+  }, [replies])
+
   return {
     size: replies.length,
     isComplete,
-    parent: replies.length > 0 ? replies[0] : undefined,
-    root: isComplete ? replies[replies.length - 1] : undefined
+    parent: parentEvent,
+    root: rootEvent
   }
 }

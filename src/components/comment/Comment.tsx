@@ -28,6 +28,7 @@ import { nip19 } from 'nostr-tools'
 import { CommentContent } from './CommentContent'
 import { NoteQuoteRepostPopup } from 'components/Notes/NoteQuoteRepostPopup'
 import { NoteRepostPopup } from 'components/Notes/NoteRepostPopup'
+import { useComments } from 'hooks/useComments'
 
 interface CommentProps {
   comment: CommentEvent
@@ -48,7 +49,10 @@ export const Comment = ({ comment }: CommentProps) => {
     : isNote
     ? `${appRoutes.feed}/`
     : undefined
-  const [commentEvents, setCommentEvents] = useState<CommentEvent[]>([])
+  const userState = useAppSelector((state) => state.user)
+  const userPubkey = userState.user?.pubkey as string | undefined
+  const { commentEvents } = useComments(userPubkey, undefined, comment.event.id)
+
   const [profile, setProfile] = useState<UserProfile>()
 
   const submit = useSubmit()
@@ -59,23 +63,9 @@ export const Comment = ({ comment }: CommentProps) => {
   const [hasQuoted, setHasQuoted] = useState(false)
   const [showRepostPopup, setShowRepostPopup] = useState(false)
   const [showQuoteRepostPopup, setShowQuoteRepostPopup] = useState(false)
-  const userState = useAppSelector((state) => state.user)
-  const userPubkey = userState.user?.pubkey as string | undefined
+
   useDidMount(() => {
     comment.event.author.fetchProfile().then((res) => setProfile(res))
-    ndk
-      .fetchEvents({
-        kinds: [NDKKind.Text, NDKKind.GenericReply],
-        '#e': [comment.event.id]
-      })
-      .then((ndkEventsSet) => {
-        setCommentEvents(
-          Array.from(ndkEventsSet).map((ndkEvent) => ({
-            event: ndkEvent
-          }))
-        )
-      })
-
     const repostFilter: NDKFilter = {
       kinds: [NDKKind.Repost],
       '#e': [comment.event.id]
@@ -124,7 +114,6 @@ export const Comment = ({ comment }: CommentProps) => {
     submit(
       JSON.stringify({
         intent: 'repost',
-        note1: comment.event.encode(),
         data: rawEvent
       }),
       {

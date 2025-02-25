@@ -10,6 +10,7 @@ import { useEffect, useState } from 'react'
 import { CommentEvent, UserRelaysType } from 'types'
 import { log, LogType, timeout } from 'utils'
 import { useNDKContext } from './useNDKContext'
+import _ from 'lodash'
 
 export const useComments = (
   author: string | undefined,
@@ -103,18 +104,25 @@ export const useComments = (
             // This event has a single #e tag reference
             // Checks single marked event (root) and a single positional "e" tags
             // Allow if either old kind 1 reply to addressable or matches eTag
-            if (eTags.length === 1 && !(aTag || eTag === eTags[0][1])) {
+            if (eTags.length === 1 && !(aTag || eTag === _.first(eTags)?.[1])) {
               return [...prev]
             }
 
-            // Position "e" tags (no markets)
+            // Position "e" tags (no markers)
             // Multiple e tags, checks the last "e" tag
             // Last "e" tag does not match eTag
             if (
               root.length + replies.length === 0 &&
               eTags.length > 1 &&
-              eTags[eTags.length - 1][1] !== eTag
+              _.last(eTags)?.[1] !== eTag
             ) {
+              return [...prev]
+            }
+
+            // "e" tags with markets
+            // Multiple replies, checks the last "e" tag
+            // Only show direct replies
+            if (replies.length > 1 && _.last(replies)?.[1] !== eTag) {
               return [...prev]
             }
           }

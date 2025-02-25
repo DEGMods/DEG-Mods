@@ -14,7 +14,6 @@ export type NoteAction =
     }
   | {
       intent: 'repost'
-      note1: string
       data: NostrEvent
     }
 

@@ -1,7 +1,7 @@
 import { FALLBACK_PROFILE_IMAGE } from 'constants.ts'
 import { Event, Filter, kinds, nip19, UnsignedEvent } from 'nostr-tools'
 import { QRCodeSVG } from 'qrcode.react'
-import { Fragment, useMemo, useState } from 'react'
+import { Fragment, useEffect, useMemo, useState } from 'react'
 import { Link } from 'react-router-dom'
 import { toast } from 'react-toastify'
 import {
@@ -10,7 +10,7 @@ import {
   useDidMount,
   useNDKContext
 } from '../hooks'
-import { appRoutes, getProfilePageRoute } from '../routes'
+import { appRoutes, getFeedNotePageRoute, getProfilePageRoute } from '../routes'
 import '../styles/author.css'
 import '../styles/innerPage.css'
 import '../styles/socialPosts.css'
@@ -18,6 +18,8 @@ import { UserRelaysType } from '../types'
 import {
   copyTextToClipboard,
   hexToNpub,
+  isValidImageUrl,
+  isValidUrl,
   log,
   LogType,
   now,
@@ -26,8 +28,12 @@ import {
 } from '../utils'
 import { LoadingSpinner } from './LoadingSpinner'
 import { ZapPopUp } from './Zap'
-import placeholder from '../assets/img/DEGMods Placeholder Img.png'
-import { NDKEvent, NDKSubscriptionCacheUsage } from '@nostr-dev-kit/ndk'
+import {
+  NDKEvent,
+  NDKFilter,
+  NDKKind,
+  NDKSubscriptionCacheUsage
+} from '@nostr-dev-kit/ndk'
 import { useProfile } from 'hooks/useProfile'
 import { createPortal } from 'react-dom'
 
@@ -36,55 +42,104 @@ type Props = {
 }
 
 export const ProfileSection = ({ pubkey }: Props) => {
+  const { ndk } = useNDKContext()
+  const profile = useProfile(pubkey, {
+    cacheUsage: NDKSubscriptionCacheUsage.PARALLEL
+  })
+  const displayName =
+    profile?.displayName || profile?.name || '[name not set up]'
+  const [posts, setPosts] = useState<Post[]>([])
+  useEffect(() => {
+    const filter: NDKFilter = {
+      authors: [pubkey],
+      kinds: [NDKKind.Text],
+      limit: 10
+    }
+    ndk
+      .fetchEvents(filter, {
+        closeOnEose: true,
+        cacheUsage: NDKSubscriptionCacheUsage.PARALLEL
+      })
+      .then((ndkEventSet) => {
+        const ndkEvents = Array.from(ndkEventSet)
+        const posts: Post[] = ndkEvents
+          .sort((a, b) => (b.created_at ?? 0) - (a.created_at ?? 0))
+          .map((ndkEvent) => ({
+            content: ndkEvent.content,
+            link: getFeedNotePageRoute(ndkEvent.encode()),
+            name: displayName
+          }))
+        posts.splice(5)
+        for (const post of posts) {
+          const imageUrls = post.content.match(
+            new RegExp(
+              /(?:https?:\/\/|www\.)(?:[a-zA-Z0-9.-]+\.[a-zA-Z]+(?::\d+)?)(?:[/?#][\p{L}\p{N}\p{M}&.-/?=#\-@%+_,:!~*]*)?/gu
+            )
+          )
+          if (imageUrls) {
+            for (const url of imageUrls) {
+              if (isValidUrl(url) && isValidImageUrl(url)) {
+                post.imageUrl = url
+                break
+              }
+            }
+          }
+        }
+        setPosts(posts)
+      })
+  }, [displayName, ndk, pubkey])
+
   return (
     <div className='IBMSMSplitMainSmallSide'>
       <div className='IBMSMSplitMainSmallSideSecWrapper'>
         <div className='IBMSMSplitMainSmallSideSec'>
           <Profile pubkey={pubkey} />
         </div>
-        <div className='IBMSMSplitMainSmallSideSec'>
-          <div className='IBMSMSMSSS_ShortPosts'>
-            {posts.map((post, index) => (
-              <a
-                key={'post' + index}
-                className='IBMSMSMSSS_ShortPostsPostLink'
-                href={post.link}
-              >
-                <div className='IBMSMSMSSS_ShortPostsPost'>
-                  <div className='IBMSMSMSSS_ShortPostsPost_Top'>
-                    <p className='IBMSMSMSSS_ShortPostsPost_TopName'>
-                      {post.name}
-                    </p>
-                    <div className='IBMSMSMSSS_ShortPostsPost_TopLink'>
-                      <svg
-                        xmlns='http://www.w3.org/2000/svg'
-                        viewBox='-32 0 512 512'
-                        width='1em'
-                        height='1em'
-                        fill='currentColor'
-                        className='IBMSMSMSSS_ShortPostsPost_TopLinkIcon'
-                        style={{ width: '100%', height: '100%' }}
-                      >
-                        <path d='M256 64C256 46.33 270.3 32 288 32H415.1C415.1 32 415.1 32 415.1 32C420.3 32 424.5 32.86 428.2 34.43C431.1 35.98 435.5 38.27 438.6 41.3C438.6 41.35 438.6 41.4 438.7 41.44C444.9 47.66 447.1 55.78 448 63.9C448 63.94 448 63.97 448 64V192C448 209.7 433.7 224 416 224C398.3 224 384 209.7 384 192V141.3L214.6 310.6C202.1 323.1 181.9 323.1 169.4 310.6C156.9 298.1 156.9 277.9 169.4 265.4L338.7 96H288C270.3 96 256 81.67 256 64V64zM0 128C0 92.65 28.65 64 64 64H160C177.7 64 192 78.33 192 96C192 113.7 177.7 128 160 128H64V416H352V320C352 302.3 366.3 288 384 288C401.7 288 416 302.3 416 320V416C416 451.3 387.3 480 352 480H64C28.65 480 0 451.3 0 416V128z'></path>
-                      </svg>
+        {posts.length > 0 && (
+          <div className='IBMSMSplitMainSmallSideSec'>
+            <div className='IBMSMSMSSS_ShortPosts'>
+              {posts.map((post, index) => (
+                <a
+                  key={'post' + index}
+                  className='IBMSMSMSSS_ShortPostsPostLink'
+                  href={post.link}
+                >
+                  <div className='IBMSMSMSSS_ShortPostsPost'>
+                    <div className='IBMSMSMSSS_ShortPostsPost_Top'>
+                      <p className='IBMSMSMSSS_ShortPostsPost_TopName'>
+                        {post.name}
+                      </p>
+                      <div className='IBMSMSMSSS_ShortPostsPost_TopLink'>
+                        <svg
+                          xmlns='http://www.w3.org/2000/svg'
+                          viewBox='-32 0 512 512'
+                          width='1em'
+                          height='1em'
+                          fill='currentColor'
+                          className='IBMSMSMSSS_ShortPostsPost_TopLinkIcon'
+                          style={{ width: '100%', height: '100%' }}
+                        >
+                          <path d='M256 64C256 46.33 270.3 32 288 32H415.1C415.1 32 415.1 32 415.1 32C420.3 32 424.5 32.86 428.2 34.43C431.1 35.98 435.5 38.27 438.6 41.3C438.6 41.35 438.6 41.4 438.7 41.44C444.9 47.66 447.1 55.78 448 63.9C448 63.94 448 63.97 448 64V192C448 209.7 433.7 224 416 224C398.3 224 384 209.7 384 192V141.3L214.6 310.6C202.1 323.1 181.9 323.1 169.4 310.6C156.9 298.1 156.9 277.9 169.4 265.4L338.7 96H288C270.3 96 256 81.67 256 64V64zM0 128C0 92.65 28.65 64 64 64H160C177.7 64 192 78.33 192 96C192 113.7 177.7 128 160 128H64V416H352V320C352 302.3 366.3 288 384 288C401.7 288 416 302.3 416 320V416C416 451.3 387.3 480 352 480H64C28.65 480 0 451.3 0 416V128z'></path>
+                        </svg>
+                      </div>
+                    </div>
+                    <div className='IBMSMSMSSS_ShortPostsPost_Bottom'>
+                      <p>{post.content}</p>
+                      {post.imageUrl && (
+                        <div
+                          className='IBMSMSMSSS_ShortPostsPost_BottomImg'
+                          style={{
+                            background: `linear-gradient(0deg, #232323 5%, rgba(255, 255, 255, 0)), url("${post.imageUrl}") top / cover no-repeat`
+                          }}
+                        ></div>
+                      )}
                     </div>
                   </div>
-                  <div className='IBMSMSMSSS_ShortPostsPost_Bottom'>
-                    <p>{post.content}</p>
-                    {post.imageUrl && (
-                      <div
-                        className='IBMSMSMSSS_ShortPostsPost_BottomImg'
-                        style={{
-                          background: `linear-gradient(0deg, #232323 5%, rgba(255, 255, 255, 0)), url("${post.imageUrl}") top / cover no-repeat`
-                        }}
-                      ></div>
-                    )}
-                  </div>
-                </div>
-              </a>
-            ))}
+                </a>
+              ))}
+            </div>
           </div>
-        </div>
+        )}
       </div>
     </div>
   )
@@ -221,25 +276,6 @@ interface Post {
   content: string
   imageUrl?: string
 }
-
-const posts: Post[] = [
-  {
-    name: 'User name',
-    link: `feed-note.html`,
-    content: `user text, this is a long string of temporary text that would be replaced with the user post from their short posts`
-  },
-  {
-    name: 'User name',
-    link: 'feed-note.html',
-    content: `user text, this is a long string of temporary text that would be replaced with the user post from their short posts`
-  },
-  {
-    name: 'User name',
-    link: `feed-note.html`,
-    content: `user text, this is a long string of temporary text that would be replaced with the user post from their short posts`,
-    imageUrl: placeholder
-  }
-]
 
 type QRButtonWithPopUpProps = {
   nprofile: string

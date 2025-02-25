@@ -60,6 +60,10 @@ export const NoteSubmit = ({
     })
   }, [content, nsfw, setCache])
 
+  useEffect(() => {
+    if (ref.current) adjustTextareaHeight(ref.current)
+  }, [content])
+
   const [showTryAgainPopup, setShowTryAgainPopup] = useState<boolean>(false)
   useEffect(() => {
     const isTimeout = actionData?.type === 'timeout'
@@ -85,6 +89,8 @@ export const NoteSubmit = ({
       setContent('')
       setNsfw(false)
 
+      setShowPreview(false)
+
       submit(JSON.stringify(formSubmit), {
         method: 'post',
         encType: 'application/json',
@@ -103,10 +109,6 @@ export const NoteSubmit = ({
       // Cancel if not confirmed
       if (!confirm) return
 
-      // Reset form
-      setContent('')
-      setNsfw(false)
-
       handleFormSubmit()
     },
     [handleFormSubmit]
@@ -115,7 +117,6 @@ export const NoteSubmit = ({
     event: React.ChangeEvent<HTMLTextAreaElement>
   ) => {
     setContent(event.currentTarget.value)
-    adjustTextareaHeight(event.currentTarget)
   }
 
   const handlePreviewToggle = () => {

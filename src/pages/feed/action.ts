@@ -56,11 +56,7 @@ export const feedPostRouteAction =
           )
 
         case 'repost':
-          return await handleActionRepost(
-            ndkContext.ndk,
-            action.data,
-            action.note1
-          )
+          return await handleActionRepost(ndkContext.ndk, action.data)
 
         default:
           throw new Error('Unsupported feed action. Intent missing.')
@@ -134,7 +130,7 @@ async function handleActionSubmit(
     return redirect(getFeedNotePageRoute(note1))
   }
 }
-async function handleActionRepost(ndk: NDK, data: NostrEvent, note1: string) {
+async function handleActionRepost(ndk: NDK, data: NostrEvent) {
   const ndkEvent = new NDKEvent(ndk, data)
   await ndkEvent.sign()
 
@@ -144,6 +140,6 @@ async function handleActionRepost(ndk: NDK, data: NostrEvent, note1: string) {
     return null
   } else {
     toast.success('Note published successfully')
-    return redirect(getFeedNotePageRoute(note1))
+    return null
   }
 }

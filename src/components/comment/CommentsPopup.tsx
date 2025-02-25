@@ -7,7 +7,14 @@ import {
   useReplies
 } from 'hooks'
 import { nip19 } from 'nostr-tools'
-import { ChangeEvent, useCallback, useEffect, useMemo, useState } from 'react'
+import {
+  ChangeEvent,
+  useCallback,
+  useEffect,
+  useMemo,
+  useRef,
+  useState
+} from 'react'
 import {
   Link,
   useLoaderData,
@@ -72,7 +79,10 @@ export const CommentsPopup = ({ title }: CommentsPopupProps) => {
     isComplete,
     root: rootEvent
   } = useReplies(lastETag?.[1])
-  const isRoot = event.tagValue('a') === event.tagValue('A')
+  const isRoot =
+    event.kind === NDKKind.Text
+      ? !event.getMatchingTags('e').length
+      : event.tagValue('a') === event.tagValue('A')
   const [profile, setProfile] = useState<UserProfile>()
   const { commentEvents, setCommentEvents } = useComments(
     event.author.pubkey,
@@ -93,15 +103,18 @@ export const CommentsPopup = ({ title }: CommentsPopupProps) => {
   )
 
   const navigate = useNavigate()
-
+  const ref = useRef<HTMLTextAreaElement>(null)
   const [isSubmitting, setIsSubmitting] = useState(false)
   const [replyText, setReplyText] = useState('')
 
   const handleChange = useCallback((e: ChangeEvent<HTMLTextAreaElement>) => {
     const value = e.currentTarget.value
     setReplyText(value)
-    adjustTextareaHeight(e.currentTarget)
   }, [])
+
+  useEffect(() => {
+    if (ref.current) adjustTextareaHeight(ref.current)
+  }, [replyText])
 
   const [visible, setVisible] = useState<CommentEvent[]>([])
   const discoveredCount = commentEvents.length - visible.length
@@ -185,6 +198,8 @@ export const CommentsPopup = ({ title }: CommentsPopupProps) => {
       })
   })
 
+  const [showQuoteReposts, setShowQuoteReposts] = useState(false)
+
   const handleRepost = async (confirm: boolean) => {
     if (navigation.state !== 'idle') return
 
@@ -198,7 +213,6 @@ export const CommentsPopup = ({ title }: CommentsPopupProps) => {
     submit(
       JSON.stringify({
         intent: 'repost',
-        note1: event.encode(),
         data: rawEvent
       }),
       {
@@ -425,6 +439,7 @@ export const CommentsPopup = ({ title }: CommentsPopupProps) => {
               <div className='pUMCB_CommentToPrime'>
                 <div className='IBMSMSMBSSCC_Top'>
                   <textarea
+                    ref={ref}
                     className='IBMSMSMBSSCC_Top_Box postSocialTextarea'
                     placeholder='Got something to say?'
                     value={replyText}
@@ -446,10 +461,38 @@ export const CommentsPopup = ({ title }: CommentsPopupProps) => {
                   </button>
                 </div>
               </div>
-              {commentEvents.length > 0 && (
+              {commentEvents.length + quoteRepostEvents.length > 0 && (
                 <>
                   <h3 className='IBMSMSMBSSCL_CommentNoteRepliesTitle'>
-                    Replies
+                    {isNote ? (
+                      <div className='dropdown'>
+                        <button
+                          className='btn dropdown-toggle btnMain btnMainDropdown'
+                          aria-expanded='false'
+                          data-bs-toggle='dropdown'
+                          type='button'
+                        >
+                          {showQuoteReposts ? 'Quote-Reposts' : 'Replies'}
+                        </button>
+
+                        <div className='dropdown-menu dropdownMainMenu'>
+                          <div
+                            className='dropdown-item dropdownMainMenuItem'
+                            onClick={() => setShowQuoteReposts(false)}
+                          >
+                            Replies
+                          </div>
+                          <div
+                            className='dropdown-item dropdownMainMenuItem'
+                            onClick={() => setShowQuoteReposts(true)}
+                          >
+                            Quote-Reposts
+                          </div>
+                        </div>
+                      </div>
+                    ) : (
+                      <>Replies</>
+                    )}
                     <button
                       type='button'
                       className='btnMain IBMSMSMBSSCL_CommentNoteRepliesTitleBtn'
@@ -471,11 +514,29 @@ export const CommentsPopup = ({ title }: CommentsPopupProps) => {
                       </span>
                     </button>
                   </h3>
-                  <div className='pUMCB_RepliesToPrime'>
-                    {commentEvents.map((reply) => (
-                      <Comment key={reply.event.id} comment={reply} />
-                    ))}
-                  </div>
+                  {(showQuoteReposts
+                    ? quoteRepostEvents.length
+                    : commentEvents.length) === 0 && !isLoading ? (
+                    <div className='IBMSMListFeedNoPosts'>
+                      <p>
+                        There are no{' '}
+                        {showQuoteReposts ? 'quote-reposts' : 'replies'} to show
+                      </p>
+                    </div>
+                  ) : (
+                    <div className='pUMCB_RepliesToPrime'>
+                      {showQuoteReposts
+                        ? quoteRepostEvents.map((reply) => (
+                            <Comment
+                              key={reply.id}
+                              comment={{ event: reply }}
+                            />
+                          ))
+                        : commentEvents.map((reply) => (
+                            <Comment key={reply.event.id} comment={reply} />
+                          ))}
+                    </div>
+                  )}
                 </>
               )}
             </div>

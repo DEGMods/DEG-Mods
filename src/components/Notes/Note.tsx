@@ -184,7 +184,6 @@ export const Note = ({ ndkEvent }: NoteProps) => {
     submit(
       JSON.stringify({
         intent: 'repost',
-        note1: ndkEvent.encode(),
         data: rawEvent
       }),
       {
