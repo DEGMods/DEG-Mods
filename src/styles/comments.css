@@ -639,3 +639,8 @@ hover {
 .IBMSMSMBSSCL_CBText >  *:last-child {
     margin-bottom: 0;
 }
+
+/* Lightbox exception */
+.IBMSMSMBSSCL_CBText > .fslightbox-container { 
+  margin: 0
+}

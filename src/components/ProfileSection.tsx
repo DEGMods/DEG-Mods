@@ -44,7 +44,7 @@ type Props = {
 export const ProfileSection = ({ pubkey }: Props) => {
   const { ndk } = useNDKContext()
   const profile = useProfile(pubkey, {
-    cacheUsage: NDKSubscriptionCacheUsage.PARALLEL
+    cacheUsage: NDKSubscriptionCacheUsage.ONLY_RELAY
   })
   const displayName =
     profile?.displayName || profile?.name || '[name not set up]'
@@ -151,7 +151,7 @@ type ProfileProps = {
 
 export const Profile = ({ pubkey }: ProfileProps) => {
   const profile = useProfile(pubkey, {
-    cacheUsage: NDKSubscriptionCacheUsage.PARALLEL
+    cacheUsage: NDKSubscriptionCacheUsage.ONLY_RELAY
   })
 
   const displayName =

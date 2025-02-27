@@ -1,3 +1,4 @@
+import { NDKSubscriptionCacheUsage } from '@nostr-dev-kit/ndk'
 import { Dots } from 'components/Spinner'
 import { ZapSplit } from 'components/Zap'
 import {
@@ -28,7 +29,9 @@ export const Zap = ({ addressable }: ZapProps) => {
   useBodyScrollDisable(isOpen)
 
   useDidMount(() => {
-    findMetadata(addressable.author)
+    findMetadata(addressable.author, {
+      cacheUsage: NDKSubscriptionCacheUsage.ONLY_RELAY
+    })
       .then((res) => {
         setIsAvailable(typeof res?.lud16 !== 'undefined' && res.lud16 !== '')
       })

@@ -532,9 +532,12 @@ export const CommentsPopup = ({ title }: CommentsPopupProps) => {
                               comment={{ event: reply }}
                             />
                           ))
-                        : commentEvents.map((reply) => (
-                            <Comment key={reply.event.id} comment={reply} />
-                          ))}
+                        : commentEvents
+                            // Filter out events with 'q' tag since we are showing them with a dropdown
+                            .filter((r) => r.event.tagValue('q') !== event.id)
+                            .map((reply) => (
+                              <Comment key={reply.event.id} comment={reply} />
+                            ))}
                     </div>
                   )}
                 </>

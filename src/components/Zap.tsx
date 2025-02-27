@@ -1,4 +1,7 @@
-import { getRelayListForUser } from '@nostr-dev-kit/ndk'
+import {
+  getRelayListForUser,
+  NDKSubscriptionCacheUsage
+} from '@nostr-dev-kit/ndk'
 import { QRCodeSVG } from 'qrcode.react'
 import React, {
   Dispatch,
@@ -318,7 +321,9 @@ export const ZapPopUp = ({
 
       setLoadingSpinnerDesc('Finding receiver metadata')
 
-      const receiverMetadata = await findMetadata(receiver)
+      const receiverMetadata = await findMetadata(receiver, {
+        cacheUsage: NDKSubscriptionCacheUsage.ONLY_RELAY
+      })
 
       if (!receiverMetadata?.lud16) {
         setIsLoading(false)
@@ -552,12 +557,16 @@ export const ZapSplit = ({
   const [invoices, setInvoices] = useState<Map<string, PaymentRequest>>()
 
   useDidMount(async () => {
-    findMetadata(pubkey).then((res) => {
+    findMetadata(pubkey, {
+      cacheUsage: NDKSubscriptionCacheUsage.ONLY_RELAY
+    }).then((res) => {
       setAuthor(res)
     })
 
     const adminNpubs = import.meta.env.VITE_ADMIN_NPUBS.split(',')
-    findMetadata(adminNpubs[0]).then((res) => {
+    findMetadata(adminNpubs[0], {
+      cacheUsage: NDKSubscriptionCacheUsage.ONLY_RELAY
+    }).then((res) => {
       setAdmin(res)
     })
   })

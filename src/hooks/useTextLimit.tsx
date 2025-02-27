@@ -18,13 +18,13 @@ export const useTextLimit = (
     filteredText: string
     indices: number[]
   } => {
-    const words = text.split(' ')
+    const words = text.split(/[\s\n]+/)
     const filteredWords: string[] = []
     const indices: number[] = []
     let currentIndex = 0
 
     words.forEach((word) => {
-      if (!word.startsWith('nostr:')) {
+      if (!(word.startsWith('nostr:') || word.startsWith('http'))) {
         filteredWords.push(word)
         indices.push(currentIndex)
       }

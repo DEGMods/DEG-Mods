@@ -1,7 +1,7 @@
 import { NDKKind } from '@nostr-dev-kit/ndk'
 import { ProfileLink } from 'components/ProfileSection'
 import { nip19 } from 'nostr-tools'
-import { useMemo } from 'react'
+import { useCallback, useMemo, useState } from 'react'
 import { Fragment } from 'react/jsx-runtime'
 import { BlogPreview } from './internal/BlogPreview'
 import { ModPreview } from './internal/ModPreview'
@@ -14,6 +14,8 @@ import {
   isValidVideoUrl,
   isYoutubeLink
 } from 'utils'
+import FsLightbox from 'fslightbox-react'
+import { createPortal } from 'react-dom'
 
 interface NoteRenderProps {
   content: string
@@ -28,6 +30,49 @@ const nostrNip05Mention = /(?:nostr:|@)[^\s]{1,64}@[^\s]+\.[^\s]{2,}/i
 const nip05Entity = /(?:nostr:|@)([^\s]{1,64}@[^\s]+\.[^\s]{2,})/i
 
 export const NoteRender = ({ content }: NoteRenderProps) => {
+  const [lightBoxController, setLightBoxController] = useState({
+    toggler: false,
+    slide: 1
+  })
+  const slides = useMemo(() => {
+    const sources: { url: string; type: 'image' | 'video' | 'youtube' }[] = []
+    const parts = content.matchAll(new RegExp(`${link.source}`, 'gui'))
+    ;[...parts]
+      .filter((p) => typeof p !== 'undefined')
+      .forEach((part) => {
+        const [href] = part
+
+        if (href && isValidUrl(href)) {
+          if (isValidImageUrl(href)) {
+            sources.push({ url: href, type: 'image' })
+          } else if (isValidVideoUrl(href)) {
+            sources.push({ url: href, type: 'video' })
+          } else if (isYoutubeLink(href)) {
+            const id = getIdFromYoutubeLink(href)
+            if (id) {
+              sources.push({
+                url: `https://www.youtube.com/embed/${id}`,
+                type: 'youtube'
+              })
+            }
+          }
+        }
+      })
+
+    return sources
+  }, [content])
+
+  const openLightBoxOnSlide = useCallback(
+    (url: string) => {
+      slides.length &&
+        setLightBoxController((prev) => ({
+          toggler: !prev.toggler,
+          slide: slides.findIndex((s) => s.url === url) + 1
+        }))
+    },
+    [slides]
+  )
+
   const _content = useMemo(() => {
     if (!content) return
 
@@ -49,7 +94,13 @@ export const NoteRender = ({ content }: NoteRenderProps) => {
             if (isValidImageUrl(href)) {
               // Image
               return (
-                <img key={key} className='imgFeedRender' src={href} alt='' />
+                <img
+                  key={key}
+                  className='imgFeedRender'
+                  src={href}
+                  alt=''
+                  onClick={() => openLightBoxOnSlide(href)}
+                />
               )
             } else if (isValidVideoUrl(href)) {
               // Video
@@ -129,9 +180,23 @@ export const NoteRender = ({ content }: NoteRenderProps) => {
         }
       })
     return _parts
-  }, [content])
+  }, [content, openLightBoxOnSlide])
 
-  return _content
+  return (
+    <>
+      {_content}
+      {slides.length > 0 &&
+        createPortal(
+          <FsLightbox
+            toggler={lightBoxController.toggler}
+            sources={slides.map((s) => s.url)}
+            types={slides.map((s) => s.type)}
+            slide={lightBoxController.slide}
+          />,
+          document.body
+        )}
+    </>
+  )
 }
 
 function handleNaddr(data: nip19.AddressPointer, original: string) {
