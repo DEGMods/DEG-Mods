@@ -644,3 +644,10 @@ hover {
 .IBMSMSMBSSCL_CBText > .fslightbox-container { 
   margin: 0
 }
+
+.IBMSMSMBSSCL_CBText > video, .IBMSMSMBSSCL_CBText > img {
+    aspect-ratio: 16 / 9;
+    object-fit: contain;
+    background: rgb(255 255 255 / 2%);
+    outline: solid 1px rgb(255 255 255 / 10%);
+}

@@ -75,7 +75,7 @@ export const FeedTabPosts = () => {
               prev.find(
                 (e) =>
                   e.id === ndkEvent.id ||
-                  ndkEvents.findIndex((n) => n.id === ndkEvent.id) === -1
+                  ndkEvents.findIndex((n) => n.id === ndkEvent.id) !== -1
               )
             ) {
               return [...prev]
