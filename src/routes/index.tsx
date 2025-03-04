@@ -34,6 +34,7 @@ import { SupportersPage } from 'pages/supporters'
 import { commentsLoader } from 'loaders/comment'
 import { CommentsPopup } from 'components/comment/CommentsPopup'
 import { feedPostRouteAction } from 'pages/feed/action'
+import { ModManagerPage } from 'pages/modManager'
 
 export const appRoutes = {
   home: '/',
@@ -43,6 +44,7 @@ export const appRoutes = {
   mod: '/mod/:naddr/',
   modReport_actionOnly: '/mod/:naddr/report',
   about: '/about',
+  modManager: '/mod-manager',
   blogs: '/blog',
   blog: '/blog/:naddr/',
   blogEdit: '/blog/:naddr/edit',
@@ -124,6 +126,10 @@ export const routerWithNdkContext = (context: NDKContextType) =>
         {
           path: appRoutes.about,
           element: <AboutPage />
+        },
+        {
+          path: appRoutes.modManager,
+          element: <ModManagerPage />
         },
         {
           path: appRoutes.blogs,

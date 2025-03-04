@@ -651,3 +651,28 @@ hover {
     background: rgb(255 255 255 / 2%);
     outline: solid 1px rgb(255 255 255 / 10%);
 }
+
+.IBMSMSMBSSCL_CBText > img {
+    object-fit: cover;
+}
+
+.IBMSMSMBSSCL_CBText > audio {
+    width: 100%;
+}
+
+.IBMSMSMBSSCL_CBImgGroup {
+    width: 100%;
+    display: grid;
+    grid-template-columns: 1fr;
+    grid-gap: 10px;
+}
+
+.IBMSMSMBSSCL_CBImgGroup > * {
+    transition: ease 0.2s;
+    object-fit: cover;
+    aspect-ratio: 16/9;
+}
+
+.IBMSMSMBSSCL_CBImgGroup > *:hover {
+    transform: scale(1.02);
+}

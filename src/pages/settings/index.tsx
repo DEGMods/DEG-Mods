@@ -77,7 +77,7 @@ const SettingTabs = () => {
     },
     {
       path: appRoutes.settingsPreferences,
-      label: 'Preferences (WIP)',
+      label: 'Preferences',
       icon: <PreferenceSVG />
     }
   ]

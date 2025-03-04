@@ -1,12 +1,6 @@
 import { NDKEvent, NDKKind } from '@nostr-dev-kit/ndk'
 import { LoadingSpinner } from 'components/LoadingSpinner'
-import { NsfwAlertPopup } from 'components/NsfwAlertPopup'
-import {
-  useAppDispatch,
-  useAppSelector,
-  useNDKContext,
-  useLocalStorage
-} from 'hooks'
+import { useAppDispatch, useAppSelector, useNDKContext } from 'hooks'
 import { kinds, UnsignedEvent, Event } from 'nostr-tools'
 import { useEffect, useState } from 'react'
 import { toast } from 'react-toastify'
@@ -24,13 +18,6 @@ export const PreferencesSetting = () => {
 
   const [wotLevel, setWotLevel] = useState(userWotLevel)
   const [isSaving, setIsSaving] = useState(false)
-
-  const [nsfw, setNsfw] = useState(false)
-  const [confirmNsfw] = useLocalStorage<boolean>('confirm-nsfw', false)
-  const [showNsfwPopup, setShowNsfwPopup] = useState<boolean>(false)
-  const handleNsfwConfirm = (confirm: boolean) => {
-    setNsfw(confirm)
-  }
 
   useEffect(() => {
     if (user?.pubkey) {
@@ -133,94 +120,6 @@ export const PreferencesSetting = () => {
           <div className='IBMSMSMBS_Write'>
             <div className='inputLabelWrapperMain'>
               <div className='labelWrapperMain'>
-                <p className='labelMain'>Notifications</p>
-              </div>
-              <div className='inputLabelWrapperMain inputLabelWrapperMainAlt inputLabelWrapperMainAltStylized'>
-                <label className='form-label labelMain'>
-                  When someone follows you
-                </label>
-                <input
-                  type='checkbox'
-                  className='CheckboxMain'
-                  name='notificationsSettings'
-                  checked
-                  readOnly
-                />
-              </div>
-              <div className='inputLabelWrapperMain inputLabelWrapperMainAlt inputLabelWrapperMainAltStylized'>
-                <label className='form-label labelMain'>
-                  When someone mentions you
-                </label>
-                <input
-                  type='checkbox'
-                  className='CheckboxMain'
-                  name='notificationsSettings'
-                  checked
-                  readOnly
-                />
-              </div>
-              <div className='inputLabelWrapperMain inputLabelWrapperMainAlt inputLabelWrapperMainAltStylized'>
-                <label className='form-label labelMain'>
-                  When someone sends a reaction to your post
-                </label>
-                <input
-                  type='checkbox'
-                  className='CheckboxMain'
-                  name='notificationsSettings'
-                  checked
-                  readOnly
-                />
-              </div>
-              <div className='inputLabelWrapperMain inputLabelWrapperMainAlt inputLabelWrapperMainAltStylized'>
-                <label className='form-label labelMain'>
-                  When someone Tips/Zaps you
-                </label>
-                <input
-                  type='checkbox'
-                  className='CheckboxMain'
-                  name='notificationsSettings'
-                  checked
-                  readOnly
-                />
-              </div>
-              <div className='inputLabelWrapperMain inputLabelWrapperMainAlt inputLabelWrapperMainAltStylized'>
-                <label className='form-label labelMain'>
-                  When someone re-posts your post
-                </label>
-                <input
-                  type='checkbox'
-                  className='CheckboxMain'
-                  name='notificationsSettings'
-                  checked
-                  readOnly
-                />
-              </div>
-            </div>
-            <div className='inputLabelWrapperMain'>
-              <div className='labelWrapperMain'>
-                <p className='labelMain'>Not Safe For Work (NSFW)</p>
-              </div>
-              <div className='inputLabelWrapperMain inputLabelWrapperMainAlt inputLabelWrapperMainAltStylized'>
-                <label className='form-label labelMain'>
-                  Show all NSFW posts
-                </label>
-                <input
-                  type='checkbox'
-                  className='CheckboxMain'
-                  name='NSFWPreference'
-                  checked={nsfw}
-                  onChange={(e) => {
-                    if (e.currentTarget.checked && !confirmNsfw) {
-                      setShowNsfwPopup(true)
-                    } else {
-                      setNsfw(e.currentTarget.checked)
-                    }
-                  }}
-                />
-              </div>
-            </div>
-            <div className='inputLabelWrapperMain'>
-              <div className='labelWrapperMain'>
                 <p className='labelMain'>Web of Trust (WoT) level</p>
               </div>
               <p className='labelDescriptionMain'>
@@ -241,18 +140,6 @@ export const PreferencesSetting = () => {
                 />
                 <p className='ZapSplitUserBoxRangeText'>{wotLevel}</p>
               </div>
-              <div className='inputLabelWrapperMain inputLabelWrapperMainAlt inputLabelWrapperMainAltStylized'>
-                <label className='form-label labelMain'>
-                  Consider those who zap/tip, regardless of WoT level
-                </label>
-                <input
-                  type='checkbox'
-                  className='CheckboxMain'
-                  name='WoTZap'
-                  checked
-                  readOnly
-                />
-              </div>
             </div>
             <div className='IBMSMSMBS_WriteAction'>
               <button
@@ -263,12 +150,6 @@ export const PreferencesSetting = () => {
                 Save
               </button>
             </div>
-            {showNsfwPopup && (
-              <NsfwAlertPopup
-                handleConfirm={handleNsfwConfirm}
-                handleClose={() => setShowNsfwPopup(false)}
-              />
-            )}
           </div>
         </div>
       </div>

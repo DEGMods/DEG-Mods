@@ -225,6 +225,12 @@ export const Header = () => {
               >
                 Blog
               </Link>
+              <Link
+                to={appRoutes.modManager}
+                className={navStyles.NavMainBottomInsideLink}
+              >
+                Mod Manager
+              </Link>
             </div>
             <div
               className={`${navStyles.NavMainBottomInsideOther} ${navStyles.NavMainBottomInsideOtherRight}`}
