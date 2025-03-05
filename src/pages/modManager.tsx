@@ -15,21 +15,19 @@ export const ModManagerPage = () => {
                     Mod Manager{' '}
                   </h1>
                   <p className='LearnTextPara'>
-                    DEG Mods will eventually have it mod manager software of its own, 
-                    and most likely it'll be a fork of Mod Organizer 2, where we'll custom-fit 
-                    it with what's needed to have it work well with DEG Mods. Until then, however, 
-                    people can just utilize Mod Organizer 2 itself. It's already useful and powerful 
-                    without any modification of our own.
+                    DEG Mods will eventually have its own mod manager software, which will likely be a fork 
+                    of Mod Organizer 2. This customized version will be tailored to work seamlessly with DEG Mods. 
+                    Until then, users can utilize Mod Organizer 2, which is already a powerful and useful tool 
+                    without any modifications.
                     <br />
                   </p>
                   <p className='LearnTextPara'>
-                    So until we get to it, making DEG Mods Manager, you can go ahead and use Mod Organizer 2 
-                    to make modding your games a lot easier than without a mod manager.
+                    Until we develop the DEG Mods Manager, you can use Mod Organizer 2 to make modding your games much easier.
                     <br />
                   </p>
                   <p className='LearnTextPara'>
-                    To help you familiarize yourself with Mod Organizer 2 and how to use it, there are videos 
-                    available online that can assist you. Here's one of them.
+                    To help you familiarize yourself with Mod Organizer 2, there are online videos available that 
+                    can guide you. Here's one of them.
                   </p>
                   <div style={{ width: '100%', aspectRatio: '16 / 9', position: 'relative' }}>
                     <iframe
@@ -41,7 +39,7 @@ export const ModManagerPage = () => {
                     />
                   </div>
                   <p className='LearnTextPara'>
-                    Here's where you can find and download Mod Organizer 2, from their Github repo.
+                    You can find and download Mod Organizer 2 from their GitHub repository.
                   </p>
                   <div style={{ width: '100%' }}>
                     <a
