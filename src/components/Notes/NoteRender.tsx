@@ -1,7 +1,7 @@
 import { NDKKind } from '@nostr-dev-kit/ndk'
 import { ProfileLink } from 'components/ProfileSection'
 import { nip19 } from 'nostr-tools'
-import { useCallback, useMemo, useState } from 'react'
+import React, { useCallback, useContext, useMemo, useState } from 'react'
 import { Fragment } from 'react/jsx-runtime'
 import { BlogPreview } from './internal/BlogPreview'
 import { ModPreview } from './internal/ModPreview'
@@ -16,6 +16,10 @@ import {
 } from 'utils'
 import FsLightbox from 'fslightbox-react'
 import { createPortal } from 'react-dom'
+import { CommentDepthContext } from 'contexts/CommentDepthContext'
+import { Link } from 'react-router-dom'
+import { appRoutes } from 'routes'
+import { truncate } from 'lodash'
 
 interface NoteRenderProps {
   content: string
@@ -30,6 +34,7 @@ const nostrNip05Mention = /(?:nostr:|@)[^\s]{1,64}@[^\s]+\.[^\s]{2,}/i
 const nip05Entity = /(?:nostr:|@)([^\s]{1,64}@[^\s]+\.[^\s]{2,})/i
 
 export const NoteRender = ({ content }: NoteRenderProps) => {
+  const depth = useContext(CommentDepthContext)
   const [lightBoxController, setLightBoxController] = useState({
     toggler: false,
     slide: 1
@@ -148,15 +153,51 @@ export const NoteRender = ({ content }: NoteRenderProps) => {
 
           try {
             const decoded = nip19.decode(encoded)
-
+            const baseUrl = appRoutes.feed + '/'
             switch (decoded.type) {
               case 'nprofile':
                 return <ProfileLink key={key} pubkey={decoded.data.pubkey} />
               case 'npub':
                 return <ProfileLink key={key} pubkey={decoded.data} />
               case 'note':
+                if (depth >= 2)
+                  return (
+                    <Link
+                      to={baseUrl + encoded}
+                      className='IBMSMSMBSSCL_CADDate'
+                    >
+                      <svg
+                        xmlns='http://www.w3.org/2000/svg'
+                        viewBox='0 0 512 512'
+                        width='1em'
+                        height='1em'
+                        fill='currentColor'
+                      >
+                        <path d='M256 31.1c-141.4 0-255.1 93.09-255.1 208c0 49.59 21.38 94.1 56.97 130.7c-12.5 50.39-54.31 95.3-54.81 95.8C0 468.8-.5938 472.2 .6875 475.2c1.312 3 4.125 4.797 7.312 4.797c66.31 0 116-31.8 140.6-51.41c32.72 12.31 69.01 19.41 107.4 19.41C397.4 447.1 512 354.9 512 239.1S397.4 31.1 256 31.1zM368 266c0 8.836-7.164 16-16 16h-54V336c0 8.836-7.164 16-16 16h-52c-8.836 0-16-7.164-16-16V282H160c-8.836 0-16-7.164-16-16V214c0-8.838 7.164-16 16-16h53.1V144c0-8.838 7.164-16 16-16h52c8.836 0 16 7.162 16 16v54H352c8.836 0 16 7.162 16 16V266z'></path>
+                      </svg>{' '}
+                      {truncate(encoded)}
+                    </Link>
+                  )
                 return <NoteWrapper key={key} noteEntity={encoded} />
               case 'nevent':
+                if (depth >= 2)
+                  return (
+                    <Link
+                      to={baseUrl + encoded}
+                      className='IBMSMSMBSSCL_CADDate'
+                    >
+                      <svg
+                        xmlns='http://www.w3.org/2000/svg'
+                        viewBox='0 0 512 512'
+                        width='1em'
+                        height='1em'
+                        fill='currentColor'
+                      >
+                        <path d='M256 31.1c-141.4 0-255.1 93.09-255.1 208c0 49.59 21.38 94.1 56.97 130.7c-12.5 50.39-54.31 95.3-54.81 95.8C0 468.8-.5938 472.2 .6875 475.2c1.312 3 4.125 4.797 7.312 4.797c66.31 0 116-31.8 140.6-51.41c32.72 12.31 69.01 19.41 107.4 19.41C397.4 447.1 512 354.9 512 239.1S397.4 31.1 256 31.1zM368 266c0 8.836-7.164 16-16 16h-54V336c0 8.836-7.164 16-16 16h-52c-8.836 0-16-7.164-16-16V282H160c-8.836 0-16-7.164-16-16V214c0-8.838 7.164-16 16-16h53.1V144c0-8.838 7.164-16 16-16h52c8.836 0 16 7.162 16 16v54H352c8.836 0 16 7.162 16 16V266z'></path>
+                      </svg>{' '}
+                      {truncate(encoded)}
+                    </Link>
+                  )
                 return <NoteWrapper key={key} noteEntity={encoded} />
               case 'naddr':
                 return (
@@ -179,8 +220,67 @@ export const NoteRender = ({ content }: NoteRenderProps) => {
           return <Fragment key={key}>{part}</Fragment>
         }
       })
-    return _parts
-  }, [content, openLightBoxOnSlide])
+
+    const groupedParts = []
+    let imgGroup: JSX.Element[] = []
+
+    _parts.forEach((part, index) => {
+      const nextPart = _parts[index + 1]
+      const isNextPartImage =
+        nextPart && React.isValidElement(nextPart) && nextPart.type === 'img'
+      // Skip empty spaces only if previous one is image and the next one is image
+      if (
+        React.isValidElement(part) &&
+        part.props &&
+        typeof part.props === 'object' &&
+        'children' in part.props &&
+        typeof part.props.children === 'string' &&
+        part.props.children.trim() === '' &&
+        imgGroup.length > 0 &&
+        isNextPartImage
+      ) {
+        return
+      }
+      if (React.isValidElement(part) && part.type === 'img') {
+        imgGroup.push(part)
+      } else {
+        if (imgGroup.length > 0) {
+          groupedParts.push(
+            <div
+              key={imgGroup.join('-')}
+              className='IBMSMSMBSSCL_CBImgGroup'
+              style={{
+                gridTemplateColumns: `repeat(${Math.min(
+                  imgGroup.length,
+                  3
+                )}, 1fr)`
+              }}
+            >
+              {imgGroup}
+            </div>
+          )
+          imgGroup = []
+        }
+        groupedParts.push(part)
+      }
+    })
+
+    if (imgGroup.length > 0) {
+      groupedParts.push(
+        <div
+          key={imgGroup.join('-')}
+          className='IBMSMSMBSSCL_CBImgGroup'
+          style={{
+            gridTemplateColumns: `repeat(${imgGroup.length}, 1fr)`
+          }}
+        >
+          {imgGroup}
+        </div>
+      )
+    }
+
+    return groupedParts
+  }, [content, depth, openLightBoxOnSlide])
 
   return (
     <>

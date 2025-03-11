@@ -509,16 +509,18 @@ const Body = ({
               </div>
             </div>
           </div>
-          <div className='IBMSMSMBSSShots'>
-            {screenshotsUrls.map((url, index) => (
-              <img
-                className='IBMSMSMBSSShotsImg'
-                src={url}
-                alt=''
-                key={`ScreenShot-${index}`}
-                onClick={() => openLightBoxOnSlide(index + 1)}
-              />
-            ))}
+          <div className='IBMSMSMBSSShotsWrapper'>
+            <div className='IBMSMSMBSSShots'>
+              {screenshotsUrls.map((url, index) => (
+                <img
+                  className='IBMSMSMBSSShotsImg'
+                  src={url}
+                  alt=''
+                  key={`ScreenShot-${index}`}
+                  onClick={() => openLightBoxOnSlide(index + 1)}
+                />
+              ))}
+            </div>
           </div>
           <ExtraDetails
             otherAssets={otherAssets}

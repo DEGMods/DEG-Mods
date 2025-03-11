@@ -1,4 +1,5 @@
 import { NoteRender } from 'components/Notes/NoteRender'
+import { CommentDepthProvider } from 'contexts/CommentDepthContext'
 import { useTextLimit } from 'hooks'
 
 interface CommentContentProps {
@@ -13,7 +14,7 @@ export const CommentContent = ({
   const { text, isTextOverflowing, isExpanded, toggle } = useTextLimit(content)
 
   return (
-    <>
+    <CommentDepthProvider>
       {isExpanded && (
         <div
           className='IBMSMSMBSSCL_CBExpand IBMSMSMBSSCL_CBExpandAlt'
@@ -35,6 +36,6 @@ export const CommentContent = ({
           <p>NSFW</p>
         </div>
       )}
-    </>
+    </CommentDepthProvider>
   )
 }

@@ -31,7 +31,7 @@ import {
   timeout
 } from 'utils'
 
-type FetchModsOptions = {
+export type FetchModsOptions = {
   source?: string
   until?: number
   since?: number
@@ -170,15 +170,24 @@ export const NDKContextProvider = ({ children }: { children: ReactNode }) => {
     const filter: NDKFilter = {
       kinds: [NDKKind.Classified], // Specify the kind of events to fetch
       limit: limit || MOD_FILTER_LIMIT, // Limit the number of events fetched to 20
-      '#t': [T_TAG_VALUE],
-      until, // Optional filter to fetch events until this timestamp
-      since, // Optional filter to fetch events from this timestamp
-      authors: author ? [author] : undefined // Optional filter to fetch events from only this author
+      '#t': [T_TAG_VALUE]
     }
 
     // If the source matches the current window location, add a filter condition
     if (source === window.location.host) {
       filter['#r'] = [window.location.host] // Add a tag filter for the current host
+    }
+    // Optional filter to fetch events until this timestamp
+    if (until) {
+      filter['until'] = until
+    }
+    // Optional filter to fetch events from this timestamp
+    if (since) {
+      filter['since'] = since
+    }
+    // Optional filter to fetch events from only this author
+    if (author) {
+      filter['authors'] = [author]
     }
 
     return ndk

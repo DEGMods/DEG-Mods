@@ -2,6 +2,7 @@ import {
   NDKEvent,
   NDKFilter,
   NDKKind,
+  NDKSubscription,
   NDKSubscriptionCacheUsage
 } from '@nostr-dev-kit/ndk'
 import { LoadingSpinner } from 'components/LoadingSpinner'
@@ -10,7 +11,11 @@ import { ModFilter } from 'components/Filters/ModsFilter'
 import { Pagination } from 'components/Pagination'
 import { ProfileSection } from 'components/ProfileSection'
 import { Tabs } from 'components/Tabs'
-import { MOD_FILTER_LIMIT, PROFILE_BLOG_FILTER_LIMIT } from '../../constants'
+import {
+  MOD_FILTER_LIMIT,
+  PROFILE_BLOG_FILTER_LIMIT,
+  T_TAG_VALUE
+} from '../../constants'
 import {
   useAppSelector,
   useFilteredMods,
@@ -37,11 +42,12 @@ import {
   copyTextToClipboard,
   DEFAULT_FILTER_OPTIONS,
   extractBlogCardDetails,
+  extractModData,
+  isModDataComplete,
   log,
   LogType,
   now,
   npubToHex,
-  scrollIntoView,
   sendDMUsingRandomKey,
   signAndPublish
 } from 'utils'
@@ -51,18 +57,16 @@ import { BlogCard } from 'components/BlogCard'
 import { BlogsFilter } from 'components/Filters/BlogsFilter'
 import { FeedFilter } from 'components/Filters/FeedFilter'
 import { Note } from 'components/Notes/Note'
+import { FetchModsOptions } from 'contexts/NDKContext'
 
 export const ProfilePage = () => {
   const {
     profilePubkey,
     profile,
-    isBlocked: _isBlocked,
-    repostList,
-    muteLists,
-    nsfwList
+    isBlocked: _isBlocked
   } = useLoaderData() as ProfilePageLoaderResult
   const scrollTargetRef = useRef<HTMLDivElement>(null)
-  const { ndk, publish, fetchEventFromUserRelays, fetchMods } = useNDKContext()
+  const { ndk, publish, fetchEventFromUserRelays } = useNDKContext()
   const userState = useAppSelector((state) => state.user)
   const [isLoading, setIsLoading] = useState(false)
   const [loadingSpinnerDesc, setLoadingSpinnerDesc] = useState('')
@@ -213,85 +217,6 @@ export const ProfilePage = () => {
 
   // Tabs
   const [tab, setTab] = useState(0)
-  const [page, setPage] = useState(1)
-
-  // Mods
-  const [mods, setMods] = useState<ModDetails[]>([])
-  const filterKey = 'filter-profile'
-  const [filterOptions] = useLocalStorage<FilterOptions>(filterKey, {
-    ...DEFAULT_FILTER_OPTIONS
-  })
-
-  const handleNext = useCallback(() => {
-    setIsLoading(true)
-
-    const until =
-      mods.length > 0 ? mods[mods.length - 1].published_at - 1 : undefined
-
-    fetchMods({
-      source: filterOptions.source,
-      until,
-      author: profilePubkey
-    })
-      .then((res) => {
-        setMods(res)
-        setPage((prev) => prev + 1)
-        scrollIntoView(scrollTargetRef.current)
-      })
-      .finally(() => {
-        setIsLoading(false)
-      })
-  }, [mods, fetchMods, filterOptions.source, profilePubkey])
-
-  const handlePrev = useCallback(() => {
-    setIsLoading(true)
-
-    const since = mods.length > 0 ? mods[0].published_at + 1 : undefined
-
-    fetchMods({
-      source: filterOptions.source,
-      since,
-      author: profilePubkey
-    })
-      .then((res) => {
-        setMods(res)
-        setPage((prev) => prev - 1)
-        scrollIntoView(scrollTargetRef.current)
-      })
-      .finally(() => {
-        setIsLoading(false)
-      })
-  }, [mods, fetchMods, filterOptions.source, profilePubkey])
-
-  useEffect(() => {
-    setIsLoading(true)
-    switch (tab) {
-      case 0:
-        setLoadingSpinnerDesc('Fetching mods..')
-        fetchMods({ source: filterOptions.source, author: profilePubkey })
-          .then((res) => {
-            setMods(res)
-          })
-          .finally(() => {
-            setIsLoading(false)
-          })
-        break
-
-      default:
-        setIsLoading(false)
-        break
-    }
-  }, [filterOptions.source, tab, fetchMods, profilePubkey])
-
-  const filteredModList = useFilteredMods(
-    mods,
-    userState,
-    filterOptions,
-    nsfwList,
-    muteLists,
-    repostList,
-    profilePubkey
-  )
 
   return (
     <div className='InnerBodyMain'>
@@ -440,25 +365,7 @@ export const ProfilePage = () => {
                   />
 
                   {/* Tabs Content */}
-                  {tab === 0 && (
-                    <>
-                      <ModFilter filterKey={filterKey} author={profilePubkey} />
-
-                      <div className='IBMSMList IBMSMListAlt'>
-                        {filteredModList.map((mod) => (
-                          <ModCard key={mod.id} {...mod} />
-                        ))}
-                      </div>
-
-                      <Pagination
-                        page={page}
-                        disabledNext={mods.length < MOD_FILTER_LIMIT}
-                        handlePrev={handlePrev}
-                        handleNext={handleNext}
-                      />
-                    </>
-                  )}
-
+                  {tab === 0 && <ProfileTabMods />}
                   {tab === 1 && <ProfileTabBlogs />}
                   {tab === 2 && <ProfileTabPosts />}
                 </div>
@@ -681,6 +588,184 @@ const ReportUserPopup = ({
           </div>
         </div>
       </div>
+    </>
+  )
+}
+
+const ProfileTabMods = () => {
+  const { profilePubkey, repostList, muteLists, nsfwList } =
+    useLoaderData() as ProfilePageLoaderResult
+  const { ndk, fetchMods } = useNDKContext()
+  const userState = useAppSelector((state) => state.user)
+  const [isLoading, setIsLoading] = useState(false)
+  const [loadingSpinnerDesc, setLoadingSpinnerDesc] = useState('')
+  const [mods, setMods] = useState<ModDetails[]>([])
+  const [isLoadMoreVisible, setIsLoadMoreVisible] = useState(false)
+  const filterKey = 'filter-profile'
+  const [filterOptions] = useLocalStorage<FilterOptions>(filterKey, {
+    ...DEFAULT_FILTER_OPTIONS
+  })
+  const lastMod: ModDetails | undefined = useMemo(() => {
+    // For the latest sort find oldest mod
+    // for the oldest sort find newest mod
+    return mods.reduce((prev, current) => {
+      if (!prev) return current
+      if (filterOptions.sort === SortBy.Latest) {
+        return current.edited_at < prev.edited_at ? current : prev
+      } else if (filterOptions.sort === SortBy.Oldest) {
+        return current.edited_at > prev.edited_at ? current : prev
+      }
+      return prev
+    }, undefined as ModDetails | undefined)
+  }, [mods, filterOptions.sort])
+  useEffect(() => {
+    setIsLoading(true)
+    setLoadingSpinnerDesc('Fetching mods..')
+    fetchMods({ source: filterOptions.source, author: profilePubkey })
+      .then((res) => {
+        if (filterOptions.sort === SortBy.Latest) {
+          res.sort((a, b) => b.published_at - a.published_at)
+        } else if (filterOptions.sort === SortBy.Oldest) {
+          res.sort((a, b) => a.published_at - b.published_at)
+        }
+        setIsLoadMoreVisible(res.length >= MOD_FILTER_LIMIT)
+        setMods(res.slice(0, MOD_FILTER_LIMIT))
+      })
+      .finally(() => {
+        setIsLoading(false)
+      })
+  }, [fetchMods, filterOptions.sort, filterOptions.source, profilePubkey])
+
+  const handleLoadMore = useCallback(() => {
+    setIsLoading(true)
+
+    const fetchModsOptions: FetchModsOptions = {
+      source: filterOptions.source,
+      author: profilePubkey
+    }
+
+    if (lastMod) {
+      if (filterOptions.sort === SortBy.Latest) {
+        fetchModsOptions.until = lastMod.edited_at - 1
+      } else if (filterOptions.sort === SortBy.Oldest) {
+        fetchModsOptions.since = lastMod.edited_at + 1
+      }
+    }
+
+    fetchMods(fetchModsOptions)
+      .then((res) => {
+        setMods((prevMods) => {
+          const newMods = res
+          const combinedMods = [...prevMods, ...newMods]
+          const uniqueMods = Array.from(
+            new Set(combinedMods.map((mod) => mod.id))
+          )
+            .map((id) => combinedMods.find((mod) => mod.id === id))
+            .filter((mod): mod is ModDetails => mod !== undefined)
+
+          setIsLoadMoreVisible(newMods.length >= MOD_FILTER_LIMIT)
+
+          return uniqueMods
+        })
+      })
+      .finally(() => {
+        setIsLoading(false)
+      })
+  }, [
+    fetchMods,
+    filterOptions.sort,
+    filterOptions.source,
+    lastMod,
+    profilePubkey
+  ])
+
+  // Add missing mods to the list
+  useEffect(() => {
+    let sub: NDKSubscription
+    if (lastMod && profilePubkey) {
+      const filter: NDKFilter = {
+        kinds: [NDKKind.Classified],
+        '#t': [T_TAG_VALUE],
+        authors: [profilePubkey]
+      }
+      if (filterOptions.sort === SortBy.Latest) {
+        filter.since = lastMod.edited_at + 1
+      } else if (filterOptions.sort === SortBy.Oldest) {
+        filter.until = lastMod.edited_at - 1
+      }
+      if (filterOptions.source === window.location.host) {
+        filter['#r'] = [window.location.host]
+      }
+      sub = ndk.subscribe(
+        filter,
+        {
+          closeOnEose: false,
+          cacheUsage: NDKSubscriptionCacheUsage.PARALLEL
+        },
+        undefined,
+        {
+          onEvent: (ndkEvent) => {
+            setMods((prevMods) => {
+              // Skip if not valid
+              if (!isModDataComplete(ndkEvent)) {
+                return prevMods
+              }
+
+              // Skip existing
+              if (
+                prevMods.find(
+                  (e) =>
+                    e.id === ndkEvent.id ||
+                    prevMods.findIndex((n) => n.id === ndkEvent.id) !== -1
+                )
+              ) {
+                return prevMods
+              }
+              const newMod = extractModData(ndkEvent)
+              return [...prevMods, newMod]
+            })
+          }
+        }
+      )
+    }
+    return () => {
+      if (sub) sub.stop()
+    }
+  }, [filterOptions.sort, filterOptions.source, lastMod, ndk, profilePubkey])
+
+  const filteredModList = useFilteredMods(
+    mods,
+    userState,
+    filterOptions,
+    nsfwList,
+    muteLists,
+    repostList,
+    profilePubkey
+  )
+
+  return (
+    <>
+      {isLoading && <LoadingSpinner desc={loadingSpinnerDesc} />}
+
+      <ModFilter filterKey={filterKey} author={profilePubkey} />
+
+      <div className='IBMSMList IBMSMListAlt'>
+        {filteredModList.map((mod) => (
+          <ModCard key={mod.id} {...mod} />
+        ))}
+      </div>
+
+      {!isLoading && isLoadMoreVisible && filteredModList.length > 0 && (
+        <div className='IBMSMListFeedLoadMore'>
+          <button
+            className='btn btnMain IBMSMListFeedLoadMoreBtn'
+            type='button'
+            onClick={handleLoadMore}
+          >
+            Load More
+          </button>
+        </div>
+      )}
     </>
   )
 }
