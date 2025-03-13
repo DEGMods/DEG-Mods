@@ -664,7 +664,9 @@ hover {
     width: 100%;
     display: grid;
     grid-template-columns: 1fr;
-    grid-gap: 10px;
+    grid-gap: 4px;
+    overflow: hidden;
+    border-radius: 6px;
 }
 
 .IBMSMSMBSSCL_CBImgGroup > * {
@@ -674,5 +676,5 @@ hover {
 }
 
 .IBMSMSMBSSCL_CBImgGroup > *:hover {
-    transform: scale(1.02);
+    transform: scale(1.01);
 }
