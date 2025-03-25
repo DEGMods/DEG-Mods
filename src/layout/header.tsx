@@ -325,6 +325,13 @@ const TipButtonWithDialog = React.memo(() => {
           lastNode={
             <div className='BTCAddressPopZap'>
               <p>
+                DEG Mod's Bitcoin Address
+                <br />
+                <span className='BTCAddressPopZapTextSpan'>
+                  bc1qhy8avyfdmqvjs8gqz4axelcgfggrs75m07g80v
+                </span>
+              </p>
+              <p>
                 DEG Mod's Silent Payment Bitcoin Address (Be careful.{' '}
                 <a
                   href='https://youtu.be/payDPlHzp58?t=215'

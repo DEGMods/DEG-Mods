@@ -1,4 +1,4 @@
-import { InputField } from 'components/Inputs'
+import { InputField, InputFieldWithImageUpload } from 'components/Inputs'
 import { ProfileQRButtonWithPopUp } from 'components/ProfileSection'
 import { useAppDispatch, useAppSelector, useNDKContext } from 'hooks'
 import { kinds, nip19, UnsignedEvent, Event } from 'nostr-tools'
@@ -285,21 +285,21 @@ export const ProfileSettings = () => {
                 value={formState.bio}
                 onChange={handleInputChange}
               />
-              <InputField
+              <InputFieldWithImageUpload
                 label='Profile picture URL'
                 placeholder=''
                 name='picture'
                 inputMode='url'
                 value={formState.picture}
-                onChange={handleInputChange}
+                onInputChange={handleInputChange}
               />
-              <InputField
+              <InputFieldWithImageUpload
                 label='Banner picture URL'
                 placeholder=''
                 name='banner'
                 inputMode='url'
                 value={formState.banner}
-                onChange={handleInputChange}
+                onInputChange={handleInputChange}
               />
               <InputField
                 label='Nip-05 address'
