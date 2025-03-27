@@ -82,7 +82,7 @@ export const HomePage = () => {
         </div>
       </div>
       <div className='ContainerMain'>
-        <div className='IBMSecMainGroup IBMSecMainGroupAlt'>
+        <div className='IBMSecMainGroup'>
           <div className='IBMSecMain IBMSMListWrapper'>
             <div className='IBMSMTitleMain'>
               <h2 className='IBMSMTitleMainHeading'>Cool Games</h2>
