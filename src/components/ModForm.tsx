@@ -1032,7 +1032,7 @@ const GameDropdown = ({
           </button>
           <div className='dropdown-menu dropdownMainMenu dropdownMainMenuAlt'>
             <FixedSizeList
-              height={500}
+              height={5000}
               width={'100%'}
               itemCount={filteredOptions.length}
               itemSize={35}
