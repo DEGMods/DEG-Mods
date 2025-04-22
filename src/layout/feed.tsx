@@ -1,11 +1,14 @@
 import { Profile } from 'components/ProfileSection'
 import { useAppSelector } from 'hooks'
-import { Navigate, Outlet } from 'react-router-dom'
+import { Navigate, Outlet, useParams } from 'react-router-dom'
 import { appRoutes } from 'routes'
 
 export const FeedLayout = () => {
+  const { note } = useParams()
   const userState = useAppSelector((state) => state.user)
-  if (!userState.user?.pubkey) return <Navigate to={appRoutes.home} />
+
+  // Exception for visiting notes directly
+  if (!userState.user?.pubkey && !note) return <Navigate to={appRoutes.home} />
 
   return (
     <div className='InnerBodyMain'>
@@ -16,11 +19,11 @@ export const FeedLayout = () => {
               <div className='IBMSMSplitMainFullSideFeedWrapper'>
                 <div className='IBMSMSplitMainFullSideFWSide'>
                   {userState.auth && userState.user?.pubkey && (
-                      <div className='IBMSMSplitMainSmallSideSecWrapper'>
-                        <div className='IBMSMSplitMainSmallSideSec'>
-                          <Profile pubkey={userState.user.pubkey as string} />
-                        </div>
+                    <div className='IBMSMSplitMainSmallSideSecWrapper'>
+                      <div className='IBMSMSplitMainSmallSideSec'>
+                        <Profile pubkey={userState.user.pubkey as string} />
                       </div>
+                    </div>
                   )}
                 </div>
                 <div className='IBMSMSplitMainFullSideFWMid'>
@@ -28,7 +31,9 @@ export const FeedLayout = () => {
                 </div>
                 <div className='IBMSMSplitMainFullSideFWSide'>
                   <div className='IBMSMSplitMainSmallSideSecWrapper'>
-                    <div className='IBMSMSplitMainSmallSideSecBox'><p>This is a box</p></div>
+                    <div className='IBMSMSplitMainSmallSideSecBox'>
+                      <p>This is a box</p>
+                    </div>
                   </div>
                 </div>
               </div>
