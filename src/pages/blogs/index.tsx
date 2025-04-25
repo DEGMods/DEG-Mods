@@ -1,4 +1,4 @@
-import { useEffect, useMemo, useRef, useState } from 'react'
+import { useCallback, useEffect, useMemo, useRef, useState } from 'react'
 import { useLoaderData, useNavigation, useSearchParams } from 'react-router-dom'
 import { useLocalStorage } from 'hooks'
 import { BlogCardDetails, NSFWFilter, SortBy } from 'types'
@@ -8,7 +8,10 @@ import '../../styles/filters.css'
 import '../../styles/pagination.css'
 import '../../styles/search.css'
 import '../../styles/styles.css'
-import { PaginationWithPageNumbers } from 'components/Pagination'
+import {
+  PaginationOffset,
+  PaginationWithPageNumbers
+} from 'components/Pagination'
 import { normalizeSearchString, scrollIntoView } from 'utils'
 import { LoadingSpinner } from 'components/LoadingSpinner'
 import { Filter } from 'components/Filters'
@@ -18,7 +21,19 @@ import { NsfwFilterOptions } from 'components/Filters/NsfwFilterOptions'
 
 export const BlogsPage = () => {
   const navigation = useNavigation()
-  const blogs = useLoaderData() as Partial<BlogCardDetails>[] | undefined
+  const loaderData = useLoaderData() as
+    | {
+        blogs: Partial<BlogCardDetails>[]
+        pagination?: {
+          total: number
+          offset: number
+          limit: number
+          hasMore: boolean
+        }
+      }
+    | undefined
+  const blogs = useMemo(() => loaderData?.blogs || [], [loaderData?.blogs])
+  const pagination = loaderData?.pagination
   const filterKey = 'filter-blog-curated'
   const [filterOptions, setFilterOptions] = useLocalStorage(filterKey, {
     sort: SortBy.Latest,
@@ -45,6 +60,9 @@ export const BlogsPage = () => {
       searchParams.delete('q')
     }
 
+    // Reset to page 1 when searching
+    searchParams.delete('page')
+
     setSearchParams(searchParams, {
       replace: true
     })
@@ -65,6 +83,18 @@ export const BlogsPage = () => {
       handleSearch()
     }
   }
+  const fetchModsWithPagination = useCallback(
+    async (newOffset: number) => {
+      // Calculate the page number from the offset
+      const page = Math.floor(newOffset / (pagination?.limit || 16)) + 1
+
+      // Update the URL with the new page number
+      searchParams.set('page', page.toString())
+      setSearchParams(searchParams)
+      scrollIntoView(scrollTargetRef.current)
+    },
+    [searchParams, setSearchParams, pagination?.limit]
+  )
 
   // Filter
   const filteredBlogs = useMemo(() => {
@@ -112,7 +142,7 @@ export const BlogsPage = () => {
   const [currentPage, setCurrentPage] = useState(1)
   const scrollTargetRef = useRef<HTMLDivElement>(null)
 
-  const MAX_BLOGS_PER_PAGE = 16
+  const MAX_BLOGS_PER_PAGE = pagination?.limit || 16
   const totalBlogs = filteredBlogs.length
   const totalPages = Math.ceil(totalBlogs / MAX_BLOGS_PER_PAGE)
   const startIndex = (currentPage - 1) * MAX_BLOGS_PER_PAGE
@@ -177,12 +207,22 @@ export const BlogsPage = () => {
             </div>
           </div>
 
-          {totalPages > 1 && (
-            <PaginationWithPageNumbers
-              currentPage={currentPage}
-              totalPages={totalPages}
-              handlePageChange={handlePageChange}
+          {pagination ? (
+            <PaginationOffset
+              total={pagination.total}
+              limit={pagination.limit}
+              offset={pagination.offset}
+              hasMore={pagination.hasMore}
+              onPageChange={fetchModsWithPagination}
             />
+          ) : (
+            totalPages > 1 && (
+              <PaginationWithPageNumbers
+                currentPage={currentPage}
+                totalPages={totalPages}
+                handlePageChange={handlePageChange}
+              />
+            )
           )}
         </div>
       </div>

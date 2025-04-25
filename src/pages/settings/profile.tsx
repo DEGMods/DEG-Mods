@@ -1,7 +1,7 @@
 import { InputField, InputFieldWithImageUpload } from 'components/Inputs'
 import { ProfileQRButtonWithPopUp } from 'components/ProfileSection'
 import { useAppDispatch, useAppSelector, useNDKContext } from 'hooks'
-import { kinds, nip19, UnsignedEvent, Event } from 'nostr-tools'
+import { nip19, UnsignedEvent, Event } from 'nostr-tools'
 import { useEffect, useState } from 'react'
 import { Link } from 'react-router-dom'
 import { toast } from 'react-toastify'
@@ -10,6 +10,7 @@ import { copyTextToClipboard, log, LogType, now, npubToHex } from 'utils'
 import 'styles/profile.css'
 import {
   NDKEvent,
+  NDKKind,
   NDKUserProfile,
   profileFromEvent,
   serializeProfile
@@ -143,7 +144,7 @@ export const ProfileSettings = () => {
     const serializedProfile = serializeProfile(updatedProfile)
 
     const unsignedEvent: UnsignedEvent = {
-      kind: kinds.Metadata,
+      kind: NDKKind.Metadata,
       tags: [],
       content: serializedProfile,
       created_at: createdAt,

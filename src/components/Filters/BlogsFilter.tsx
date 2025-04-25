@@ -43,14 +43,18 @@ export const BlogsFilter = React.memo(
         {/* moderation filter options */}
         <Dropdown label={filterOptions.moderated}>
           {Object.values(ModeratedFilter).map((item) => {
-            if (item === ModeratedFilter.Unmoderated_Fully) {
-              const isAdmin =
-                userState.user?.npub === import.meta.env.VITE_REPORTING_NPUB
+            const isAdmin =
+              userState.user?.npub === import.meta.env.VITE_REPORTING_NPUB
 
+            if (item === ModeratedFilter.Unmoderated_Fully) {
               const isOwnProfile =
                 author && userState.auth && userState.user?.pubkey === author
 
               if (!(isAdmin || isOwnProfile)) return null
+            }
+
+            if (item === ModeratedFilter.Only_Blocked && !isAdmin) {
+              return null
             }
 
             return (

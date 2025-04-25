@@ -1,6 +1,6 @@
-import { NDKEvent } from '@nostr-dev-kit/ndk'
+import { NDKEvent, NDKKind } from '@nostr-dev-kit/ndk'
 import { NDKContextType } from 'contexts/NDKContext'
-import { kinds, nip19, Event, UnsignedEvent } from 'nostr-tools'
+import { nip19, Event, UnsignedEvent } from 'nostr-tools'
 import { ActionFunctionArgs, redirect } from 'react-router-dom'
 import { toast } from 'react-toastify'
 import { getModPageRoute } from 'routes'
@@ -74,7 +74,7 @@ export const submitModRouteAction =
 
       const uuid = formState.dTag || uuidv4()
       const aTag =
-        formState.aTag || `${kinds.ClassifiedListing}:${hexPubkey}:${uuid}`
+        formState.aTag || `${NDKKind.Classified}:${hexPubkey}:${uuid}`
       const published_at = formState.published_at || currentTimeStamp
 
       const tags = [
@@ -151,7 +151,7 @@ export const submitModRouteAction =
       }
 
       const unsignedEvent: UnsignedEvent = {
-        kind: kinds.ClassifiedListing,
+        kind: NDKKind.Classified,
         created_at: currentTimeStamp,
         pubkey: hexPubkey,
         content: formState.body,

@@ -6,7 +6,6 @@ import NDK, {
   NDKSubscriptionCacheUsage
 } from '@nostr-dev-kit/ndk'
 import axios, { AxiosInstance } from 'axios'
-import { kinds } from 'nostr-tools'
 import { requestProvider, SendPaymentResponse, WebLNProvider } from 'webln'
 import {
   isLnurlResponse,
@@ -299,7 +298,7 @@ export class ZapController {
     }
 
     const zapRequest: ZapRequest = {
-      kind: kinds.ZapRequest,
+      kind: NDKKind.ZapRequest,
       content,
       tags: [
         ['relays', ...recipientRelays],

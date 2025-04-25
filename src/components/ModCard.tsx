@@ -4,10 +4,11 @@ import '../styles/cardMod.css'
 import { handleModImageError } from '../utils'
 import { ModDetails } from 'types'
 import { getModPageRoute } from 'routes'
-import { kinds, nip19 } from 'nostr-tools'
+import { nip19 } from 'nostr-tools'
 import { useDidMount, useNDKContext, useReactions } from 'hooks'
 import { toast } from 'react-toastify'
 import { useComments } from 'hooks/useComments'
+import { NDKKind } from '@nostr-dev-kit/ndk'
 
 export const ModCard = React.memo((props: ModDetails) => {
   const [totalZappedAmount, setTotalZappedAmount] = useState(0)
@@ -38,7 +39,7 @@ export const ModCard = React.memo((props: ModDetails) => {
     nip19.naddrEncode({
       identifier: props.aTag,
       pubkey: props.author,
-      kind: kinds.ClassifiedListing
+      kind: NDKKind.Classified
     })
   )
 

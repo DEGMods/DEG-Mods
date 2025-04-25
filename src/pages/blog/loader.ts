@@ -1,7 +1,7 @@
-import { NDKFilter } from '@nostr-dev-kit/ndk'
+import { NDKFilter, NDKKind } from '@nostr-dev-kit/ndk'
 import { PROFILE_BLOG_FILTER_LIMIT } from '../../constants'
 import { NDKContextType } from 'contexts/NDKContext'
-import { kinds, nip19 } from 'nostr-tools'
+import { nip19 } from 'nostr-tools'
 import { LoaderFunctionArgs, redirect } from 'react-router-dom'
 import { appRoutes } from 'routes'
 import { store } from 'store'
@@ -57,7 +57,7 @@ export const blogRouteLoader =
     try {
       // Set the filter for the main blog content
       const filter = {
-        kinds: [kinds.LongFormArticle],
+        kinds: [NDKKind.Article],
         authors: [pubkey],
         '#d': [identifier]
       }
@@ -70,7 +70,7 @@ export const blogRouteLoader =
       // Fetch more in case the current blog is included in the latest and filters remove some
       const latestFilter: NDKFilter = {
         authors: [pubkey],
-        kinds: [kinds.LongFormArticle],
+        kinds: [NDKKind.Article],
         limit: PROFILE_BLOG_FILTER_LIMIT
       }
       // Add source filter

@@ -1,13 +1,14 @@
 import {
   getRelayListForUser,
   NDKEvent,
+  NDKKind,
   NDKRelayList,
   NDKRelayStatus
 } from '@nostr-dev-kit/ndk'
 import { InputField } from 'components/Inputs'
 import { LoadingSpinner } from 'components/LoadingSpinner'
 import { useAppSelector, useDidMount, useNDKContext } from 'hooks'
-import { Event, kinds, UnsignedEvent } from 'nostr-tools'
+import { Event, UnsignedEvent } from 'nostr-tools'
 import { useEffect, useState } from 'react'
 import { toast } from 'react-toastify'
 import { UserRelaysType } from 'types'
@@ -60,7 +61,7 @@ export const RelaySettings = () => {
 
     const unsignedEvent: UnsignedEvent = {
       pubkey: rawEvent.pubkey,
-      kind: kinds.RelayList,
+      kind: NDKKind.RelayList,
       tags: [...rawEvent.tags, ['r', normalizedUrl]],
       content: rawEvent.content,
       created_at: now()
@@ -119,7 +120,7 @@ export const RelaySettings = () => {
 
     const unsignedEvent: UnsignedEvent = {
       pubkey: rawEvent.pubkey,
-      kind: kinds.RelayList,
+      kind: NDKKind.RelayList,
       tags: [...nonRelayTags, ...relayTags],
       content: rawEvent.content,
       created_at: now()
@@ -190,7 +191,7 @@ export const RelaySettings = () => {
 
     const unsignedEvent: UnsignedEvent = {
       pubkey: rawEvent.pubkey,
-      kind: kinds.RelayList,
+      kind: NDKKind.RelayList,
       tags: [...nonRelayTags, ...relayTags, tag],
       content: rawEvent.content,
       created_at: now()

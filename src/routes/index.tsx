@@ -35,6 +35,11 @@ import { commentsLoader } from 'loaders/comment'
 import { CommentsPopup } from 'components/comment/CommentsPopup'
 import { feedPostRouteAction } from 'pages/feed/action'
 import { ModManagerPage } from 'pages/modManager'
+import { ProfileSettings } from 'pages/settings/profile'
+import { RelaySettings } from 'pages/settings/relay'
+import { PreferencesSetting } from 'pages/settings/preference'
+import { AdminSetting } from 'pages/settings/admin'
+import { ServerSetting } from 'pages/settings/server'
 
 export const appRoutes = {
   home: '/',
@@ -53,10 +58,11 @@ export const appRoutes = {
   editMod: '/edit-mod/:naddr',
   write: '/write',
   search: '/search',
-  settingsProfile: '/settings-profile',
-  settingsRelays: '/settings-relays',
-  settingsPreferences: '/settings-preferences',
-  settingsAdmin: '/settings-admin',
+  settingsProfile: '/settings/profile',
+  settingsRelays: '/settings/relays',
+  settingsPreferences: '/settings/preferences',
+  settingsServer: '/settings/server',
+  settingsAdmin: '/settings/admin',
   profile: '/profile/:nprofile?',
   feed: '/feed',
   note: '/feed/:note',
@@ -184,21 +190,31 @@ export const routerWithNdkContext = (context: NDKContextType) =>
           element: <SearchPage />
         },
         {
-          path: appRoutes.settingsProfile,
-          element: <SettingsPage />
+          element: <SettingsPage />,
+          children: [
+            {
+              path: appRoutes.settingsProfile,
+              element: <ProfileSettings />
+            },
+            {
+              path: appRoutes.settingsRelays,
+              element: <RelaySettings />
+            },
+            {
+              path: appRoutes.settingsPreferences,
+              element: <PreferencesSetting />
+            },
+            {
+              path: appRoutes.settingsServer,
+              element: <ServerSetting />
+            },
+            {
+              path: appRoutes.settingsAdmin,
+              element: <AdminSetting />
+            }
+          ]
         },
-        {
-          path: appRoutes.settingsRelays,
-          element: <SettingsPage />
-        },
-        {
-          path: appRoutes.settingsPreferences,
-          element: <SettingsPage />
-        },
-        {
-          path: appRoutes.settingsAdmin,
-          element: <SettingsPage />
-        },
+
         {
           path: appRoutes.profile,
           element: <ProfilePage />,

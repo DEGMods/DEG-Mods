@@ -1,7 +1,7 @@
 import { PaginationWithPageNumbers } from 'components/Pagination'
 import { MAX_GAMES_PER_PAGE } from 'constants.ts'
-import { useDidMount, useGames, useNDKContext } from 'hooks'
-import { useMemo, useRef, useState } from 'react'
+import { useGames, useNDKContext, useServer } from 'hooks'
+import { useEffect, useMemo, useRef, useState } from 'react'
 import { GameCard } from '../components/GameCard'
 import '../styles/pagination.css'
 import '../styles/search.css'
@@ -10,6 +10,7 @@ import { createSearchParams, useNavigate } from 'react-router-dom'
 import { appRoutes } from 'routes'
 import { scrollIntoView } from 'utils'
 import { SearchInput } from 'components/SearchInput'
+import { ServerService } from 'controllers'
 
 export const GamesPage = () => {
   const scrollTargetRef = useRef<HTMLDivElement>(null)
@@ -19,17 +20,26 @@ export const GamesPage = () => {
   const games = useGames()
   const [gamesWithMods, setGamesWithMods] = useState<string[]>([])
   const [currentPage, setCurrentPage] = useState(1)
+  const { isServerActive } = useServer()
 
-  useDidMount(() => {
-    fetchMods({ limit: 100, source: window.location.host }).then((mods) => {
-      mods.sort((a, b) => b.published_at - a.published_at)
+  useEffect(() => {
+    if (isServerActive) {
+      const serverService = ServerService.getInstance()
+      serverService.games().then((games) => {
+        const gameNames = new Set<string>(games)
+        setGamesWithMods(Array.from(gameNames))
+      })
+    } else {
+      fetchMods({ limit: 100, source: window.location.host }).then((mods) => {
+        mods.sort((a, b) => b.published_at - a.published_at)
 
-      const gameNames = new Set<string>()
+        const gameNames = new Set<string>()
 
-      mods.map((mod) => gameNames.add(mod.game))
-      setGamesWithMods(Array.from(gameNames))
-    })
-  })
+        mods.map((mod) => gameNames.add(mod.game))
+        setGamesWithMods(Array.from(gameNames))
+      })
+    }
+  }, [fetchMods, isServerActive])
 
   const sortedGames = useMemo(() => {
     // Create a map for the order array, assigning each game name a rank based on its index.

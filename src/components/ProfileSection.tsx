@@ -1,5 +1,5 @@
 import { FALLBACK_PROFILE_IMAGE } from 'constants.ts'
-import { Event, Filter, kinds, nip19, UnsignedEvent } from 'nostr-tools'
+import { Event, Filter, nip19, UnsignedEvent } from 'nostr-tools'
 import { QRCodeSVG } from 'qrcode.react'
 import { Fragment, useEffect, useMemo, useState } from 'react'
 import { Link } from 'react-router-dom'
@@ -460,7 +460,7 @@ const FollowButton = ({ pubkey }: FollowButtonProps) => {
     tags: string[][]
   }> => {
     const filter: Filter = {
-      kinds: [kinds.Contacts],
+      kinds: [NDKKind.Contacts],
       authors: [userHexKey]
     }
 
@@ -539,7 +539,7 @@ const FollowButton = ({ pubkey }: FollowButtonProps) => {
     const unsignedEvent: UnsignedEvent = {
       content: '',
       created_at: now(),
-      kind: kinds.Contacts,
+      kind: NDKKind.Contacts,
       pubkey: userHexKey,
       tags: [...tags, ['p', pubkey]]
     }
@@ -562,7 +562,7 @@ const FollowButton = ({ pubkey }: FollowButtonProps) => {
     }
 
     const filter: Filter = {
-      kinds: [kinds.Contacts],
+      kinds: [NDKKind.Contacts],
       authors: [userHexKey]
     }
 
@@ -586,7 +586,7 @@ const FollowButton = ({ pubkey }: FollowButtonProps) => {
     const unsignedEvent: UnsignedEvent = {
       content: '',
       created_at: now(),
-      kind: kinds.Contacts,
+      kind: NDKKind.Contacts,
       pubkey: userHexKey,
       tags: contactListEvent.tags.filter(
         (t) => !(t[0] === 'p' && t[1] === pubkey)

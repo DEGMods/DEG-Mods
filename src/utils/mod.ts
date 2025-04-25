@@ -2,7 +2,11 @@ import _ from 'lodash'
 import { NDKEvent } from '@nostr-dev-kit/ndk'
 import { Event } from 'nostr-tools'
 import { ModDetails, ModFormState } from '../types'
-import { getTagValue, getTagValues, getFirstTagValue as _getFirstTagValue } from './nostr'
+import {
+  getTagValue,
+  getTagValues,
+  getFirstTagValue as _getFirstTagValue
+} from './nostr'
 
 /**
  * Extracts and normalizes mod data from an event.
@@ -32,7 +36,10 @@ export const extractModData = (event: Event | NDKEvent): ModDetails => {
   const modPermission = _getFirstTagValue(event, 'modPermission')
   const convPermission = _getFirstTagValue(event, 'convPermission')
   const assetUsePermission = _getFirstTagValue(event, 'assetUsePermission')
-  const assetUseComPermission = _getFirstTagValue(event, 'assetUseComPermission')
+  const assetUseComPermission = _getFirstTagValue(
+    event,
+    'assetUseComPermission'
+  )
 
   return {
     id: event.id,
@@ -62,11 +69,17 @@ export const extractModData = (event: Event | NDKEvent): ModDetails => {
       JSON.parse(item)
     ),
     otherAssets: otherAssets ? otherAssets === 'true' : undefined,
-    uploadPermission: uploadPermission ? uploadPermission === 'true' : undefined,
+    uploadPermission: uploadPermission
+      ? uploadPermission === 'true'
+      : undefined,
     modPermission: modPermission ? modPermission === 'true' : undefined,
     convPermission: convPermission ? convPermission === 'true' : undefined,
-    assetUsePermission: assetUsePermission ? assetUsePermission === 'true' : undefined,
-    assetUseComPermission: assetUseComPermission ? assetUseComPermission === 'true' : undefined,
+    assetUsePermission: assetUsePermission
+      ? assetUsePermission === 'true'
+      : undefined,
+    assetUseComPermission: assetUseComPermission
+      ? assetUseComPermission === 'true'
+      : undefined,
     publisherNotes: _getFirstTagValue(event, 'publisherNotes'),
     extraCredits: _getFirstTagValue(event, 'extraCredits')
   }
@@ -167,11 +180,11 @@ export const initializeFormState = (
   otherAssets: existingModData?.otherAssets ?? true,
   uploadPermission: existingModData?.uploadPermission ?? true,
   modPermission: existingModData?.modPermission ?? true,
-  convPermission:existingModData?.convPermission ?? true,
-  assetUsePermission:existingModData?.assetUsePermission ?? true,
-  assetUseComPermission:existingModData?.assetUseComPermission ?? false,
-  publisherNotes:existingModData?.publisherNotes || '',
-  extraCredits:existingModData?.extraCredits || ''
+  convPermission: existingModData?.convPermission ?? true,
+  assetUsePermission: existingModData?.assetUsePermission ?? true,
+  assetUseComPermission: existingModData?.assetUseComPermission ?? false,
+  publisherNotes: existingModData?.publisherNotes || '',
+  extraCredits: existingModData?.extraCredits || ''
 })
 
 export const MOD_DRAFT_CACHE_KEY = 'draft-mod'

@@ -1,7 +1,7 @@
-import { NDKEvent, NDKFilter } from '@nostr-dev-kit/ndk'
+import { NDKEvent, NDKFilter, NDKKind } from '@nostr-dev-kit/ndk'
 import { REACTIONS } from 'constants.ts'
 import { useAppSelector, useDidMount, useNDKContext } from 'hooks'
-import { Event, kinds, UnsignedEvent } from 'nostr-tools'
+import { Event, UnsignedEvent } from 'nostr-tools'
 import { useMemo, useState } from 'react'
 import { toast } from 'react-toastify'
 import { UserRelaysType } from 'types'
@@ -23,7 +23,7 @@ export const useReactions = (params: UseReactionsParams) => {
 
   useDidMount(() => {
     const filter: NDKFilter = {
-      kinds: [kinds.Reaction]
+      kinds: [NDKKind.Reaction]
     }
 
     if (params.aTag) {
@@ -102,7 +102,7 @@ export const useReactions = (params: UseReactionsParams) => {
       if (!pubkey) return
 
       const unsignedEvent: UnsignedEvent = {
-        kind: kinds.Reaction,
+        kind: NDKKind.Reaction,
         created_at: now(),
         content: isPositive ? '+' : '-',
         pubkey,

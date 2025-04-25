@@ -19,11 +19,19 @@ import '../../styles/filters.css'
 import '../../styles/pagination.css'
 import '../../styles/search.css'
 import '../../styles/styles.css'
-import { FilterOptions, ModDetails, SortBy } from '../../types'
+import {
+  FilterOptions,
+  ModDetails,
+  NSFWFilter,
+  RepostFilter,
+  SortBy
+} from '../../types'
 import {
   DEFAULT_FILTER_OPTIONS,
   extractModData,
-  isModDataComplete
+  getFallbackPubkey,
+  isModDataComplete,
+  scrollIntoView
 } from 'utils'
 import { SearchInput } from 'components/SearchInput'
 import { ModsPageLoaderResult } from './loader'
@@ -34,11 +42,15 @@ import {
   NDKSubscription,
   NDKSubscriptionCacheUsage
 } from '@nostr-dev-kit/ndk'
+import { PaginationOffset } from 'components/Pagination'
+import { PaginatedRequest, ServerService } from 'controllers'
+import { useServer } from 'hooks'
 
 export const ModsPage = () => {
   const scrollTargetRef = useRef<HTMLDivElement>(null)
   const { repostList, muteLists, nsfwList } =
     useLoaderData() as ModsPageLoaderResult
+  const { isServerActive, isRelayFallbackActive } = useServer()
   const { ndk, fetchMods } = useNDKContext()
   const [isFetching, setIsFetching] = useState(false)
   const [mods, setMods] = useState<ModDetails[]>([])
@@ -47,25 +59,110 @@ export const ModsPage = () => {
     'filter',
     DEFAULT_FILTER_OPTIONS
   )
-
+  const [pagination, setPagination] = useState({
+    limit: MOD_FILTER_LIMIT,
+    total: 0,
+    offset: 0,
+    hasMore: false
+  })
   const userState = useAppSelector((state) => state.user)
+  const { userWot, userWotLevel } = useAppSelector((state) => state.wot)
+  const fetchModsWithPagination = useCallback(async (newOffset: number) => {
+    setPagination((prev) => ({
+      ...prev,
+      offset: newOffset
+    }))
+    scrollIntoView(scrollTargetRef.current)
+  }, [])
 
   useEffect(() => {
-    setIsFetching(true)
-    fetchMods({ source: filterOptions.source })
-      .then((res) => {
-        if (filterOptions.sort === SortBy.Latest) {
-          res.sort((a, b) => b.published_at - a.published_at)
-        } else if (filterOptions.sort === SortBy.Oldest) {
-          res.sort((a, b) => a.published_at - b.published_at)
-        }
-        setIsLoadMoreVisible(res.length >= MOD_FILTER_LIMIT)
-        setMods(res.slice(0, MOD_FILTER_LIMIT))
-      })
-      .finally(() => {
-        setIsFetching(false)
-      })
-  }, [filterOptions.source, fetchMods, filterOptions.sort])
+    if (isServerActive) {
+      setIsFetching(true)
+      const serverService = ServerService.getInstance()
+      const data: PaginatedRequest = {
+        kinds: [NDKKind.Classified],
+        '#t': [T_TAG_VALUE],
+        limit: pagination.limit,
+        offset: pagination.offset,
+        sort: filterOptions.sort === SortBy.Latest ? 'desc' : 'asc',
+        sortBy: 'published_at',
+        moderation: filterOptions.moderated,
+        wot: filterOptions.wot,
+        userMuteList: {
+          authors: [...muteLists.user.authors],
+          events: [...muteLists.user.replaceableEvents]
+        },
+        userWot,
+        userWotScore: userWotLevel
+      }
+
+      const loggedInUserPubkey =
+        (userState?.user?.pubkey as string | undefined) || getFallbackPubkey()
+      if (loggedInUserPubkey) data.pubkey = loggedInUserPubkey
+
+      if (filterOptions.nsfw !== NSFWFilter.Show_NSFW) {
+        data['#nsfw'] = [
+          filterOptions.nsfw === NSFWFilter.Only_NSFW ? 'true' : 'false'
+        ]
+      }
+      if (filterOptions.repost !== RepostFilter.Show_Repost) {
+        data['#repost'] = [
+          filterOptions.repost === RepostFilter.Only_Repost ? 'true' : 'false'
+        ]
+      }
+      if (filterOptions.source === window.location.host) {
+        data['#r'] = [window.location.host]
+      }
+
+      serverService
+        .fetch('mods', data)
+        .then((res) => {
+          setMods(res.events.filter(isModDataComplete).map(extractModData))
+          setPagination(res.pagination)
+        })
+        .finally(() => {
+          setIsFetching(false)
+        })
+    }
+  }, [
+    filterOptions.moderated,
+    filterOptions.nsfw,
+    filterOptions.repost,
+    filterOptions.sort,
+    filterOptions.source,
+    filterOptions.wot,
+    isServerActive,
+    muteLists.user.authors,
+    muteLists.user.replaceableEvents,
+    pagination.limit,
+    pagination.offset,
+    userState?.user?.pubkey,
+    userWot,
+    userWotLevel
+  ])
+  useEffect(() => {
+    if (isRelayFallbackActive) {
+      setIsFetching(true)
+      fetchMods({ source: filterOptions.source })
+        .then((res) => {
+          if (filterOptions.sort === SortBy.Latest) {
+            res.sort((a, b) => b.published_at - a.published_at)
+          } else if (filterOptions.sort === SortBy.Oldest) {
+            res.sort((a, b) => a.published_at - b.published_at)
+          }
+          setIsLoadMoreVisible(res.length >= MOD_FILTER_LIMIT)
+          setMods(res.slice(0, MOD_FILTER_LIMIT))
+        })
+        .finally(() => {
+          setIsFetching(false)
+        })
+    }
+  }, [
+    fetchMods,
+    filterOptions.sort,
+    filterOptions.source,
+    isRelayFallbackActive
+  ])
 
   const lastMod: ModDetails | undefined = useMemo(() => {
     // For the latest sort find oldest mod
@@ -84,7 +181,7 @@ export const ModsPage = () => {
   // Add missing mods to the list
   useEffect(() => {
     let sub: NDKSubscription
-    if (lastMod) {
+    if (isRelayFallbackActive && lastMod) {
       const filter: NDKFilter = {
         kinds: [NDKKind.Classified],
         '#t': [T_TAG_VALUE]
@@ -132,7 +229,13 @@ export const ModsPage = () => {
     return () => {
       if (sub) sub.stop()
     }
-  }, [filterOptions.sort, filterOptions.source, lastMod, ndk])
+  }, [
+    filterOptions.sort,
+    filterOptions.source,
+    isRelayFallbackActive,
+    lastMod,
+    ndk
+  ])
 
   const handleLoadMore = useCallback(() => {
     setIsFetching(true)
@@ -199,16 +302,28 @@ export const ModsPage = () => {
               </div>
             </div>
 
-            {!isFetching && isLoadMoreVisible && filteredModList.length > 0 && (
-              <div className='IBMSMListFeedLoadMore'>
-                <button
-                  className='btn btnMain IBMSMListFeedLoadMoreBtn'
-                  type='button'
-                  onClick={handleLoadMore}
-                >
-                  Load More
-                </button>
-              </div>
+            {isServerActive ? (
+              <PaginationOffset
+                total={pagination.total}
+                limit={pagination.limit}
+                offset={pagination.offset}
+                hasMore={pagination.hasMore}
+                onPageChange={fetchModsWithPagination}
+              />
+            ) : (
+              !isFetching &&
+              isLoadMoreVisible &&
+              filteredModList.length > 0 && (
+                <div className='IBMSMListFeedLoadMore'>
+                  <button
+                    className='btn btnMain IBMSMListFeedLoadMoreBtn'
+                    type='button'
+                    onClick={handleLoadMore}
+                  >
+                    Load More
+                  </button>
+                </div>
+              )
             )}
           </div>
         </div>

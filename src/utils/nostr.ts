@@ -3,14 +3,13 @@ import {
   finalizeEvent,
   generateSecretKey,
   getPublicKey,
-  kinds,
   nip04,
   nip19,
   UnsignedEvent
 } from 'nostr-tools'
 import { toast } from 'react-toastify'
 import { log, LogType } from './utils'
-import NDK, { NDKEvent } from '@nostr-dev-kit/ndk'
+import NDK, { NDKEvent, NDKKind } from '@nostr-dev-kit/ndk'
 
 /**
  * Get the current time in seconds since the Unix epoch (January 1, 1970).
@@ -228,7 +227,7 @@ export const sendDMUsingRandomKey = async (
   // Construct the unsigned event containing the encrypted message and relevant metadata
   const unsignedEvent: UnsignedEvent = {
     pubkey: getPublicKey(secretKey),
-    kind: kinds.EncryptedDirectMessage,
+    kind: NDKKind.EncryptedDirectMessage,
     created_at: now(),
     tags: [['p', receiver]],
     content: encryptedMessage

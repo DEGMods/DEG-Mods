@@ -11,9 +11,9 @@ import {
   now,
   removeLocalStorageItem
 } from 'utils'
-import { kinds, UnsignedEvent, Event, nip19 } from 'nostr-tools'
+import { UnsignedEvent, Event, nip19 } from 'nostr-tools'
 import { toast } from 'react-toastify'
-import { NDKEvent } from '@nostr-dev-kit/ndk'
+import { NDKEvent, NDKKind } from '@nostr-dev-kit/ndk'
 import { v4 as uuidv4 } from 'uuid'
 import { store } from 'store'
 
@@ -74,7 +74,7 @@ export const writeRouteAction =
         ? formEdit.published_at
         : currentTimeStamp
 
-    const aTag = `${kinds.LongFormArticle}:${hexPubkey}:${uuid}`
+    const aTag = `${NDKKind.Article}:${hexPubkey}:${uuid}`
     const tTags = formSubmit
       .tags!.toLowerCase()
       .split(',')
@@ -96,7 +96,7 @@ export const writeRouteAction =
     if (formSubmit.nsfw) tags.push(['L', 'content-warning'])
 
     const unsignedEvent: UnsignedEvent = {
-      kind: kinds.LongFormArticle,
+      kind: NDKKind.Article,
       created_at: currentTimeStamp,
       pubkey: hexPubkey,
       content: content,

@@ -1,16 +1,29 @@
 import {
+  NDKEvent,
   NDKFilter,
   NDKKind,
   NDKSubscriptionCacheUsage
 } from '@nostr-dev-kit/ndk'
-import { useAppSelector, useLocalStorage, useNDKContext } from 'hooks'
-import { useEffect, useMemo, useState } from 'react'
+import {
+  useAppSelector,
+  useLocalStorage,
+  useNDKContext,
+  useServer
+} from 'hooks'
+import { useCallback, useEffect, useMemo, useRef, useState } from 'react'
 import { BlogCardDetails, FilterOptions, NSFWFilter, SortBy } from 'types'
-import { DEFAULT_FILTER_OPTIONS, extractBlogCardDetails } from 'utils'
+import {
+  DEFAULT_FILTER_OPTIONS,
+  extractBlogCardDetails,
+  scrollIntoView
+} from 'utils'
 import { FeedPageLoaderResult } from './loader'
 import { useLoaderData } from 'react-router-dom'
 import { LoadingSpinner } from 'components/LoadingSpinner'
 import { BlogCard } from 'components/BlogCard'
+import { PROFILE_BLOG_FILTER_LIMIT } from '../../constants'
+import { PaginationOffset } from 'components/Pagination'
+import { ServerService, PaginatedRequest } from 'controllers'
 
 export const FeedTabBlogs = () => {
   const SHOWING_STEP = 10
@@ -29,8 +42,70 @@ export const FeedTabBlogs = () => {
   const [isLoadMoreVisible, setIsLoadMoreVisible] = useState(true)
   const [showing, setShowing] = useState(SHOWING_STEP)
 
+  const scrollTargetRef = useRef<HTMLDivElement>(null)
+  const { isServerActive, isRelayFallbackActive } = useServer()
+  const [pagination, setPagination] = useState({
+    limit: PROFILE_BLOG_FILTER_LIMIT,
+    total: 0,
+    offset: 0,
+    hasMore: false
+  })
+  const fetchModsWithPagination = useCallback(async (newOffset: number) => {
+    setPagination((prev) => ({
+      ...prev,
+      offset: newOffset
+    }))
+    scrollIntoView(scrollTargetRef.current)
+  }, [])
+
   useEffect(() => {
-    if (!userPubkey) return
+    if (!isServerActive || !userPubkey) return
+    setIsFetching(true)
+    const serverService = ServerService.getInstance()
+    const data: PaginatedRequest = {
+      kinds: [NDKKind.Article],
+      authors: [...followList, userPubkey],
+      limit: pagination.limit,
+      offset: pagination.offset,
+      sort: filterOptions.sort === SortBy.Latest ? 'desc' : 'asc',
+      sortBy: 'published_at'
+    }
+    if (filterOptions.nsfw === NSFWFilter.Only_NSFW) {
+      data['#L'] = ['content-warning']
+    } else if (filterOptions.nsfw === NSFWFilter.Hide_NSFW) {
+      data['!#L'] = ['content-warning']
+    }
+
+    if (filterOptions.source === window.location.host) {
+      data['#r'] = [window.location.host]
+    }
+    serverService
+      .fetch('mods', data)
+      .then((res) => {
+        setBlogs(
+          res.events.map((event) => {
+            return extractBlogCardDetails(new NDKEvent(ndk, event))
+          })
+        )
+        setPagination(res.pagination)
+      })
+      .finally(() => {
+        setIsFetching(false)
+      })
+  }, [
+    filterOptions.nsfw,
+    filterOptions.sort,
+    filterOptions.source,
+    followList,
+    isServerActive,
+    ndk,
+    pagination.limit,
+    pagination.offset,
+    userPubkey
+  ])
+
+  useEffect(() => {
+    if (!userPubkey || !isRelayFallbackActive) return
 
     setIsFetching(true)
     setIsLoadMoreVisible(true)
@@ -60,7 +135,14 @@ export const FeedTabBlogs = () => {
       .finally(() => {
         setIsFetching(false)
       })
-  }, [filterOptions.nsfw, filterOptions.source, followList, ndk, userPubkey])
+  }, [
+    filterOptions.nsfw,
+    filterOptions.source,
+    followList,
+    isRelayFallbackActive,
+    ndk,
+    userPubkey
+  ])
 
   const filteredBlogs = useMemo(() => {
     let _blogs = blogs || []
@@ -94,12 +176,13 @@ export const FeedTabBlogs = () => {
       )
     }
 
-    showing > 0 && _blogs.splice(showing)
+    showing > 0 && isRelayFallbackActive && _blogs.splice(showing)
     return _blogs
   }, [
     blogs,
     filterOptions.nsfw,
     filterOptions.sort,
+    isRelayFallbackActive,
     muteLists.admin.authors,
     muteLists.admin.replaceableEvents,
     nsfwList,
@@ -173,23 +256,38 @@ export const FeedTabBlogs = () => {
           <p>You aren't following people (or there are no posts to show)</p>
         </div>
       )}
-      <div className='IBMSMSplitMainFullSideSec IBMSMSMFSSContent'>
+      <div
+        className='IBMSMSplitMainFullSideSec IBMSMSMFSSContent'
+        ref={scrollTargetRef}
+      >
         <div className='IBMSMList IBMSMListFeed'>
           {filteredBlogs.map((blog) => (
             <BlogCard key={blog.id} {...blog} />
           ))}
         </div>
       </div>
-      {!isFetching && isLoadMoreVisible && filteredBlogs.length > 0 && (
-        <div className='IBMSMListFeedLoadMore'>
-          <button
-            className='btn btnMain IBMSMListFeedLoadMoreBtn'
-            type='button'
-            onClick={handleLoadMore}
-          >
-            Load More
-          </button>
-        </div>
+      {isServerActive ? (
+        <PaginationOffset
+          total={pagination.total}
+          limit={pagination.limit}
+          offset={pagination.offset}
+          hasMore={pagination.hasMore}
+          onPageChange={fetchModsWithPagination}
+        />
+      ) : (
+        !isFetching &&
+        isLoadMoreVisible &&
+        filteredBlogs.length > 0 && (
+          <div className='IBMSMListFeedLoadMore'>
+            <button
+              className='btn btnMain IBMSMListFeedLoadMoreBtn'
+              type='button'
+              onClick={handleLoadMore}
+            >
+              Load More
+            </button>
+          </div>
+        )
       )}
     </>
   )

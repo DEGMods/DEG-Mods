@@ -1,5 +1,5 @@
-import { kinds } from 'nostr-tools'
 import { SignedEvent } from '.'
+import { NDKKind } from '@nostr-dev-kit/ndk'
 
 export interface LnurlResponse {
   callback: string
@@ -24,7 +24,7 @@ export const isLnurlResponse = (obj: any): obj is LnurlResponse =>
   'allowsNostr' in obj
 
 export interface ZapRequest {
-  kind: typeof kinds.ZapRequest
+  kind: typeof NDKKind.ZapRequest
   content: string
   tags: string[][]
   pubkey: string
@@ -36,5 +36,5 @@ export interface PaymentRequest extends SignedEvent {
 }
 
 export interface ZapReceipt extends SignedEvent {
-  kind: typeof kinds.Zap
+  kind: typeof NDKKind.Zap
 }

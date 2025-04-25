@@ -1,6 +1,6 @@
-import { NDKFilter } from '@nostr-dev-kit/ndk'
+import { NDKFilter, NDKKind } from '@nostr-dev-kit/ndk'
 import { NDKContextType } from 'contexts/NDKContext'
-import { kinds, nip19, UnsignedEvent } from 'nostr-tools'
+import { nip19, UnsignedEvent } from 'nostr-tools'
 import { ActionFunctionArgs } from 'react-router-dom'
 import { toast } from 'react-toastify'
 import { store } from 'store'
@@ -57,7 +57,7 @@ export const blogRouteAction =
       // Define the event filter to search for the user's mute list events.
       // We look for events of a specific kind (Mutelist) authored by the given hexPubkey.
       const filter: NDKFilter = {
-        kinds: [kinds.Mutelist],
+        kinds: [NDKKind.MuteList],
         authors: [hexPubkey]
       }
 
@@ -84,7 +84,7 @@ export const blogRouteAction =
 
         unsignedEvent = {
           pubkey: muteListEvent.pubkey,
-          kind: kinds.Mutelist,
+          kind: NDKKind.MuteList,
           content: muteListEvent.content,
           created_at: now(),
           tags: [...tags]
@@ -92,7 +92,7 @@ export const blogRouteAction =
       } else {
         unsignedEvent = {
           pubkey: hexPubkey,
-          kind: kinds.Mutelist,
+          kind: NDKKind.MuteList,
           content: '',
           created_at: now(),
           tags: [['a', aTag]]
@@ -113,7 +113,7 @@ export const blogRouteAction =
 
     const handleUnblock = async () => {
       const filter: NDKFilter = {
-        kinds: [kinds.Mutelist],
+        kinds: [NDKKind.MuteList],
         authors: [hexPubkey]
       }
       const muteListEvent = await ndkContext.fetchEventFromUserRelays(
@@ -129,7 +129,7 @@ export const blogRouteAction =
       const tags = muteListEvent.tags
       const unsignedEvent: UnsignedEvent = {
         pubkey: muteListEvent.pubkey,
-        kind: kinds.Mutelist,
+        kind: NDKKind.MuteList,
         content: muteListEvent.content,
         created_at: now(),
         tags: tags.filter((item) => item[0] !== 'a' || item[1] !== aTag)
@@ -147,7 +147,7 @@ export const blogRouteAction =
     }
     const handleAddNSFW = async () => {
       const filter: NDKFilter = {
-        kinds: [kinds.Curationsets],
+        kinds: [NDKKind.ArticleCurationSet],
         authors: [hexPubkey],
         '#d': ['nsfw']
       }
@@ -174,7 +174,7 @@ export const blogRouteAction =
 
         unsignedEvent = {
           pubkey: nsfwListEvent.pubkey,
-          kind: kinds.Curationsets,
+          kind: NDKKind.ArticleCurationSet,
           content: nsfwListEvent.content,
           created_at: now(),
           tags: [...tags]
@@ -182,7 +182,7 @@ export const blogRouteAction =
       } else {
         unsignedEvent = {
           pubkey: hexPubkey,
-          kind: kinds.Curationsets,
+          kind: NDKKind.ArticleCurationSet,
           content: '',
           created_at: now(),
           tags: [
@@ -204,7 +204,7 @@ export const blogRouteAction =
     }
     const handleRemoveNSFW = async () => {
       const filter: NDKFilter = {
-        kinds: [kinds.Curationsets],
+        kinds: [NDKKind.ArticleCurationSet],
         authors: [hexPubkey],
         '#d': ['nsfw']
       }
@@ -224,7 +224,7 @@ export const blogRouteAction =
 
       const unsignedEvent: UnsignedEvent = {
         pubkey: nsfwListEvent.pubkey,
-        kind: kinds.Curationsets,
+        kind: NDKKind.ArticleCurationSet,
         content: nsfwListEvent.content,
         created_at: now(),
         tags: tags.filter((item) => item[0] !== 'a' || item[1] !== aTag)

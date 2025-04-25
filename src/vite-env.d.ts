@@ -8,6 +8,7 @@ interface ImportMetaEnv {
   readonly VITE_FALLBACK_MOD_IMAGE: string
   readonly VITE_FALLBACK_GAME_IMAGE: string
   readonly VITE_BLOG_NPUBS: string
+  readonly VITE_DEFAULT_SERVER: string
   // more env variables...
 }
 

@@ -1,6 +1,6 @@
-import { NDKFilter } from '@nostr-dev-kit/ndk'
+import { NDKFilter, NDKKind } from '@nostr-dev-kit/ndk'
 import { NDKContextType } from 'contexts/NDKContext'
-import { kinds, nip19, UnsignedEvent } from 'nostr-tools'
+import { nip19, UnsignedEvent } from 'nostr-tools'
 import { ActionFunctionArgs } from 'react-router-dom'
 import { toast } from 'react-toastify'
 import { store } from 'store'
@@ -75,7 +75,7 @@ export const reportRouteAction =
       // Define the event filter to search for the user's mute list events.
       // We look for events of a specific kind (Mutelist) authored by the given hexPubkey.
       const filter: NDKFilter = {
-        kinds: [kinds.Mutelist],
+        kinds: [NDKKind.MuteList],
         authors: [hexPubkey]
       }
 
@@ -98,7 +98,7 @@ export const reportRouteAction =
         tags.push(['a', aTag])
         unsignedEvent = {
           pubkey: muteListEvent.pubkey,
-          kind: kinds.Mutelist,
+          kind: NDKKind.MuteList,
           content: muteListEvent.content,
           created_at: now(),
           tags: [...tags]
@@ -106,7 +106,7 @@ export const reportRouteAction =
       } else {
         unsignedEvent = {
           pubkey: hexPubkey,
-          kind: kinds.Mutelist,
+          kind: NDKKind.MuteList,
           content: '',
           created_at: now(),
           tags: [['a', aTag]]

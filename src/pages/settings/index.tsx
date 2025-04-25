@@ -1,16 +1,18 @@
-import { AdminSVG, PreferenceSVG, ProfileSVG, RelaySVG } from 'components/SVGs'
+import {
+  AdminSVG,
+  PreferenceSVG,
+  ProfileSVG,
+  RelaySVG,
+  ServerSVG
+} from 'components/SVGs'
 import { useAppSelector } from 'hooks'
 import { logout } from 'nostr-login'
 import { useEffect, useState } from 'react'
-import { Link, useLocation } from 'react-router-dom'
+import { Link, Outlet, useLocation } from 'react-router-dom'
 import { toast } from 'react-toastify'
 import { appRoutes } from 'routes'
 import { AuthMethod } from 'store/reducers/user'
 import { copyTextToClipboard } from 'utils'
-import { ProfileSettings } from './profile'
-import { RelaySettings } from './relay'
-import { PreferencesSetting } from './preference'
-import { AdminSetting } from './admin'
 import { ProfileSection } from 'components/ProfileSection'
 
 import 'styles/feed.css'
@@ -21,7 +23,6 @@ import 'styles/styles.css'
 import 'styles/write.css'
 
 export const SettingsPage = () => {
-  const location = useLocation()
   const userState = useAppSelector((state) => state.user)
 
   return (
@@ -30,16 +31,7 @@ export const SettingsPage = () => {
         <div className='IBMSecMainGroup IBMSecMainGroupAlt'>
           <div className='IBMSMSplitMain IBMSMSplitMainThree'>
             <SettingTabs />
-            {location.pathname === appRoutes.settingsProfile && (
-              <ProfileSettings />
-            )}
-            {location.pathname === appRoutes.settingsRelays && (
-              <RelaySettings />
-            )}
-            {location.pathname === appRoutes.settingsPreferences && (
-              <PreferencesSetting />
-            )}
-            {location.pathname === appRoutes.settingsAdmin && <AdminSetting />}
+            <Outlet />
             {userState.auth && userState.user?.pubkey && (
               <ProfileSection pubkey={userState.user.pubkey as string} />
             )}
@@ -79,6 +71,11 @@ const SettingTabs = () => {
       path: appRoutes.settingsPreferences,
       label: 'Preferences',
       icon: <PreferenceSVG />
+    },
+    {
+      path: appRoutes.settingsServer,
+      label: 'Server',
+      icon: <ServerSVG />
     }
   ]
 

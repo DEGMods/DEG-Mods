@@ -1,12 +1,12 @@
-import { kinds, nip19 } from 'nostr-tools'
+import { nip19 } from 'nostr-tools'
 import { useMemo, useState } from 'react'
 import { Link, useNavigate, useNavigation } from 'react-router-dom'
 import { A11y, Autoplay, Navigation, Pagination } from 'swiper/modules'
 import { Swiper, SwiperSlide } from 'swiper/react'
-import { BlogCard } from '../components/BlogCard'
-import { GameCard } from '../components/GameCard'
-import { ModCard } from '../components/ModCard'
-import { LANDING_PAGE_DATA, PROFILE_BLOG_FILTER_LIMIT } from '../constants'
+import { BlogCard } from '../../components/BlogCard'
+import { GameCard } from '../../components/GameCard'
+import { ModCard } from '../../components/ModCard'
+import { LANDING_PAGE_DATA, PROFILE_BLOG_FILTER_LIMIT } from '../../constants'
 import {
   useAppSelector,
   useDidMount,
@@ -16,9 +16,9 @@ import {
   useNDKContext,
   useNSFWList,
   useRepostList
-} from '../hooks'
-import { appRoutes, getModPageRoute } from '../routes'
-import { BlogCardDetails, ModDetails, NSFWFilter, SortBy } from '../types'
+} from '../../hooks'
+import { appRoutes, getModPageRoute } from '../../routes'
+import { BlogCardDetails, ModDetails, NSFWFilter, SortBy } from '../../types'
 import {
   extractBlogCardDetails,
   extractModData,
@@ -26,14 +26,14 @@ import {
   log,
   LogType,
   npubToHex
-} from '../utils'
+} from '../../utils'
 
-import '../styles/cardLists.css'
-import '../styles/SimpleSlider.css'
-import '../styles/styles.css'
+import '../../styles/cardLists.css'
+import '../../styles/SimpleSlider.css'
+import '../../styles/styles.css'
 
 // Import Swiper styles
-import { NDKFilter } from '@nostr-dev-kit/ndk'
+import { NDKFilter, NDKKind } from '@nostr-dev-kit/ndk'
 import 'swiper/css'
 import 'swiper/css/navigation'
 import 'swiper/css/pagination'
@@ -358,7 +358,7 @@ const DisplayLatestBlogs = () => {
         // 2 should be featured and the most recent 2 from blog npubs
         // Populate the filter from known naddr (constants.ts)
         const filter: NDKFilter = {
-          kinds: [kinds.LongFormArticle],
+          kinds: [NDKKind.Article],
           authors: [],
           '#d': []
         }
@@ -387,7 +387,7 @@ const DisplayLatestBlogs = () => {
         // We fetch more posts in case of duplicates (from featured)
         const latestFilter: NDKFilter = {
           authors: blogHexkeys,
-          kinds: [kinds.LongFormArticle],
+          kinds: [NDKKind.Article],
           limit: PROFILE_BLOG_FILTER_LIMIT
         }
 

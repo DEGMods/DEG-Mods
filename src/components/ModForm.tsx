@@ -14,7 +14,6 @@ import {
   useSubmit
 } from 'react-router-dom'
 import { FixedSizeList } from 'react-window'
-import { useGames } from '../hooks'
 import '../styles/styles.css'
 import {
   DownloadUrl,
@@ -43,11 +42,7 @@ import { InputError } from './Inputs/Error'
 import { ImageUpload } from './Inputs/ImageUpload'
 import { useLocalCache } from 'hooks/useLocalCache'
 import { toast } from 'react-toastify'
-
-interface GameOption {
-  value: string
-  label: string
-}
+import { useGames } from 'hooks'
 
 export const ModForm = () => {
   const data = useLoaderData() as ModPageLoaderResult
@@ -59,8 +54,6 @@ export const ModForm = () => {
   )
   const navigation = useNavigation()
   const submit = useSubmit()
-  const games = useGames()
-  const [gameOptions, setGameOptions] = useState<GameOption[]>([])
 
   // Enable cache for the new mod
   const isEditing = typeof mod !== 'undefined'
@@ -92,14 +85,6 @@ export const ModForm = () => {
   }, [formState, isEditing, setCache])
 
   const editorRef = useRef<EditorRef>(null)
-
-  useEffect(() => {
-    const options = games.map((game) => ({
-      label: game['Game Name'],
-      value: game['Game Name']
-    }))
-    setGameOptions(options)
-  }, [games])
 
   const handleInputChange = useCallback((name: string, value: string) => {
     setFormState((prevState) => ({
@@ -269,7 +254,6 @@ export const ModForm = () => {
   return (
     <form className='IBMSMSMBS_Write' onSubmit={handlePublish}>
       <GameDropdown
-        options={gameOptions}
         selected={formState?.game}
         error={formErrors?.game}
         onChange={handleInputChange}
@@ -952,18 +936,13 @@ const ScreenshotUrlFields = React.memo(
 )
 
 type GameDropdownProps = {
-  options: GameOption[]
   selected: string
   error?: string
   onChange: (name: string, value: string) => void
 }
 
-const GameDropdown = ({
-  options,
-  selected,
-  error,
-  onChange
-}: GameDropdownProps) => {
+const GameDropdown = ({ selected, error, onChange }: GameDropdownProps) => {
+  const games = useGames()
   const [searchTerm, setSearchTerm] = useState('')
   const [debouncedSearchTerm, setDebouncedSearchTerm] = useState('')
   const inputRef = useRef<HTMLInputElement>(null)
@@ -979,14 +958,34 @@ const GameDropdown = ({
   const filteredOptions = useMemo(() => {
     const normalizedSearchTerm = normalizeSearchString(debouncedSearchTerm)
     if (normalizedSearchTerm === '') return []
-    else {
-      return options.filter((option) =>
-        memoizedNormalizeSearchString(option.label).includes(
-          normalizedSearchTerm.toLowerCase()
+    return games
+      .filter((game) =>
+        memoizedNormalizeSearchString(game['Game Name']).includes(
+          normalizedSearchTerm
         )
       )
-    }
-  }, [debouncedSearchTerm, options])
+      .sort((a, b) => {
+        const aGameName = memoizedNormalizeSearchString(a['Game Name'])
+        const bGameNAme = memoizedNormalizeSearchString(b['Game Name'])
+
+        // Exact matches first
+        if (
+          aGameName === normalizedSearchTerm &&
+          bGameNAme !== normalizedSearchTerm
+        )
+          return -1
+        if (
+          bGameNAme === normalizedSearchTerm &&
+          aGameName !== normalizedSearchTerm
+        )
+          return 1
+
+        // Then sort by position of match
+        const aIndex = aGameName.indexOf(normalizedSearchTerm)
+        const bIndex = bGameNAme.indexOf(normalizedSearchTerm)
+        return aIndex - bIndex
+      })
+  }, [debouncedSearchTerm, games])
 
   return (
     <div className='inputLabelWrapperMain'>
@@ -1043,14 +1042,14 @@ const GameDropdown = ({
                   className='dropdown-item dropdownMainMenuItem'
                   onMouseDown={() => (isOptionClicked.current = true)}
                   onClick={() => {
-                    onChange('game', filteredOptions[index].value)
+                    onChange('game', filteredOptions[index]['Game Name'])
                     setSearchTerm('')
                     if (inputRef.current) {
                       inputRef.current.blur()
                     }
                   }}
                 >
-                  {filteredOptions[index].label}
+                  {filteredOptions[index]['Game Name']}
                 </div>
               )}
             </FixedSizeList>

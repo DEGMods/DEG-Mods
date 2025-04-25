@@ -7,12 +7,15 @@ import App from './App.tsx'
 import './index.css'
 import { store } from './store/index.ts'
 import { NDKContextProvider } from 'contexts/NDKContext.tsx'
+import { ServerProvider } from 'contexts/ServerContext.tsx'
 
 ReactDOM.createRoot(document.getElementById('root')!).render(
   <React.StrictMode>
     <Provider store={store}>
       <NDKContextProvider>
-        <App />
+        <ServerProvider>
+          <App />
+        </ServerProvider>
       </NDKContextProvider>
       <ToastContainer />
     </Provider>

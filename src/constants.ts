@@ -127,3 +127,5 @@ export const MAX_VISIBLE_TEXT_PER_COMMENT = 500
 export const CLIENT_NAME_VALUE = 'DEG Mods'
 export const CLIENT_TAG_VALUE =
   '31990:f4bf1fb5ba8be839f70c7331733e309f780822b311f63e01f9dc8abbb428f8d5:bf1987d6-b772-43c6-bce7-42b638a9ffed'
+
+export const SERVER_URL_STORAGE_KEY = 'serverUrl'

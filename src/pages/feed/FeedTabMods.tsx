@@ -1,5 +1,10 @@
-import { useAppSelector, useLocalStorage, useNDKContext } from 'hooks'
-import { useEffect, useMemo, useState } from 'react'
+import {
+  useAppSelector,
+  useLocalStorage,
+  useNDKContext,
+  useServer
+} from 'hooks'
+import { useCallback, useEffect, useMemo, useRef, useState } from 'react'
 import { useLoaderData } from 'react-router-dom'
 import {
   FilterOptions,
@@ -11,7 +16,10 @@ import {
 import {
   constructModListFromEvents,
   DEFAULT_FILTER_OPTIONS,
-  orderEventsChronologically
+  extractModData,
+  isModDataComplete,
+  orderEventsChronologically,
+  scrollIntoView
 } from 'utils'
 import { FeedPageLoaderResult } from './loader'
 import {
@@ -21,11 +29,15 @@ import {
 } from '@nostr-dev-kit/ndk'
 import { LoadingSpinner } from 'components/LoadingSpinner'
 import { ModCard } from 'components/ModCard'
+import { PaginatedRequest, ServerService } from 'controllers'
+import { MOD_FILTER_LIMIT, T_TAG_VALUE } from '../../constants'
+import { PaginationOffset } from 'components/Pagination'
 
 export const FeedTabMods = () => {
   const SHOWING_STEP = 10
   const { muteLists, nsfwList, repostList, followList } =
     useLoaderData() as FeedPageLoaderResult
+  const { isServerActive, isRelayFallbackActive } = useServer()
   const userState = useAppSelector((state) => state.user)
   const userPubkey = userState.user?.pubkey as string | undefined
 
@@ -39,8 +51,65 @@ export const FeedTabMods = () => {
   const [isLoadMoreVisible, setIsLoadMoreVisible] = useState(true)
   const [showing, setShowing] = useState(SHOWING_STEP)
 
+  const scrollTargetRef = useRef<HTMLDivElement>(null)
+  const [pagination, setPagination] = useState({
+    limit: MOD_FILTER_LIMIT,
+    total: 0,
+    offset: 0,
+    hasMore: false
+  })
+  const fetchModsWithPagination = useCallback(async (newOffset: number) => {
+    setPagination((prev) => ({
+      ...prev,
+      offset: newOffset
+    }))
+    scrollIntoView(scrollTargetRef.current)
+  }, [])
+
   useEffect(() => {
-    if (!userPubkey) return
+    if (!isServerActive || !userPubkey) return
+
+    setIsFetching(true)
+    const serverService = ServerService.getInstance()
+    const data: PaginatedRequest = {
+      kinds: [NDKKind.Classified],
+      authors: [...followList, userPubkey],
+      '#t': [T_TAG_VALUE],
+      limit: pagination.limit,
+      offset: pagination.offset,
+      sort: filterOptions.sort === SortBy.Latest ? 'desc' : 'asc',
+      sortBy: 'published_at'
+    }
+    if (filterOptions.nsfw !== NSFWFilter.Show_NSFW) {
+      data['#nsfw'] = [
+        filterOptions.nsfw === NSFWFilter.Only_NSFW ? 'true' : 'false'
+      ]
+    }
+    if (filterOptions.source === window.location.host) {
+      data['#r'] = [window.location.host]
+    }
+    serverService
+      .fetch('mods', data)
+      .then((res) => {
+        setMods(res.events.filter(isModDataComplete).map(extractModData))
+        setPagination(res.pagination)
+      })
+      .finally(() => {
+        setIsFetching(false)
+      })
+  }, [
+    filterOptions.nsfw,
+    filterOptions.sort,
+    filterOptions.source,
+    followList,
+    isServerActive,
+    pagination.limit,
+    pagination.offset,
+    userPubkey
+  ])
+
+  useEffect(() => {
+    if (!userPubkey || !isRelayFallbackActive) return
 
     setIsFetching(true)
     setIsLoadMoreVisible(true)
@@ -66,7 +135,7 @@ export const FeedTabMods = () => {
       .finally(() => {
         setIsFetching(false)
       })
-  }, [filterOptions.source, followList, ndk, userPubkey])
+  }, [filterOptions.source, followList, isRelayFallbackActive, ndk, userPubkey])
 
   const filteredModList = useMemo(() => {
     const nsfwFilter = (mods: ModDetails[]) => {
@@ -132,12 +201,13 @@ export const FeedTabMods = () => {
     } else if (filterOptions.sort === SortBy.Oldest) {
       filtered.sort((a, b) => a.published_at - b.published_at)
     }
-    showing > 0 && filtered.splice(showing)
+    showing > 0 && isRelayFallbackActive && filtered.splice(showing)
     return filtered
   }, [
     filterOptions.nsfw,
     filterOptions.repost,
     filterOptions.sort,
+    isRelayFallbackActive,
     mods,
     muteLists.admin.authors,
     muteLists.admin.replaceableEvents,
@@ -210,22 +280,34 @@ export const FeedTabMods = () => {
         </div>
       )}
       <div className='IBMSMSplitMainFullSideSec IBMSMSMFSSContent'>
-        <div className='IBMSMList IBMSMListFeed'>
+        <div className='IBMSMList IBMSMListFeed' ref={scrollTargetRef}>
           {filteredModList.map((mod) => (
             <ModCard key={mod.id} {...mod} />
           ))}
         </div>
       </div>
-      {!isFetching && isLoadMoreVisible && filteredModList.length > 0 && (
-        <div className='IBMSMListFeedLoadMore'>
-          <button
-            className='btn btnMain IBMSMListFeedLoadMoreBtn'
-            type='button'
-            onClick={handleLoadMore}
-          >
-            Load More
-          </button>
-        </div>
+      {isServerActive ? (
+        <PaginationOffset
+          total={pagination.total}
+          limit={pagination.limit}
+          offset={pagination.offset}
+          hasMore={pagination.hasMore}
+          onPageChange={fetchModsWithPagination}
+        />
+      ) : (
+        !isFetching &&
+        isLoadMoreVisible &&
+        filteredModList.length > 0 && (
+          <div className='IBMSMListFeedLoadMore'>
+            <button
+              className='btn btnMain IBMSMListFeedLoadMoreBtn'
+              type='button'
+              onClick={handleLoadMore}
+            >
+              Load More
+            </button>
+          </div>
+        )
       )}
     </>
   )

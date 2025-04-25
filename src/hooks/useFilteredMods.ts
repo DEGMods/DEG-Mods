@@ -10,7 +10,6 @@ import {
   SortBy,
   WOTFilterOptions
 } from 'types'
-import { npubToHex } from 'utils'
 import { useAppSelector } from './redux'
 import { isInWoT } from 'utils/wot'
 
@@ -88,16 +87,20 @@ export const useFilteredMods = (
       // when user is logged, allow other filter selections
       const isWoTNpub =
         userState.user?.npub === import.meta.env.VITE_SITE_WOT_NPUB
+
+      const isOwnProfile =
+        author && userState.auth && userState.user?.pubkey === author
+
       switch (filterOptions.wot) {
         case WOTFilterOptions.None:
-          // Only admins can choose None, use siteWoT for others
-          return isWoTNpub
+          // Only admins (and own profile) can choose None, use siteWoT for others
+          return isWoTNpub || isOwnProfile
             ? mods
             : mods.filter((mod) => isInWoT(siteWot, siteWotLevel, mod.author))
         case WOTFilterOptions.Exclude:
-          // Only admins can choose Exlude, use siteWot for others
+          // Only admins (and own profile) can choose Exlude, use siteWot for others
           // Exlude returns the mods not in the site's WoT
-          return isWoTNpub
+          return isWoTNpub || isOwnProfile
             ? mods.filter((mod) => !isInWoT(siteWot, siteWotLevel, mod.author))
             : mods.filter((mod) => isInWoT(siteWot, siteWotLevel, mod.author))
         case WOTFilterOptions.Site_Only:
@@ -105,8 +108,8 @@ export const useFilteredMods = (
             isInWoT(siteWot, siteWotLevel, mod.author)
           )
         case WOTFilterOptions.Mine_Only:
-          // Only admins can choose Mine_Only, use siteWoT for others
-          return isWoTNpub
+          // Only admins (and own profile) can choose Mine_Only, use siteWoT for others
+          return isWoTNpub || isOwnProfile
             ? mods.filter((mod) => isInWoT(userWot, userWotLevel, mod.author))
             : mods.filter((mod) => isInWoT(siteWot, siteWotLevel, mod.author))
         case WOTFilterOptions.Site_And_Mine:
@@ -123,9 +126,7 @@ export const useFilteredMods = (
     filtered = wotFilter(filtered)
 
     const isAdmin = userState.user?.npub === import.meta.env.VITE_REPORTING_NPUB
-    const isOwner =
-      userState.user?.npub &&
-      npubToHex(userState.user.npub as string) === author
+    const isOwner = userState.user?.pubkey === author
     const isUnmoderatedFully =
       filterOptions.moderated === ModeratedFilter.Unmoderated_Fully
     const isOnlyBlocked =
@@ -164,21 +165,25 @@ export const useFilteredMods = (
 
     return filtered
   }, [
-    userState.auth,
+    mods,
     userState.user?.npub,
-    filterOptions.sort,
+    userState.user?.pubkey,
+    userState.auth,
+    author,
     filterOptions.moderated,
-    filterOptions.wot,
+    filterOptions.sort,
     filterOptions.nsfw,
     filterOptions.repost,
-    author,
-    mods,
-    muteLists,
+    filterOptions.wot,
     nsfwList,
     repostList,
     siteWot,
     siteWotLevel,
     userWot,
-    userWotLevel
+    userWotLevel,
+    muteLists.admin.authors,
+    muteLists.admin.replaceableEvents,
+    muteLists.user.authors,
+    muteLists.user.replaceableEvents
   ])
 }

@@ -1,7 +1,7 @@
 import { NDKEvent, NDKKind } from '@nostr-dev-kit/ndk'
 import { LoadingSpinner } from 'components/LoadingSpinner'
 import { useAppDispatch, useAppSelector, useNDKContext } from 'hooks'
-import { kinds, UnsignedEvent, Event } from 'nostr-tools'
+import { UnsignedEvent, Event } from 'nostr-tools'
 import { useEffect, useState } from 'react'
 import { toast } from 'react-toastify'
 import { setSiteWotLevel, setUserWotLevel } from 'store/reducers/wot'
@@ -61,7 +61,7 @@ export const PreferencesSetting = () => {
     }
 
     const unsignedEvent: UnsignedEvent = {
-      kind: kinds.Application,
+      kind: NDKKind.AppSpecificData,
       created_at: now(),
       pubkey: hexPubkey,
       content: '',

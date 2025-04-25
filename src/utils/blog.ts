@@ -1,4 +1,4 @@
-import { NDKEvent } from '@nostr-dev-kit/ndk'
+import { NDKEvent, NDKKind } from '@nostr-dev-kit/ndk'
 import {
   BlogCardDetails,
   BlogDetails,
@@ -6,7 +6,7 @@ import {
   BlogEventSubmitForm
 } from 'types'
 import { getFirstTagValue, getFirstTagValueAsInt, getTagValues } from './nostr'
-import { kinds, nip19 } from 'nostr-tools'
+import { nip19 } from 'nostr-tools'
 
 export const extractBlogDetails = (event: NDKEvent): Partial<BlogDetails> => {
   const dTag = getFirstTagValue(event, 'd')
@@ -16,7 +16,7 @@ export const extractBlogDetails = (event: NDKEvent): Partial<BlogDetails> => {
 
   // Create aTag from components if aTag is not included
   if (typeof aTag === 'undefined' && event.pubkey && dTag) {
-    aTag = `${kinds.LongFormArticle}:${event.pubkey}:${dTag}`
+    aTag = `${NDKKind.Article}:${event.pubkey}:${dTag}`
   }
 
   return {
@@ -49,7 +49,7 @@ export const extractBlogCardDetails = (
     naddr: blogDetails.dTag
       ? nip19.naddrEncode({
           identifier: blogDetails.dTag,
-          kind: kinds.LongFormArticle,
+          kind: NDKKind.Article,
           pubkey: event.pubkey
         })
       : undefined

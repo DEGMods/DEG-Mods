@@ -5,9 +5,12 @@ import {
 } from '@nostr-dev-kit/ndk'
 import { ModCard } from 'components/ModCard'
 import { ModFilter } from 'components/Filters/ModsFilter'
-import { PaginationWithPageNumbers } from 'components/Pagination'
+import {
+  PaginationOffset,
+  PaginationWithPageNumbers
+} from 'components/Pagination'
 import { SearchInput } from 'components/SearchInput'
-import { MAX_MODS_PER_PAGE, T_TAG_VALUE } from 'constants.ts'
+import { MAX_MODS_PER_PAGE, MOD_FILTER_LIMIT, T_TAG_VALUE } from 'constants.ts'
 import {
   useAppSelector,
   useFilteredMods,
@@ -15,20 +18,29 @@ import {
   useMuteLists,
   useNDKContext,
   useNSFWList,
+  useServer,
   useSessionStorage
 } from 'hooks'
-import { useEffect, useMemo, useRef, useState } from 'react'
+import { useCallback, useEffect, useMemo, useRef, useState } from 'react'
 import { useParams, useSearchParams } from 'react-router-dom'
-import { FilterOptions, ModDetails } from 'types'
+import {
+  FilterOptions,
+  ModDetails,
+  NSFWFilter,
+  RepostFilter,
+  SortBy
+} from 'types'
 import {
   CurationSetIdentifiers,
   DEFAULT_FILTER_OPTIONS,
   extractModData,
+  getFallbackPubkey,
   isModDataComplete,
   scrollIntoView
 } from 'utils'
 import { useCuratedSet } from 'hooks/useCuratedSet'
 import { CategoryFilterPopup } from 'components/Filters/CategoryFilterPopup'
+import { PaginatedRequest, ServerService } from 'controllers'
 
 export const GamePage = () => {
   const scrollTargetRef = useRef<HTMLDivElement>(null)
@@ -38,7 +50,21 @@ export const GamePage = () => {
   const muteLists = useMuteLists()
   const nsfwList = useNSFWList()
   const repostList = useCuratedSet(CurationSetIdentifiers.Repost)
-
+  const { isServerActive, isRelayFallbackActive } = useServer()
+  const { userWot, userWotLevel } = useAppSelector((state) => state.wot)
+  const [pagination, setPagination] = useState({
+    limit: MOD_FILTER_LIMIT,
+    total: 0,
+    offset: 0,
+    hasMore: false
+  })
+  const fetchModsWithPagination = useCallback(async (newOffset: number) => {
+    scrollIntoView(scrollTargetRef.current)
+    setPagination((prev) => ({
+      ...prev,
+      offset: newOffset
+    }))
+  }, [])
   const [filterOptions] = useLocalStorage<FilterOptions>(
     'filter',
     DEFAULT_FILTER_OPTIONS
@@ -170,6 +196,85 @@ export const GamePage = () => {
 
   useEffect(() => {
     if (!gameName) return
+    if (!isServerActive) return
+
+    const data: PaginatedRequest = {
+      kinds: [NDKKind.Classified],
+      '#t': [T_TAG_VALUE],
+      limit: pagination.limit,
+      offset: pagination.offset,
+      sort: filterOptions.sort === SortBy.Latest ? 'desc' : 'asc',
+      sortBy: 'published_at',
+      moderation: filterOptions.moderated,
+      wot: filterOptions.wot,
+      userMuteList: {
+        authors: [...muteLists.user.authors],
+        events: [...muteLists.user.replaceableEvents]
+      },
+      userWot,
+      userWotScore: userWotLevel,
+      '#game': [gameName]
+    }
+
+    const loggedInUserPubkey =
+      (userState?.user?.pubkey as string | undefined) || getFallbackPubkey()
+    if (loggedInUserPubkey) data.pubkey = loggedInUserPubkey
+
+    if (filterOptions.nsfw !== NSFWFilter.Show_NSFW) {
+      data['#nsfw'] = [
+        filterOptions.nsfw === NSFWFilter.Only_NSFW ? 'true' : 'false'
+      ]
+    }
+    if (filterOptions.repost !== RepostFilter.Show_Repost) {
+      data['#repost'] = [
+        filterOptions.repost === RepostFilter.Only_Repost ? 'true' : 'false'
+      ]
+    }
+    if (filterOptions.source === window.location.host) {
+      data['#r'] = [window.location.host]
+    }
+
+    // Category filter
+    if (linkedHierarchy && linkedHierarchy !== '') {
+      data['#L'] = ['com.degmods:' + linkedHierarchy]
+    } else if (hierarchies.length) {
+      data['#L'] = [...hierarchies.map((item) => 'com.degmods:' + item)]
+    }
+
+    // Search
+    if (searchTerm.trim() !== '') {
+      data['search'] = searchTerm.trim()
+    }
+
+    const serverService = ServerService.getInstance()
+    serverService.fetch('game', data).then((res) => {
+      setMods(res.events.filter(isModDataComplete).map(extractModData))
+      setPagination(res.pagination)
+    })
+  }, [
+    filterOptions.moderated,
+    filterOptions.nsfw,
+    filterOptions.repost,
+    filterOptions.sort,
+    filterOptions.source,
+    filterOptions.wot,
+    gameName,
+    hierarchies,
+    isServerActive,
+    linkedHierarchy,
+    muteLists.user.authors,
+    muteLists.user.replaceableEvents,
+    pagination.limit,
+    pagination.offset,
+    searchTerm,
+    userState?.user?.pubkey,
+    userWot,
+    userWotLevel
+  ])
+
+  useEffect(() => {
+    if (!gameName) return
+    if (!isRelayFallbackActive) return
 
     const filter: NDKFilter = {
       kinds: [NDKKind.Classified],
@@ -199,7 +304,7 @@ export const GamePage = () => {
     return () => {
       subscription.stop()
     }
-  }, [gameName, ndk])
+  }, [gameName, isRelayFallbackActive, ndk])
 
   if (!gameName) return null
 
@@ -274,16 +379,26 @@ export const GamePage = () => {
 
             <div className='IBMSecMain IBMSMListWrapper'>
               <div className='IBMSMList'>
-                {currentMods.map((mod) => (
+                {(isServerActive ? mods : currentMods).map((mod) => (
                   <ModCard key={mod.id} {...mod} />
                 ))}
               </div>
             </div>
-            <PaginationWithPageNumbers
-              currentPage={currentPage}
-              totalPages={totalPages}
-              handlePageChange={handlePageChange}
-            />
+            {isServerActive ? (
+              <PaginationOffset
+                total={pagination.total}
+                limit={pagination.limit}
+                offset={pagination.offset}
+                hasMore={pagination.hasMore}
+                onPageChange={fetchModsWithPagination}
+              />
+            ) : (
+              <PaginationWithPageNumbers
+                currentPage={currentPage}
+                totalPages={totalPages}
+                handlePageChange={handlePageChange}
+              />
+            )}
           </div>
         </div>
       </div>

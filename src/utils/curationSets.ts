@@ -1,6 +1,6 @@
-import { NDKFilter, NDKList } from '@nostr-dev-kit/ndk'
+import { NDKFilter, NDKKind, NDKList } from '@nostr-dev-kit/ndk'
 import { NDKContextType } from 'contexts/NDKContext'
-import { UnsignedEvent, kinds } from 'nostr-tools'
+import { UnsignedEvent } from 'nostr-tools'
 import { toast } from 'react-toastify'
 import { UserRelaysType } from 'types'
 import { now, npubToHex, signAndPublish } from './nostr'
@@ -38,7 +38,7 @@ export async function createCurationSet(
   }
   const unsignedEvent: UnsignedEvent = {
     pubkey: pubkey,
-    kind: kinds.Curationsets,
+    kind: NDKKind.ArticleCurationSet,
     content: '',
     created_at: now(),
     tags
@@ -64,7 +64,7 @@ export async function getReportingSet(
 
   if (hexKey) {
     const event = await ndkContext.fetchEvent({
-      kinds: [kinds.Curationsets],
+      kinds: [NDKKind.ArticleCurationSet],
       authors: [hexKey],
       '#d': [dTag]
     })
@@ -88,7 +88,7 @@ export async function getCurationSet({
   ndkContext
 }: CurationSetArgs) {
   const filter: NDKFilter = {
-    kinds: [kinds.Curationsets],
+    kinds: [NDKKind.ArticleCurationSet],
     authors: [pubkey],
     '#d': [dTag]
   }
@@ -129,7 +129,7 @@ export async function addToCurationSet(
 
     const unsignedEvent = {
       pubkey: pubkey,
-      kind: kinds.Curationsets,
+      kind: NDKKind.ArticleCurationSet,
       content: curationSetEvent.content,
       created_at: now(),
       tags: [...tags]
@@ -169,7 +169,7 @@ export async function removeFromCurationSet(
 
   const unsignedEvent: UnsignedEvent = {
     pubkey: pubkey,
-    kind: kinds.Curationsets,
+    kind: NDKKind.ArticleCurationSet,
     content: curationSetEvent.content,
     created_at: now(),
     tags: tags.filter((item) => item[0] !== 'a' || item[1] !== aTag)

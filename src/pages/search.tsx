@@ -11,12 +11,13 @@ import { ErrorBoundary } from 'components/ErrorBoundary'
 import { GameCard } from 'components/GameCard'
 import { ModCard } from 'components/ModCard'
 import { ModFilter } from 'components/Filters/ModsFilter'
-import { Pagination } from 'components/Pagination'
+import { Pagination, PaginationOffset } from 'components/Pagination'
 import { Profile } from 'components/ProfileSection'
 import { SearchInput } from 'components/SearchInput'
 import {
   MAX_GAMES_PER_PAGE,
   MAX_MODS_PER_PAGE,
+  MOD_FILTER_LIMIT,
   T_TAG_VALUE
 } from 'constants.ts'
 import {
@@ -26,15 +27,25 @@ import {
   useLocalStorage,
   useMuteLists,
   useNDKContext,
-  useNSFWList
+  useNSFWList,
+  useServer
 } from 'hooks'
-import React, { useEffect, useMemo, useRef, useState } from 'react'
+import React, { useCallback, useEffect, useMemo, useRef, useState } from 'react'
 import { useSearchParams } from 'react-router-dom'
-import { FilterOptions, ModDetails, ModeratedFilter, MuteLists } from 'types'
+import {
+  FilterOptions,
+  ModDetails,
+  ModeratedFilter,
+  MuteLists,
+  NSFWFilter,
+  RepostFilter,
+  SortBy
+} from 'types'
 import {
   CurationSetIdentifiers,
   DEFAULT_FILTER_OPTIONS,
   extractModData,
+  getFallbackPubkey,
   isModDataComplete,
   memoizedNormalizeSearchString,
   normalizeSearchString,
@@ -43,6 +54,7 @@ import {
 } from 'utils'
 import { useCuratedSet } from 'hooks/useCuratedSet'
 import dedup from 'utils/nostr'
+import { PaginatedRequest, ServerService } from 'controllers'
 
 enum SearchKindEnum {
   Mods = 'Mods',
@@ -58,7 +70,6 @@ export const SearchPage = () => {
   const nsfwList = useNSFWList()
   const repostList = useCuratedSet(CurationSetIdentifiers.Repost)
   const searchTermRef = useRef<HTMLInputElement>(null)
-
   const searchKind =
     (searchParams.get('kind') as SearchKindEnum) || SearchKindEnum.Mods
 
@@ -260,8 +271,104 @@ const ModsResult = ({
   const [mods, setMods] = useState<ModDetails[]>([])
   const [page, setPage] = useState(1)
   const userState = useAppSelector((state) => state.user)
+  const { isServerActive, isRelayFallbackActive } = useServer()
+  const { userWot, userWotLevel } = useAppSelector((state) => state.wot)
+  const [pagination, setPagination] = useState({
+    limit: MOD_FILTER_LIMIT,
+    total: 0,
+    offset: 0,
+    hasMore: false
+  })
+  const fetchModsWithPagination = useCallback(
+    async (newOffset: number) => {
+      setPagination((prev) => ({
+        ...prev,
+        offset: newOffset
+      }))
+      scrollIntoView(el)
+    },
+    [el]
+  )
+  useEffect(() => {
+    if (!isServerActive) return
+
+    const normalizedSearchTerm = normalizeSearchString(searchTerm)
+    // Search page requires search term
+    if (normalizedSearchTerm === '') {
+      setMods([])
+      setPagination({
+        limit: MOD_FILTER_LIMIT,
+        total: 0,
+        offset: 0,
+        hasMore: false
+      })
+      return
+    }
+
+    const serverService = ServerService.getInstance()
+    const data: PaginatedRequest = {
+      kinds: [NDKKind.Classified],
+      '#t': [T_TAG_VALUE],
+      limit: pagination.limit,
+      offset: pagination.offset,
+      sort: filterOptions.sort === SortBy.Latest ? 'desc' : 'asc',
+      sortBy: 'published_at',
+      moderation: filterOptions.moderated,
+      wot: filterOptions.wot,
+      userMuteList: {
+        authors: [...muteLists.user.authors],
+        events: [...muteLists.user.replaceableEvents]
+      },
+      userWot,
+      userWotScore: userWotLevel
+    }
+
+    const loggedInUserPubkey =
+      (userState?.user?.pubkey as string | undefined) || getFallbackPubkey()
+    if (loggedInUserPubkey) data.pubkey = loggedInUserPubkey
+
+    if (filterOptions.nsfw !== NSFWFilter.Show_NSFW) {
+      data['#nsfw'] = [
+        filterOptions.nsfw === NSFWFilter.Only_NSFW ? 'true' : 'false'
+      ]
+    }
+    if (filterOptions.repost !== RepostFilter.Show_Repost) {
+      data['#repost'] = [
+        filterOptions.repost === RepostFilter.Only_Repost ? 'true' : 'false'
+      ]
+    }
+    if (filterOptions.source === window.location.host) {
+      data['#r'] = [window.location.host]
+    }
+
+    // Search
+    data['search'] = normalizedSearchTerm
+
+    serverService.fetch('mods', data).then((res) => {
+      setMods(res.events.filter(isModDataComplete).map(extractModData))
+      setPagination(res.pagination)
+    })
+  }, [
+    filterOptions.moderated,
+    filterOptions.nsfw,
+    filterOptions.repost,
+    filterOptions.sort,
+    filterOptions.source,
+    filterOptions.wot,
+    isServerActive,
+    muteLists.user.authors,
+    muteLists.user.replaceableEvents,
+    pagination.limit,
+    pagination.offset,
+    searchTerm,
+    userState?.user?.pubkey,
+    userWot,
+    userWotLevel
+  ])
 
   useEffect(() => {
+    if (!isRelayFallbackActive) return
+
     const filter: NDKFilter = {
       kinds: [NDKKind.Classified],
       '#t': [T_TAG_VALUE]
@@ -287,7 +394,7 @@ const ModsResult = ({
     return () => {
       subscription.stop()
     }
-  }, [ndk])
+  }, [isRelayFallbackActive, ndk])
 
   useEffect(() => {
     scrollIntoView(el)
@@ -343,19 +450,33 @@ const ModsResult = ({
     <>
       <div className='IBMSecMain IBMSMListWrapper'>
         <div className='IBMSMList'>
-          {filteredModList
-            .slice((page - 1) * MAX_MODS_PER_PAGE, page * MAX_MODS_PER_PAGE)
-            .map((mod) => (
-              <ModCard key={mod.id} {...mod} />
-            ))}
+          {(isServerActive
+            ? mods
+            : filteredModList.slice(
+                (page - 1) * MAX_MODS_PER_PAGE,
+                page * MAX_MODS_PER_PAGE
+              )
+          ).map((mod) => (
+            <ModCard key={mod.id} {...mod} />
+          ))}
         </div>
       </div>
-      <Pagination
-        page={page}
-        disabledNext={filteredModList.length <= page * MAX_MODS_PER_PAGE}
-        handlePrev={handlePrev}
-        handleNext={handleNext}
-      />
+      {isServerActive ? (
+        <PaginationOffset
+          total={pagination.total}
+          limit={pagination.limit}
+          offset={pagination.offset}
+          hasMore={pagination.hasMore}
+          onPageChange={fetchModsWithPagination}
+        />
+      ) : (
+        <Pagination
+          page={page}
+          disabledNext={filteredModList.length <= page * MAX_MODS_PER_PAGE}
+          handlePrev={handlePrev}
+          handleNext={handleNext}
+        />
+      )}
     </>
   )
 }
