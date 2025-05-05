@@ -43,6 +43,7 @@ jobs:
           echo "VITE_FALLBACK_MOD_IMAGE=${{ vars.VITE_FALLBACK_MOD_IMAGE }}" >> .env
           echo "VITE_REPORTING_NPUB=${{ vars.VITE_REPORTING_NPUB }}" >> .env
           echo "VITE_BLOG_NPUBS=${{ vars.VITE_BLOG_NPUBS }}" >> .env
+	  echo "VITE_DEFAULT_SERVER=${{ vars.VITE_DEFAULT_SERVER }}" >> .env
           cat .env
       - name: Build
         run: npm run build
