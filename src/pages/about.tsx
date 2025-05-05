@@ -87,26 +87,26 @@ const FAQ_ITEMS: FAQItem[] = [
 
 export const AboutPage = () => {
   return (
-    <div className='InnerBodyMain'>
-      <div className='ContainerMain'>
-        <div className='IBMSecMainGroup'>
-          <div className='IBMSecMain'>
-            <div className='AboutSec'>
+    <div className="InnerBodyMain">
+      <div className="ContainerMain">
+        <div className="IBMSecMainGroup">
+          <div className="IBMSecMain">
+            <div className="AboutSec">
               <img
-                src='https://image.nostr.build/ad021a18bc5784d26c000ab63b56b8c4358ff3f0765b5eb71dc14415419bd6a2.png'
+                src="https://image.nostr.build/ad021a18bc5784d26c000ab63b56b8c4358ff3f0765b5eb71dc14415419bd6a2.png"
                 style={{ width: '100%' }}
-                alt='About Section'
+                alt="About Section"
               />
-              <div className='LearnText'>
-                <div className='LearnTextInside'>
+              <div className="LearnText">
+                <div className="LearnTextInside">
                   <h1
-                    className='LearnTextHeading'
+                    className="LearnTextHeading"
                     style={{ textAlign: 'center' }}
                   >
                     Liberating Game Mods
                   </h1>
-                  <img src={thumb} alt='Thumbnail' />
-                  <p className='LearnTextPara'>
+                  <img src={thumb} alt="Thumbnail" />
+                  <p className="LearnTextPara">
                     Never get your game mods censored, get banned, lose your
                     history, nor lose the connection between creators and fans.
                     Find the game mod you want and download it. Gamers and
@@ -114,7 +114,7 @@ export const AboutPage = () => {
                     an attempt to stop it.
                     <br />
                   </p>
-                  <p className='LearnTextPara'>
+                  <p className="LearnTextPara">
                     DEG Mods (Decentralized Game Mods) is an actual platform
                     where game mod creators can thrive without the fear of
                     censorship, bans, or losing their connection with fans. Game
@@ -122,10 +122,10 @@ export const AboutPage = () => {
                     well, we literally can't fuck with them.
                     <br />
                   </p>
-                  <h3 className='LearnTextHeading'>
+                  <h3 className="LearnTextHeading">
                     What's the story with DEG Mods?
                   </h3>
-                  <p className='LearnTextPara'>
+                  <p className="LearnTextPara">
                     The idea behind DEG Mods was born out of frustration with
                     the widespread censorship and control imposed on game mods
                     across various platforms. Many mod creators faced bans, lost
@@ -134,26 +134,26 @@ export const AboutPage = () => {
                     narrative by being developed on Nostr, a revolutionary new
                     communications protocol.{' '}
                     <a
-                      className='linkMain'
-                      href='https://nostr.com/'
-                      target='_blank'
+                      className="linkMain"
+                      href="https://nostr.com/"
+                      target="_blank"
                     >
                       Learn more about Nostr here.
                     </a>
                     <br />
                   </p>
-                  <h3 className='LearnTextHeading'>
+                  <h3 className="LearnTextHeading">
                     Real quick though. What's Nostr?
                   </h3>
-                  <p className='LearnTextPara'>
+                  <p className="LearnTextPara">
                     Nostr is a communications protocol that makes it extremely
                     hard for anyone to censor anyone's data, and can never have
                     your "account" get "banned". Nostr ensures that even this
                     site's creators cannot censor mods or ban anyone directly.
                     <br />
                   </p>
-                  <h3 className='LearnTextHeading'>How DEG Mods Works</h3>
-                  <p className='LearnTextPara'>
+                  <h3 className="LearnTextHeading">How DEG Mods Works</h3>
+                  <p className="LearnTextPara">
                     Unlike traditional mod hosting platforms, DEG Mods doesn't
                     host any files. Think of it as a browser, presenting game
                     mods published by their creators. Mod creators provide
@@ -167,23 +167,23 @@ export const AboutPage = () => {
                     under a different name, and every mod would still be
                     accessible, along with their links, reactions/ratings, and
                     comments, as well as being completely functional as well.
-                     You'd also be able to just simply run the site on your PC,
-                      without having it up on a domain.
+                    You'd also be able to just simply run the site on your PC,
+                    without having it up on a domain.
                   </p>
-                  <h3 className='LearnTextHeading'>Tips / Donations</h3>
-                  <p className='LearnTextPara'>
+                  <h3 className="LearnTextHeading">Tips / Donations</h3>
+                  <p className="LearnTextPara">
                     DEG Mods supports hassle-free money transfers for modders.
                     Fans can show their appreciation by directly tipping mod
                     creators via Bitcoin through the Lightning Network, an
-                    action known as Zapping. Choose to support creators so they can
-                    continue making more valuable game mods!
+                    action known as Zapping. Choose to support creators so they
+                    can continue making more valuable game mods!
                     <br />
                   </p>
-                  <h3 className='LearnTextHeading'>
+                  <h3 className="LearnTextHeading">
                     Wait, Crypto?! Ew.
                     <br />
                   </h3>
-                  <p className='LearnTextPara'>
+                  <p className="LearnTextPara">
                     We know. You don't have to use it. Nothing is reliant on it
                     on this platform/site. Pretend its not even there. We're not
                     even making any money out of this project/site, in-fact,
@@ -199,19 +199,19 @@ export const AboutPage = () => {
                     Bitcoin.
                     <br />
                   </p>
-                  <p className='LearnTextPara'>
+                  <p className="LearnTextPara">
                     DEG Mods is a response to censorship and oppression, to
                     bring freedom and not hinder people's desires and
                     creativity. If you know a mod creator that's being censored,
-                    then show them the way. Modders just want to mod, and gamers 
+                    then show them the way. Modders just want to mod, and gamers
                     just want to game in peace...
                     <br />
                   </p>
-                  <h3 className='LearnTextHeading'>
+                  <h3 className="LearnTextHeading">
                     So, What is DEG Mods?
                     <br />
                   </h3>
-                  <p className='LearnTextPara'>
+                  <p className="LearnTextPara">
                     DEG Mods is an open-source game mods browser (you can stop
                     right here if you want) of what's uploaded on servers owned
                     by unrelated people around the world. That's the appropriate
@@ -219,38 +219,37 @@ export const AboutPage = () => {
                     <br />
                     <br />
                     Another way of describing it:
-                    <br />
-                    A true mod site.
+                    <br />A true mod site.
                   </p>
-                  <div className='learnLinks'>
+                  <div className="learnLinks">
                     <a
-                      className='learnLinksLink'
-                      href='https://degmods.com/profile/nprofile1qqs0f0clkkagh6pe7ux8xvtn8ccf77qgy2e3ra37q8uaez4mks5034gfw4xg6'
-                      target='_blank'
+                      className="learnLinksLink"
+                      href="https://degmods.com/profile/nprofile1qqs0f0clkkagh6pe7ux8xvtn8ccf77qgy2e3ra37q8uaez4mks5034gfw4xg6"
+                      target="_blank"
                     >
                       <img
-                        className='learnLinksLinkImg'
-                        src='https://image.nostr.build/fb557f1b6d58c7bbcdf4d1edb1b48090c76ff1d1384b9d1aae13d652e7a3cfe4.gif'
+                        className="learnLinksLinkImg"
+                        src="https://image.nostr.build/fb557f1b6d58c7bbcdf4d1edb1b48090c76ff1d1384b9d1aae13d652e7a3cfe4.gif"
                         style={{ maxWidth: '28px' }}
                       />
                     </a>
                     <a
-                      className='learnLinksLink'
-                      href='https://twitter.com/DEGMods'
-                      target='_blank'
+                      className="learnLinksLink"
+                      href="https://twitter.com/DEGMods"
+                      target="_blank"
                     >
                       <img
-                        className='learnLinksLinkImg'
-                        src='https://image.nostr.build/4b38de750bec88a7977767bb69824a928927ed542fee96a258b0e7e4ee4c5b53.png'
+                        className="learnLinksLinkImg"
+                        src="https://image.nostr.build/4b38de750bec88a7977767bb69824a928927ed542fee96a258b0e7e4ee4c5b53.png"
                       />
                     </a>
                   </div>
                 </div>
-                <img className='LearnTextCharacterImgRight' src={vivian} />
+                <img className="LearnTextCharacterImgRight" src={vivian} />
               </div>
 
-              <div className='LearnFAQ'>
-                <FAQAccordion id='accordion-1' items={FAQ_ITEMS} />
+              <div className="LearnFAQ">
+                <FAQAccordion id="accordion-1" items={FAQ_ITEMS} />
               </div>
             </div>
           </div>

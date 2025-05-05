@@ -12,16 +12,16 @@ export const SubmitModPage = () => {
   const userState = useAppSelector((state) => state.user)
   const title = mod ? 'Edit Mod' : 'Submit a mod'
   return (
-    <div className='InnerBodyMain'>
-      <div className='ContainerMain'>
-        <div className='IBMSecMainGroup IBMSecMainGroupAlt'>
-          <div className='IBMSMSplitMain'>
-            <div className='IBMSMSplitMainBigSide'>
-              <div className='IBMSMTitleMain'>
-                <h2 className='IBMSMTitleMainHeading'>{title}</h2>
+    <div className="InnerBodyMain">
+      <div className="ContainerMain">
+        <div className="IBMSecMainGroup IBMSecMainGroupAlt">
+          <div className="IBMSMSplitMain">
+            <div className="IBMSMSplitMainBigSide">
+              <div className="IBMSMTitleMain">
+                <h2 className="IBMSMTitleMainHeading">{title}</h2>
               </div>
               {navigation.state === 'loading' && (
-                <LoadingSpinner desc='Fetching mod details from relays' />
+                <LoadingSpinner desc="Fetching mod details from relays" />
               )}
               {navigation.state === 'submitting' && (
                 <TimerLoadingSpinner timeoutMs={10000} countdownMs={30000}>

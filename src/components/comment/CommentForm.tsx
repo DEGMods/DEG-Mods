@@ -16,23 +16,23 @@ export const CommentForm = ({ handleSubmit }: CommentFormProps) => {
   }
 
   return (
-    <div className='IBMSMSMBSSCommentsCreation'>
-      <div className='IBMSMSMBSSCC_Top'>
+    <div className="IBMSMSMBSSCommentsCreation">
+      <div className="IBMSMSMBSSCC_Top">
         <textarea
-          className='IBMSMSMBSSCC_Top_Box'
+          className="IBMSMSMBSSCC_Top_Box"
           value={commentText}
           onChange={(e) => setCommentText(e.target.value)}
         />
       </div>
-      <div className='IBMSMSMBSSCC_Bottom'>
+      <div className="IBMSMSMBSSCC_Bottom">
         <button
-          className='btnMain'
+          className="btnMain"
           onClick={handleComment}
           disabled={isSubmitting}
         >
           {isSubmitting ? 'Sending...' : 'Comment'}
-          <div className='IBMSMSMBSSCL_CAElementLoadWrapper'>
-            <div className='IBMSMSMBSSCL_CAElementLoad'></div>
+          <div className="IBMSMSMBSSCL_CAElementLoadWrapper">
+            <div className="IBMSMSMBSSCL_CAElementLoad"></div>
           </div>
         </button>
       </div>

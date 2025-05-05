@@ -117,7 +117,7 @@ export const routerWithNdkContext = (context: NDKContextType) =>
           children: [
             {
               path: ':nevent',
-              element: <CommentsPopup title='Comment replies' />,
+              element: <CommentsPopup title="Comment replies" />,
               loader: commentsLoader(context)
             }
           ],
@@ -148,7 +148,7 @@ export const routerWithNdkContext = (context: NDKContextType) =>
           children: [
             {
               path: ':nevent',
-              element: <CommentsPopup title='Comment replies' />,
+              element: <CommentsPopup title="Comment replies" />,
               loader: commentsLoader(context)
             }
           ],
@@ -158,7 +158,7 @@ export const routerWithNdkContext = (context: NDKContextType) =>
         },
         {
           path: appRoutes.blogEdit,
-          element: <WritePage key='edit' />,
+          element: <WritePage key="edit" />,
           loader: blogRouteLoader(context),
           action: writeRouteAction(context),
           errorElement: <NotFoundPage title={'Something went wrong.'} />
@@ -170,19 +170,19 @@ export const routerWithNdkContext = (context: NDKContextType) =>
         {
           path: appRoutes.submitMod,
           action: submitModRouteAction(context),
-          element: <SubmitModPage key='submit' />,
+          element: <SubmitModPage key="submit" />,
           errorElement: <NotFoundPage title={'Something went wrong.'} />
         },
         {
           path: appRoutes.editMod,
           loader: modRouteLoader(context),
           action: submitModRouteAction(context),
-          element: <SubmitModPage key='edit' />,
+          element: <SubmitModPage key="edit" />,
           errorElement: <NotFoundPage title={'Something went wrong.'} />
         },
         {
           path: appRoutes.write,
-          element: <WritePage key='write' />,
+          element: <WritePage key="write" />,
           action: writeRouteAction(context)
         },
         {
@@ -231,7 +231,7 @@ export const routerWithNdkContext = (context: NDKContextType) =>
               children: [
                 {
                   path: ':note',
-                  element: <CommentsPopup title='Note and replies' />,
+                  element: <CommentsPopup title="Note and replies" />,
                   loader: commentsLoader(context)
                 }
               ]

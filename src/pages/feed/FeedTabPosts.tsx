@@ -192,8 +192,8 @@ export const FeedTabPosts = () => {
       {discoveredCount ? (
         <div>
           <button
-            className='btnMain'
-            type='button'
+            className="btnMain"
+            type="button"
             style={{ width: '100%' }}
             onClick={discoveredCount ? handleDiscoveredClick : undefined}
           >
@@ -203,24 +203,24 @@ export const FeedTabPosts = () => {
           </button>
         </div>
       ) : null}
-      {isFetching && <LoadingSpinner desc='Fetching notes from relays' />}
+      {isFetching && <LoadingSpinner desc="Fetching notes from relays" />}
       {filteredNotes.length === 0 && !isFetching && (
-        <div className='IBMSMListFeedNoPosts'>
+        <div className="IBMSMListFeedNoPosts">
           <p>You aren't following people (or there are no posts to show)</p>
         </div>
       )}
-      <div className='IBMSMSplitMainFullSideSec IBMSMSMFSSContent'>
-        <div className='IBMSMSMFSSContentPosts'>
+      <div className="IBMSMSplitMainFullSideSec IBMSMSMFSSContent">
+        <div className="IBMSMSMFSSContentPosts">
           {filteredNotes.map((note) => (
             <Note key={note.id} ndkEvent={note} />
           ))}
         </div>
       </div>
       {!isFetching && isLoadMoreVisible && filteredNotes.length > 0 && (
-        <div className='IBMSMListFeedLoadMore'>
+        <div className="IBMSMListFeedLoadMore">
           <button
-            className='btn btnMain IBMSMListFeedLoadMoreBtn'
-            type='button'
+            className="btn btnMain IBMSMListFeedLoadMoreBtn"
+            type="button"
             onClick={handleLoadMore}
           >
             Load More

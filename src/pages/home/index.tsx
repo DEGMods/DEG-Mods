@@ -52,14 +52,14 @@ export const HomePage = () => {
   }, [games])
 
   return (
-    <div className='InnerBodyMain'>
-      <div className='SliderWrapper'>
-        <div className='ContainerMain'>
-          <div className='IBMSecMain'>
-            <div className='simple-slider IBMSMSlider'>
+    <div className="InnerBodyMain">
+      <div className="SliderWrapper">
+        <div className="ContainerMain">
+          <div className="IBMSecMain">
+            <div className="simple-slider IBMSMSlider">
               <Swiper
-                className='swiper-container IBMSMSliderContainer'
-                wrapperClass='swiper-wrapper IBMSMSliderContainerWrapper'
+                className="swiper-container IBMSMSliderContainer"
+                wrapperClass="swiper-wrapper IBMSMSliderContainerWrapper"
                 modules={[Navigation, Pagination, A11y, Autoplay]}
                 pagination={{ clickable: true, dynamicBullets: true }}
                 slidesPerView={1}
@@ -71,7 +71,7 @@ export const HomePage = () => {
                 {LANDING_PAGE_DATA.featuredSlider.map((naddr) => (
                   <SwiperSlide
                     key={naddr}
-                    className='swiper-slide IBMSMSliderContainerWrapperSlider'
+                    className="swiper-slide IBMSMSliderContainerWrapperSlider"
                   >
                     <SlideContent naddr={naddr} />
                   </SwiperSlide>
@@ -81,13 +81,13 @@ export const HomePage = () => {
           </div>
         </div>
       </div>
-      <div className='ContainerMain'>
-        <div className='IBMSecMainGroup'>
-          <div className='IBMSecMain IBMSMListWrapper'>
-            <div className='IBMSMTitleMain'>
-              <h2 className='IBMSMTitleMainHeading'>Cool Games</h2>
+      <div className="ContainerMain">
+        <div className="IBMSecMainGroup">
+          <div className="IBMSecMain IBMSMListWrapper">
+            <div className="IBMSMTitleMain">
+              <h2 className="IBMSMTitleMainHeading">Cool Games</h2>
             </div>
-            <div className='IBMSMList IBMSMListFeaturedAlt'>
+            <div className="IBMSMList IBMSMListFeaturedAlt">
               {featuredGames.map((game) => (
                 <GameCard
                   key={game['Game Name']}
@@ -96,29 +96,29 @@ export const HomePage = () => {
                 />
               ))}
             </div>
-            <div className='IBMSMAction'>
+            <div className="IBMSMAction">
               <a
-                className='btn btnMain IBMSMActionBtn'
-                role='button'
+                className="btn btnMain IBMSMActionBtn"
+                role="button"
                 onClick={() => navigate(appRoutes.games)}
               >
                 View All
               </a>
             </div>
           </div>
-          <div className='IBMSecMain IBMSMListWrapper'>
-            <div className='IBMSMTitleMain'>
-              <h2 className='IBMSMTitleMainHeading'>Awesome Mods</h2>
+          <div className="IBMSecMain IBMSMListWrapper">
+            <div className="IBMSMTitleMain">
+              <h2 className="IBMSMTitleMainHeading">Awesome Mods</h2>
             </div>
-            <div className='IBMSMList IBMSMListAlt'>
+            <div className="IBMSMList IBMSMListAlt">
               {LANDING_PAGE_DATA.awesomeMods.map((naddr) => (
                 <DisplayMod key={naddr} naddr={naddr} />
               ))}
             </div>
-            <div className='IBMSMAction'>
+            <div className="IBMSMAction">
               <a
-                className='btn btnMain IBMSMActionBtn'
-                role='button'
+                className="btn btnMain IBMSMActionBtn"
+                role="button"
                 onClick={() => navigate(appRoutes.mods)}
               >
                 View All
@@ -173,29 +173,29 @@ const SlideContent = ({ naddr }: SlideContentProps) => {
 
   return (
     <>
-      <div className='IBMSMSCWSPicWrapper'>
+      <div className="IBMSMSCWSPicWrapper">
         <img
           src={mod.featuredImageUrl}
           onError={handleModImageError}
-          className='IBMSMSCWSPic'
+          className="IBMSMSCWSPic"
         />
       </div>
-      <div className='IBMSMSCWSInfo'>
-        <h3 className='IBMSMSCWSInfoHeading'>{mod.title}</h3>
-        <div className='IBMSMSCWSInfoTextWrapper'>
-          <p className='IBMSMSCWSInfoText'>
+      <div className="IBMSMSCWSInfo">
+        <h3 className="IBMSMSCWSInfoHeading">{mod.title}</h3>
+        <div className="IBMSMSCWSInfoTextWrapper">
+          <p className="IBMSMSCWSInfoText">
             {mod.summary}
             <br />
           </p>
         </div>
-        <p className='IBMSMSCWSInfoText IBMSMSCWSInfoText2'>
+        <p className="IBMSMSCWSInfoText IBMSMSCWSInfoText2">
           {mod.game}
           <br />
         </p>
-        <div className='IBMSMSliderContainerWrapperSliderAction'>
+        <div className="IBMSMSliderContainerWrapperSliderAction">
           <a
-            className='btn btnMain IBMSMSliderContainerWrapperSliderActionbtn'
-            role='button'
+            className="btn btnMain IBMSMSliderContainerWrapperSliderActionbtn"
+            role="button"
             onClick={() => navigate(getModPageRoute(naddr))}
           >
             Check it out
@@ -316,11 +316,11 @@ const DisplayLatestMods = () => {
   ])
 
   return (
-    <div className='IBMSecMain IBMSMListWrapper'>
-      <div className='IBMSMTitleMain'>
-        <h2 className='IBMSMTitleMainHeading'>Latest Mods</h2>
+    <div className="IBMSecMain IBMSMListWrapper">
+      <div className="IBMSMTitleMain">
+        <h2 className="IBMSMTitleMainHeading">Latest Mods</h2>
       </div>
-      <div className='IBMSMList'>
+      <div className="IBMSMList">
         {isFetchingLatestMods ? (
           <Spinner />
         ) : (
@@ -330,10 +330,10 @@ const DisplayLatestMods = () => {
         )}
       </div>
 
-      <div className='IBMSMAction'>
+      <div className="IBMSMAction">
         <a
-          className='btn btnMain IBMSMActionBtn'
-          role='button'
+          className="btn btnMain IBMSMActionBtn"
+          role="button"
           onClick={() => navigate(appRoutes.mods)}
         >
           View All
@@ -451,21 +451,19 @@ const DisplayLatestBlogs = () => {
   })
 
   return (
-    <div className='IBMSecMain IBMSMListWrapper'>
+    <div className="IBMSecMain IBMSMListWrapper">
       {navigation.state !== 'idle' && <LoadingSpinner desc={'Fetching...'} />}
-      <div className='IBMSMTitleMain'>
-        <h2 className='IBMSMTitleMainHeading'>Blog Posts</h2>
+      <div className="IBMSMTitleMain">
+        <h2 className="IBMSMTitleMainHeading">Blog Posts</h2>
       </div>
-      <div className='IBMSMList'>
-        {blogs?.map((b) => (
-          <BlogCard key={b.id} {...b} />
-        ))}
+      <div className="IBMSMList">
+        {blogs?.map((b) => <BlogCard key={b.id} {...b} />)}
       </div>
 
-      <div className='IBMSMAction'>
+      <div className="IBMSMAction">
         <Link
-          className='btn btnMain IBMSMActionBtn'
-          role='button'
+          className="btn btnMain IBMSMActionBtn"
+          role="button"
           to={appRoutes.blogs}
         >
           View All

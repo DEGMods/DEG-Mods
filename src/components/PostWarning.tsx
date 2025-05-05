@@ -3,7 +3,7 @@ interface PostWarningsProps {
 }
 
 export const PostWarnings = ({ type }: PostWarningsProps) => (
-  <div className='IBMSMSMBSSWarning'>
+  <div className="IBMSMSMBSSWarning">
     <p>
       {type === 'admin' ? (
         <>

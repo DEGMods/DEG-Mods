@@ -63,8 +63,8 @@ export const useReplies = (eTag: string | undefined) => {
     return rootEvent
       ? rootEvent
       : isComplete
-      ? replies[replies.length - 1]
-      : undefined
+        ? replies[replies.length - 1]
+        : undefined
   }, [isComplete, replies])
 
   const parentEvent = useMemo(() => {

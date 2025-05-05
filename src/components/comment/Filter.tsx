@@ -14,23 +14,23 @@ type FilterProps = {
 export const Filter = React.memo(
   ({ filterOptions, setFilterOptions }: FilterProps) => {
     return (
-      <div className='FiltersMain'>
-        <div className='FiltersMainElement'>
-          <div className='dropdown dropdownMain'>
+      <div className="FiltersMain">
+        <div className="FiltersMainElement">
+          <div className="dropdown dropdownMain">
             <button
-              className='btn dropdown-toggle btnMain btnMainDropdown'
-              aria-expanded='false'
-              data-bs-toggle='dropdown'
-              type='button'
+              className="btn dropdown-toggle btnMain btnMainDropdown"
+              aria-expanded="false"
+              data-bs-toggle="dropdown"
+              type="button"
             >
               {filterOptions.sort}
             </button>
 
-            <div className='dropdown-menu dropdownMainMenu'>
+            <div className="dropdown-menu dropdownMainMenu">
               {Object.values(SortByEnum).map((item) => (
                 <div
                   key={`sortBy-${item}`}
-                  className='dropdown-item dropdownMainMenuItem'
+                  className="dropdown-item dropdownMainMenuItem"
                   onClick={() =>
                     setFilterOptions((prev) => ({
                       ...prev,
@@ -44,22 +44,22 @@ export const Filter = React.memo(
             </div>
           </div>
         </div>
-        <div className='FiltersMainElement'>
-          <div className='dropdown dropdownMain'>
+        <div className="FiltersMainElement">
+          <div className="dropdown dropdownMain">
             <button
-              className='btn dropdown-toggle btnMain btnMainDropdown'
-              aria-expanded='false'
-              data-bs-toggle='dropdown'
-              type='button'
+              className="btn dropdown-toggle btnMain btnMainDropdown"
+              aria-expanded="false"
+              data-bs-toggle="dropdown"
+              type="button"
             >
               {filterOptions.author}
             </button>
 
-            <div className='dropdown-menu dropdownMainMenu'>
+            <div className="dropdown-menu dropdownMainMenu">
               {Object.values(AuthorFilterEnum).map((item) => (
                 <div
                   key={`sortBy-${item}`}
-                  className='dropdown-item dropdownMainMenuItem'
+                  className="dropdown-item dropdownMainMenuItem"
                   onClick={() =>
                     setFilterOptions((prev) => ({
                       ...prev,

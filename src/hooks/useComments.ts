@@ -71,16 +71,13 @@ export const useComments = (
 
       authorReadRelays.forEach((relayUrl) => relayUrls.add(relayUrl))
 
-      subscription = ndk.subscribe(
-        filter,
-        {
-          closeOnEose: false,
-          cacheUsage: NDKSubscriptionCacheUsage.CACHE_FIRST
-        },
-        relayUrls.size
+      subscription = ndk.subscribe(filter, {
+        closeOnEose: false,
+        cacheUsage: NDKSubscriptionCacheUsage.CACHE_FIRST,
+        relaySet: relayUrls.size
           ? NDKRelaySet.fromRelayUrls(Array.from(relayUrls), ndk)
           : undefined
-      )
+      })
 
       subscription.on('event', (ndkEvent) => {
         const eTags = ndkEvent.getMatchingTags('e')

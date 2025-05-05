@@ -10,19 +10,19 @@ export const BlogCard = ({ title, image, nsfw, naddr }: BlogCardProps) => {
   if (!naddr) return null
 
   return (
-    <Link to={getBlogPageRoute(naddr)} className='cardBlogMainWrapperLink'>
+    <Link to={getBlogPageRoute(naddr)} className="cardBlogMainWrapperLink">
       <div
-        className='cardBlogMain'
+        className="cardBlogMain"
         style={{
           background: `url("${
             image ? image : placeholder
           }") center / cover no-repeat`
         }}
       >
-        <div className='cardBlogMainInside'>
-          <h3 className='cardBlogMainInsideTitle'>{title}</h3>
+        <div className="cardBlogMainInside">
+          <h3 className="cardBlogMainInsideTitle">{title}</h3>
           {nsfw && (
-            <div className='IBMSMSMBSSTagsTag IBMSMSMBSSTagsTagNSFW IBMSMSMBSSTagsTagNSFWCard IBMSMSMBSSTagsTagNSFWCardAlt'>
+            <div className="IBMSMSMBSSTagsTag IBMSMSMBSSTagsTagNSFW IBMSMSMBSSTagsTagNSFWCard IBMSMSMBSSTagsTagNSFWCardAlt">
               <p>NSFW</p>
             </div>
           )}

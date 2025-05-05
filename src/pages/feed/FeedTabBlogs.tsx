@@ -249,18 +249,18 @@ export const FeedTabBlogs = () => {
   return (
     <>
       {isFetching && (
-        <LoadingSpinner desc='Fetching blog details from relays' />
+        <LoadingSpinner desc="Fetching blog details from relays" />
       )}
       {filteredBlogs.length === 0 && !isFetching && (
-        <div className='IBMSMListFeedNoPosts'>
+        <div className="IBMSMListFeedNoPosts">
           <p>You aren't following people (or there are no posts to show)</p>
         </div>
       )}
       <div
-        className='IBMSMSplitMainFullSideSec IBMSMSMFSSContent'
+        className="IBMSMSplitMainFullSideSec IBMSMSMFSSContent"
         ref={scrollTargetRef}
       >
-        <div className='IBMSMList IBMSMListFeed'>
+        <div className="IBMSMList IBMSMListFeed">
           {filteredBlogs.map((blog) => (
             <BlogCard key={blog.id} {...blog} />
           ))}
@@ -278,10 +278,10 @@ export const FeedTabBlogs = () => {
         !isFetching &&
         isLoadMoreVisible &&
         filteredBlogs.length > 0 && (
-          <div className='IBMSMListFeedLoadMore'>
+          <div className="IBMSMListFeedLoadMore">
             <button
-              className='btn btnMain IBMSMListFeedLoadMoreBtn'
-              type='button'
+              className="btn btnMain IBMSMListFeedLoadMoreBtn"
+              type="button"
               onClick={handleLoadMore}
             >
               Load More

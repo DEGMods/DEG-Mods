@@ -13,10 +13,10 @@ export const YouTubeButton = () => {
 
   return (
     <DialogButton
-      tooltipTitle='Insert Youtube video'
-      submitButtonTitle='Insert video'
-      dialogInputPlaceholder='Paste the youtube video URL'
-      buttonContent='YT'
+      tooltipTitle="Insert Youtube video"
+      submitButtonTitle="Insert video"
+      dialogInputPlaceholder="Paste the youtube video URL"
+      buttonContent="YT"
       onSubmit={(url) => {
         const videoId = getId(url)
         if (videoId) {

@@ -15,33 +15,33 @@ export const NotFoundPage = ({
   const location = useLocation()
 
   return (
-    <div className='InnerBodyMain'>
-      <div className='ContainerMain'>
-        <div className='IBMSecMainGroup IBMSecMainGroupAlt'>
-          <div className='IBMSecMain IBMSMListWrapper'>
-            <div className='IBMSMTitleMain'>
-              <h2 className='IBMSMTitleMainHeading'>{error?.title || title}</h2>
+    <div className="InnerBodyMain">
+      <div className="ContainerMain">
+        <div className="IBMSecMainGroup IBMSecMainGroupAlt">
+          <div className="IBMSecMain IBMSMListWrapper">
+            <div className="IBMSMTitleMain">
+              <h2 className="IBMSMTitleMainHeading">{error?.title || title}</h2>
             </div>
             <div>
               <p>{error?.message || message}</p>
             </div>
             <div
-              className='IBMSMAction'
+              className="IBMSMAction"
               style={{
                 gap: '10px'
               }}
             >
               <Link
                 to={location.pathname}
-                className='btn btnMain IBMSMActionBtn'
-                type='button'
+                className="btn btnMain IBMSMActionBtn"
+                type="button"
               >
                 Try again
               </Link>
               <Link
                 to={appRoutes.home}
-                className='btn btnMain IBMSMActionBtn'
-                type='button'
+                className="btn btnMain IBMSMActionBtn"
+                type="button"
               >
                 Go home
               </Link>

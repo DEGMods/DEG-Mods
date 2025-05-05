@@ -151,7 +151,7 @@ export const CategoryAutocomplete = ({
   const Row = ({ index }: { index: number }) => {
     return (
       <div
-        className='dropdown-item dropdownMainMenuItem dropdownMainMenuItemCategory'
+        className="dropdown-item dropdownMainMenuItem dropdownMainMenuItemCategory"
         onClick={() => handleSelect(filteredOptions[index])}
       >
         {capitalizeEachWord(filteredOptions[index].hierarchy)}
@@ -161,19 +161,19 @@ export const CategoryAutocomplete = ({
           (cat) => cat.hierarchy === filteredOptions[index].hierarchy
         ) && (
           <button
-            type='button'
-            className='btn btnMain btnMainInsideField btnMainRemove'
+            type="button"
+            className="btn btnMain btnMainInsideField btnMainRemove"
             onClick={() => handleRemove(filteredOptions[index])}
-            title='Remove'
+            title="Remove"
           >
             <svg
-              xmlns='http://www.w3.org/2000/svg'
-              viewBox='-32 0 512 512'
-              width='1em'
-              height='1em'
-              fill='currentColor'
+              xmlns="http://www.w3.org/2000/svg"
+              viewBox="-32 0 512 512"
+              width="1em"
+              height="1em"
+              fill="currentColor"
             >
-              <path d='M323.3 32.01H188.7C172.3 32.01 160 44.31 160 60.73V96.01H32C14.33 96.01 0 110.3 0 128S14.33 160 32 160H480c17.67 0 32-14.33 32-32.01S497.7 96.01 480 96.01H352v-35.28C352 44.31 339.7 32.01 323.3 32.01zM64.9 477.5C66.5 492.3 79.31 504 94.72 504H417.3c15.41 0 28.22-11.72 29.81-26.5L480 192.2H32L64.9 477.5z'></path>
+              <path d="M323.3 32.01H188.7C172.3 32.01 160 44.31 160 60.73V96.01H32C14.33 96.01 0 110.3 0 128S14.33 160 32 160H480c17.67 0 32-14.33 32-32.01S497.7 96.01 480 96.01H352v-35.28C352 44.31 339.7 32.01 323.3 32.01zM64.9 477.5C66.5 492.3 79.31 504 94.72 504H417.3c15.41 0 28.22-11.72 29.81-26.5L480 192.2H32L64.9 477.5z"></path>
             </svg>
           </button>
         )}
@@ -186,19 +186,19 @@ export const CategoryAutocomplete = ({
             (cat) => cat.hierarchy === filteredOptions[index].hierarchy
           ) && (
             <button
-              type='button'
-              className='btn btnMain btnMainInsideField btnMainAdd'
+              type="button"
+              className="btn btnMain btnMainInsideField btnMainAdd"
               onClick={() => handleAddNewCustom(filteredOptions[index])}
-              title='Add'
+              title="Add"
             >
               <svg
-                xmlns='http://www.w3.org/2000/svg'
-                viewBox='-32 0 512 512'
-                width='1em'
-                height='1em'
-                fill='currentColor'
+                xmlns="http://www.w3.org/2000/svg"
+                viewBox="-32 0 512 512"
+                width="1em"
+                height="1em"
+                fill="currentColor"
               >
-                <path d='M432 256c0 17.69-14.33 32.01-32 32.01H256v144c0 17.69-14.33 31.99-32 31.99s-32-14.3-32-31.99v-144H48c-17.67 0-32-14.32-32-32.01s14.33-31.99 32-31.99H192v-144c0-17.69 14.33-32.01 32-32.01s32 14.32 32 32.01v144h144C417.7 224 432 238.3 432 256z'></path>
+                <path d="M432 256c0 17.69-14.33 32.01-32 32.01H256v144c0 17.69-14.33 31.99-32 31.99s-32-14.3-32-31.99v-144H48c-17.67 0-32-14.32-32-32.01s14.33-31.99 32-31.99H192v-144c0-17.69 14.33-32.01 32-32.01s32 14.32 32 32.01v144h144C417.7 224 432 238.3 432 256z"></path>
               </svg>
             </button>
           )}
@@ -207,38 +207,41 @@ export const CategoryAutocomplete = ({
   }
 
   return (
-    <div className='inputLabelWrapperMain'>
-      <label className='form-label labelMain'>Categories</label>
-      <p className='labelDescriptionMain'>You can select multiple categories, or even add your own custom category (ex: custom &gt; custom sub)</p>
-      <div className='dropdown dropdownMain'>
-        <div className='inputWrapperMain inputWrapperMainAlt'>
+    <div className="inputLabelWrapperMain">
+      <label className="form-label labelMain">Categories</label>
+      <p className="labelDescriptionMain">
+        You can select multiple categories, or even add your own custom category
+        (ex: custom &gt; custom sub)
+      </p>
+      <div className="dropdown dropdownMain">
+        <div className="inputWrapperMain inputWrapperMainAlt">
           <input
-            type='text'
-            className='inputMain inputMainWithBtn dropdown-toggle'
-            placeholder='Select some categories...'
-            data-bs-toggle='dropdown'
+            type="text"
+            className="inputMain inputMainWithBtn dropdown-toggle"
+            placeholder="Select some categories..."
+            data-bs-toggle="dropdown"
             value={inputValue}
             onChange={handleInputChange}
           />
           <button
-            className='btn btnMain btnMainInsideField btnMainRemove'
-            title='Remove'
-            type='button'
+            className="btn btnMain btnMainInsideField btnMainRemove"
+            title="Remove"
+            type="button"
             onClick={handleReset}
           >
             <svg
-              xmlns='http://www.w3.org/2000/svg'
-              viewBox='0 0 512 512'
-              width='1em'
-              height='1em'
-              fill='currentColor'
+              xmlns="http://www.w3.org/2000/svg"
+              viewBox="0 0 512 512"
+              width="1em"
+              height="1em"
+              fill="currentColor"
             >
-              <path d='M480 416C497.7 416 512 430.3 512 448C512 465.7 497.7 480 480 480H150.6C133.7 480 117.4 473.3 105.4 461.3L25.37 381.3C.3786 356.3 .3786 315.7 25.37 290.7L258.7 57.37C283.7 32.38 324.3 32.38 349.3 57.37L486.6 194.7C511.6 219.7 511.6 260.3 486.6 285.3L355.9 416H480zM265.4 416L332.7 348.7L195.3 211.3L70.63 336L150.6 416L265.4 416z'></path>
+              <path d="M480 416C497.7 416 512 430.3 512 448C512 465.7 497.7 480 480 480H150.6C133.7 480 117.4 473.3 105.4 461.3L25.37 381.3C.3786 356.3 .3786 315.7 25.37 290.7L258.7 57.37C283.7 32.38 324.3 32.38 349.3 57.37L486.6 194.7C511.6 219.7 511.6 260.3 486.6 285.3L355.9 416H480zM265.4 416L332.7 348.7L195.3 211.3L70.63 336L150.6 416L265.4 416z"></path>
             </svg>
           </button>
 
           <div
-            className='dropdown-menu dropdownMainMenu dropdownMainMenuAlt category'
+            className="dropdown-menu dropdownMainMenu dropdownMainMenuAlt category"
             style={{
               maxHeight: '500px'
             }}
@@ -247,7 +250,7 @@ export const CategoryAutocomplete = ({
               filteredOptions.map((c, i) => <Row key={c.hierarchy} index={i} />)
             ) : (
               <div
-                className='dropdown-item dropdownMainMenuItem dropdownMainMenuItemCategory'
+                className="dropdown-item dropdownMainMenuItem dropdownMainMenuItemCategory"
                 onClick={handleAddNew}
               >
                 {inputValue &&
@@ -258,18 +261,18 @@ export const CategoryAutocomplete = ({
                   <>
                     Add "{inputValue}"
                     <button
-                      type='button'
-                      className='btn btnMain btnMainInsideField btnMainAdd'
-                      title='Add'
+                      type="button"
+                      className="btn btnMain btnMainInsideField btnMainAdd"
+                      title="Add"
                     >
                       <svg
-                        xmlns='http://www.w3.org/2000/svg'
-                        viewBox='-32 0 512 512'
-                        width='1em'
-                        height='1em'
-                        fill='currentColor'
+                        xmlns="http://www.w3.org/2000/svg"
+                        viewBox="-32 0 512 512"
+                        width="1em"
+                        height="1em"
+                        fill="currentColor"
                       >
-                        <path d='M432 256c0 17.69-14.33 32.01-32 32.01H256v144c0 17.69-14.33 31.99-32 31.99s-32-14.3-32-31.99v-144H48c-17.67 0-32-14.32-32-32.01s14.33-31.99 32-31.99H192v-144c0-17.69 14.33-32.01 32-32.01s32 14.32 32 32.01v144h144C417.7 224 432 238.3 432 256z'></path>
+                        <path d="M432 256c0 17.69-14.33 32.01-32 32.01H256v144c0 17.69-14.33 31.99-32 31.99s-32-14.3-32-31.99v-144H48c-17.67 0-32-14.32-32-32.01s14.33-31.99 32-31.99H192v-144c0-17.69 14.33-32.01 32-32.01s32 14.32 32 32.01v144h144C417.7 224 432 238.3 432 256z"></path>
                       </svg>
                     </button>
                   </>
@@ -282,7 +285,7 @@ export const CategoryAutocomplete = ({
         </div>
       </div>
       {LTags.length > 0 && (
-        <div className='IBMSMSMBSSCategories'>
+        <div className="IBMSMSMBSSCategories">
           {LTags.map((hierarchy) => {
             const hierarchicalCategories = hierarchy.split(`:`)
             const categories = hierarchicalCategories
@@ -294,17 +297,17 @@ export const CategoryAutocomplete = ({
                 return game ? (
                   <Link
                     key={`category-${i}`}
-                    target='_blank'
+                    target="_blank"
                     to={{
                       pathname: getGamePageRoute(game),
                       search: `h=${partialHierarchy}`
                     }}
-                    className='IBMSMSMBSSCategoriesBoxItem'
+                    className="IBMSMSMBSSCategoriesBoxItem"
                   >
                     <p>{capitalizeEachWord(c)}</p>
                   </Link>
                 ) : (
-                  <p className='IBMSMSMBSSCategoriesBoxItem'>
+                  <p className="IBMSMSMBSSCategoriesBoxItem">
                     {capitalizeEachWord(c)}
                   </p>
                 )
@@ -313,7 +316,7 @@ export const CategoryAutocomplete = ({
                 prev,
                 <div
                   key={`separator-${i}`}
-                  className='IBMSMSMBSSCategoriesBoxSeparator'
+                  className="IBMSMSMBSSCategoriesBoxSeparator"
                 >
                   <p>&gt;</p>
                 </div>,
@@ -321,7 +324,7 @@ export const CategoryAutocomplete = ({
               ])
 
             return (
-              <div key={hierarchy} className='IBMSMSMBSSCategoriesBox'>
+              <div key={hierarchy} className="IBMSMSMBSSCategoriesBox">
                 {categories}
               </div>
             )

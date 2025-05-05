@@ -17,22 +17,22 @@ export const CommentContent = ({
     <CommentDepthProvider>
       {isExpanded && (
         <div
-          className='IBMSMSMBSSCL_CBExpand IBMSMSMBSSCL_CBExpandAlt'
+          className="IBMSMSMBSSCL_CBExpand IBMSMSMBSSCL_CBExpandAlt"
           onClick={toggle}
         >
           <p>Hide full post</p>
         </div>
       )}
-      <div className='IBMSMSMBSSCL_CBText'>
+      <div className="IBMSMSMBSSCL_CBText">
         <NoteRender content={text} />
       </div>
       {isTextOverflowing && !isExpanded && (
-        <div className='IBMSMSMBSSCL_CBExpand' onClick={toggle}>
+        <div className="IBMSMSMBSSCL_CBExpand" onClick={toggle}>
           <p>View full post</p>
         </div>
       )}
       {isNsfw && (
-        <div className='IBMSMSMBSSCL_CommentNSWFTag'>
+        <div className="IBMSMSMBSSCL_CommentNSWFTag">
           <p>NSFW</p>
         </div>
       )}

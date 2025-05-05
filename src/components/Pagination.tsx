@@ -10,27 +10,27 @@ type PaginationProps = {
 export const Pagination = React.memo(
   ({ page, disabledNext, handlePrev, handleNext }: PaginationProps) => {
     return (
-      <div className='IBMSecMain'>
-        <div className='PaginationMain'>
-          <div className='PaginationMainInside'>
+      <div className="IBMSecMain">
+        <div className="PaginationMain">
+          <div className="PaginationMainInside">
             <button
-              className='PaginationMainInsideBox PaginationMainInsideBoxArrows'
+              className="PaginationMainInsideBox PaginationMainInsideBoxArrows"
               onClick={handlePrev}
               disabled={page === 1}
             >
-              <i className='fas fa-chevron-left'></i>
+              <i className="fas fa-chevron-left"></i>
             </button>
-            <div className='PaginationMainInsideBoxGroup'>
-              <button className='PaginationMainInsideBox PMIBActive'>
+            <div className="PaginationMainInsideBoxGroup">
+              <button className="PaginationMainInsideBox PMIBActive">
                 <p>{page}</p>
               </button>
             </div>
             <button
-              className='PaginationMainInsideBox PaginationMainInsideBoxArrows'
+              className="PaginationMainInsideBox PaginationMainInsideBoxArrows"
               onClick={handleNext}
               disabled={disabledNext}
             >
-              <i className='fas fa-chevron-right'></i>
+              <i className="fas fa-chevron-right"></i>
             </button>
           </div>
         </div>
@@ -104,7 +104,7 @@ export const PaginationWithPageNumbers = ({
       } else {
         // For ellipses, render non-clickable dots
         return (
-          <p key={index} className='PaginationMainInsideBox PMIBDots'>
+          <p key={index} className="PaginationMainInsideBox PMIBDots">
             ...
           </p>
         )
@@ -113,23 +113,23 @@ export const PaginationWithPageNumbers = ({
   }
 
   return (
-    <div className='IBMSecMain'>
-      <div className='PaginationMain'>
-        <div className='PaginationMainInside'>
+    <div className="IBMSecMain">
+      <div className="PaginationMain">
+        <div className="PaginationMainInside">
           <div
-            className='PaginationMainInsideBox PaginationMainInsideBoxArrows'
+            className="PaginationMainInsideBox PaginationMainInsideBoxArrows"
             onClick={() => handlePageChange(currentPage - 1)}
           >
-            <i className='fas fa-chevron-left'></i>
+            <i className="fas fa-chevron-left"></i>
           </div>
-          <div className='PaginationMainInsideBoxGroup'>
+          <div className="PaginationMainInsideBoxGroup">
             {renderPagination()}
           </div>
           <div
-            className='PaginationMainInsideBox PaginationMainInsideBoxArrows'
+            className="PaginationMainInsideBox PaginationMainInsideBoxArrows"
             onClick={() => handlePageChange(currentPage + 1)}
           >
-            <i className='fas fa-chevron-right'></i>
+            <i className="fas fa-chevron-right"></i>
           </div>
         </div>
       </div>
@@ -241,7 +241,7 @@ export const PaginationOffset: React.FC<PaginationOffsetProps> = ({
         return (
           <div
             key={`ellipsis-${index}`}
-            className='PaginationMainInsideBox PMIBDots'
+            className="PaginationMainInsideBox PMIBDots"
           >
             <p>...</p>
           </div>
@@ -256,32 +256,32 @@ export const PaginationOffset: React.FC<PaginationOffsetProps> = ({
   }
 
   return (
-    <div className='IBMSecMain'>
-      <div className='PaginationMain'>
-        <div className='PaginationMainInside'>
+    <div className="IBMSecMain">
+      <div className="PaginationMain">
+        <div className="PaginationMainInside">
           {/* Previous page button */}
           <button
-            className='PaginationMainInsideBox PaginationMainInsideBoxArrows'
+            className="PaginationMainInsideBox PaginationMainInsideBoxArrows"
             onClick={() => handlePageChange(currentPage - 1)}
             disabled={currentPage === 1}
-            aria-label='Previous page'
+            aria-label="Previous page"
           >
-            <i className='fas fa-chevron-left'></i>
+            <i className="fas fa-chevron-left"></i>
           </button>
 
           {/* Page numbers */}
-          <div className='PaginationMainInsideBoxGroup'>
+          <div className="PaginationMainInsideBoxGroup">
             {renderPagination()}
           </div>
 
           {/* Next page button */}
           <button
-            className='PaginationMainInsideBox PaginationMainInsideBoxArrows'
+            className="PaginationMainInsideBox PaginationMainInsideBoxArrows"
             onClick={() => handlePageChange(currentPage + 1)}
             disabled={!hasMore}
-            aria-label='Next page'
+            aria-label="Next page"
           >
-            <i className='fas fa-chevron-right'></i>
+            <i className="fas fa-chevron-right"></i>
           </button>
         </div>
       </div>

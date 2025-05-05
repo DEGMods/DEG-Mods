@@ -127,13 +127,13 @@ export const NoteSubmit = ({
 
   return (
     <>
-      <form className='feedPostsPost' onSubmit={handleFormSubmit}>
-        <div className='feedPostsPostInside'>
-          <div className='feedPostsPostInsideInputWrapper'>
-            <div className='feedPostsPostInsidePP'>
-              <div className='IBMSMSMBSSCL_CommentTopPPWrapper'>
+      <form className="feedPostsPost" onSubmit={handleFormSubmit}>
+        <div className="feedPostsPostInside">
+          <div className="feedPostsPostInsideInputWrapper">
+            <div className="feedPostsPostInsidePP">
+              <div className="IBMSMSMBSSCL_CommentTopPPWrapper">
                 <div
-                  className='IBMSMSMBSSCL_CommentTopPP'
+                  className="IBMSMSMBSSCL_CommentTopPP"
                   style={{
                     background: `url(${image}) center/cover no-repeat`,
                     width: '50px',
@@ -144,29 +144,29 @@ export const NoteSubmit = ({
               </div>
             </div>
             <textarea
-              id='postSocialTextarea'
-              name='content'
-              className='inputMain feedPostsPostInsideInput'
-              placeholder='Watcha thinking about?'
+              id="postSocialTextarea"
+              name="content"
+              className="inputMain feedPostsPostInsideInput"
+              placeholder="Watcha thinking about?"
               ref={ref}
               value={content}
               onChange={handleContentChange}
             />
           </div>
-          <div className='feedPostsPostInsideAction'>
+          <div className="feedPostsPostInsideAction">
             <div
-              className='inputLabelWrapperMain inputLabelWrapperMainAlt'
+              className="inputLabelWrapperMain inputLabelWrapperMainAlt"
               style={{ width: 'unset' }}
             >
               <input
-                type='checkbox'
-                className='CheckboxMain'
+                type="checkbox"
+                className="CheckboxMain"
                 checked={nsfw}
-                id='nsfw'
-                name='nsfw'
+                id="nsfw"
+                name="nsfw"
                 onChange={() => setNsfw((nsfw) => !nsfw)}
               />
-              <label htmlFor='nsfw' className='form-label labelMain'>
+              <label htmlFor="nsfw" className="form-label labelMain">
                 NSFW
               </label>
             </div>
@@ -175,8 +175,8 @@ export const NoteSubmit = ({
             >
               {typeof handleClose === 'function' && (
                 <button
-                  className='btn btnMain'
-                  type='button'
+                  className="btn btnMain"
+                  type="button"
                   style={{ padding: '5px 20px', borderRadius: '8px' }}
                   onClick={handleClose}
                 >
@@ -184,16 +184,16 @@ export const NoteSubmit = ({
                 </button>
               )}
               <button
-                className='btn btnMain'
-                type='button'
+                className="btn btnMain"
+                type="button"
                 style={{ padding: '5px 20px', borderRadius: '8px' }}
                 onClick={handlePreviewToggle}
               >
                 Preview
               </button>
               <button
-                className='btn btnMain'
-                type='submit'
+                className="btn btnMain"
+                type="submit"
                 style={{ padding: '5px 20px', borderRadius: '8px' }}
                 disabled={navigation.state !== 'idle' || !content.length}
               >

@@ -35,12 +35,12 @@ export const NoteWrapper = ({ noteEntity }: NoteWrapperProps) => {
   const baseUrl = appRoutes.feed + '/'
 
   return (
-    <div className='IBMSMSMBSSCL_CommentQP'>
-      <div className='IBMSMSMBSSCL_Comment'>
-        <div className='IBMSMSMBSSCL_CommentTop'>
-          <div className='IBMSMSMBSSCL_CommentTopPPWrapper'>
+    <div className="IBMSMSMBSSCL_CommentQP">
+      <div className="IBMSMSMBSSCL_Comment">
+        <div className="IBMSMSMBSSCL_CommentTop">
+          <div className="IBMSMSMBSSCL_CommentTopPPWrapper">
             <Link
-              className='IBMSMSMBSSCL_CommentTopPP'
+              className="IBMSMSMBSSCL_CommentTopPP"
               to={profileRoute}
               style={{
                 background: `url('${
@@ -49,26 +49,26 @@ export const NoteWrapper = ({ noteEntity }: NoteWrapperProps) => {
               }}
             />
           </div>
-          <div className='IBMSMSMBSSCL_CommentTopDetailsWrapper'>
-            <div className='IBMSMSMBSSCL_CommentTopDetails'>
-              <Link className='IBMSMSMBSSCL_CTD_Name' to={profileRoute}>
+          <div className="IBMSMSMBSSCL_CommentTopDetailsWrapper">
+            <div className="IBMSMSMBSSCL_CommentTopDetails">
+              <Link className="IBMSMSMBSSCL_CTD_Name" to={profileRoute}>
                 {profile?.displayName || profile?.name || ''}{' '}
               </Link>
-              <Link className='IBMSMSMBSSCL_CTD_Address' to={profileRoute}>
+              <Link className="IBMSMSMBSSCL_CTD_Address" to={profileRoute}>
                 {hexToNpub(note.pubkey)}
               </Link>
             </div>
             {note.created_at && (
-              <div className='IBMSMSMBSSCL_CommentActionsDetails'>
+              <div className="IBMSMSMBSSCL_CommentActionsDetails">
                 <Link
                   to={baseUrl + noteEntity}
-                  className='IBMSMSMBSSCL_CADTime'
+                  className="IBMSMSMBSSCL_CADTime"
                 >
                   {formatDate(note.created_at * 1000, 'hh:mm aa')}{' '}
                 </Link>
                 <Link
                   to={baseUrl + noteEntity}
-                  className='IBMSMSMBSSCL_CADDate'
+                  className="IBMSMSMBSSCL_CADDate"
                 >
                   {formatDate(note.created_at * 1000, 'dd/MM/yyyy')}
                 </Link>
@@ -76,7 +76,7 @@ export const NoteWrapper = ({ noteEntity }: NoteWrapperProps) => {
             )}
           </div>
         </div>
-        <div className='IBMSMSMBSSCL_CommentBottom'>
+        <div className="IBMSMSMBSSCL_CommentBottom">
           <CommentContent content={note.content} />
         </div>
       </div>

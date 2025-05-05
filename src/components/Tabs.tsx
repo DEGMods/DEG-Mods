@@ -6,7 +6,7 @@ interface TabsProps {
 
 export const Tabs = ({ tabs, tab, setTab }: TabsProps) => {
   return (
-    <div className='IBMSMSplitMainFullSideSec IBMSMSMFSSNav'>
+    <div className="IBMSMSplitMainFullSideSec IBMSMSMFSSNav">
       {tabs.map((t, i) => {
         return (
           <button
@@ -14,7 +14,7 @@ export const Tabs = ({ tabs, tab, setTab }: TabsProps) => {
             className={`btn btnMain IBMSMSMFSSNavBtn${
               tab === i ? ' IBMSMSMFSSNavBtnActive' : ''
             }`}
-            type='button'
+            type="button"
             onClick={() => setTab(i)}
           >
             {t}

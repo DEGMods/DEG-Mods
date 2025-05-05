@@ -273,14 +273,14 @@ export const FeedTabMods = () => {
 
   return (
     <>
-      {isFetching && <LoadingSpinner desc='Fetching mod details from relays' />}
+      {isFetching && <LoadingSpinner desc="Fetching mod details from relays" />}
       {filteredModList.length === 0 && !isFetching && (
-        <div className='IBMSMListFeedNoPosts'>
+        <div className="IBMSMListFeedNoPosts">
           <p>You aren't following people (or there are no posts to show)</p>
         </div>
       )}
-      <div className='IBMSMSplitMainFullSideSec IBMSMSMFSSContent'>
-        <div className='IBMSMList IBMSMListFeed' ref={scrollTargetRef}>
+      <div className="IBMSMSplitMainFullSideSec IBMSMSMFSSContent">
+        <div className="IBMSMList IBMSMListFeed" ref={scrollTargetRef}>
           {filteredModList.map((mod) => (
             <ModCard key={mod.id} {...mod} />
           ))}
@@ -298,10 +298,10 @@ export const FeedTabMods = () => {
         !isFetching &&
         isLoadMoreVisible &&
         filteredModList.length > 0 && (
-          <div className='IBMSMListFeedLoadMore'>
+          <div className="IBMSMListFeedLoadMore">
             <button
-              className='btn btnMain IBMSMListFeedLoadMoreBtn'
-              type='button'
+              className="btn btnMain IBMSMListFeedLoadMoreBtn"
+              type="button"
               onClick={handleLoadMore}
             >
               Load More

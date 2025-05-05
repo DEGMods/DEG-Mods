@@ -114,37 +114,37 @@ export const PreferencesSetting = () => {
 
   return (
     <>
-      {isSaving && <LoadingSpinner desc='Saving preferences to relays' />}
-      <div className='IBMSMSplitMainFullSideFWMid'>
-        <div className='IBMSMSplitMainFullSideSec'>
-          <div className='IBMSMSMBS_Write'>
-            <div className='inputLabelWrapperMain'>
-              <div className='labelWrapperMain'>
-                <p className='labelMain'>Web of Trust (WoT) level</p>
+      {isSaving && <LoadingSpinner desc="Saving preferences to relays" />}
+      <div className="IBMSMSplitMainFullSideFWMid">
+        <div className="IBMSMSplitMainFullSideSec">
+          <div className="IBMSMSMBS_Write">
+            <div className="inputLabelWrapperMain">
+              <div className="labelWrapperMain">
+                <p className="labelMain">Web of Trust (WoT) level</p>
               </div>
-              <p className='labelDescriptionMain'>
+              <p className="labelDescriptionMain">
                 This affects what posts you see, reactions, DMs, and
                 notifications. Learn more:&nbsp;Link
               </p>
-              <div className='inputLabelWrapperMainSliderWrapper'>
+              <div className="inputLabelWrapperMainSliderWrapper">
                 <input
-                  className='form-range inputRangeMain inputRangeMainZap'
-                  type='range'
-                  max='100'
-                  min='0'
+                  className="form-range inputRangeMain inputRangeMainZap"
+                  type="range"
+                  max="100"
+                  min="0"
                   value={wotLevel}
                   onChange={(e) => setWotLevel(parseInt(e.target.value))}
-                  step='1'
+                  step="1"
                   required
-                  name='WoTLevel'
+                  name="WoTLevel"
                 />
-                <p className='ZapSplitUserBoxRangeText'>{wotLevel}</p>
+                <p className="ZapSplitUserBoxRangeText">{wotLevel}</p>
               </div>
             </div>
-            <div className='IBMSMSMBS_WriteAction'>
+            <div className="IBMSMSMBS_WriteAction">
               <button
-                className='btn btnMain'
-                type='button'
+                className="btn btnMain"
+                type="button"
                 onClick={handleSave}
               >
                 Save

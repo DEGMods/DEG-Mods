@@ -1,8 +1,8 @@
 import styles from '../styles/dotsSpinner.module.scss'
 
 export const Spinner = () => (
-  <div className='spinner'>
-    <div className='spinnerCircle'></div>
+  <div className="spinner">
+    <div className="spinnerCircle"></div>
   </div>
 )
 

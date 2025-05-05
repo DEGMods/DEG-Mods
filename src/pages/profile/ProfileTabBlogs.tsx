@@ -265,7 +265,7 @@ export const ProfileTabBlogs = () => {
 
       <BlogsFilter filterKey={'filter-blog'} author={profilePubkey} />
 
-      <div className='IBMSMList IBMSMListAlt' ref={scrollTargetRef}>
+      <div className="IBMSMList IBMSMListAlt" ref={scrollTargetRef}>
         {moderatedAndSortedBlogs.map((b) => (
           <BlogCard key={b.id} {...b} />
         ))}

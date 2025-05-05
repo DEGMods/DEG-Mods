@@ -32,6 +32,6 @@ export const Viewer = ({ markdown }: ViewerProps) => {
   }, [markdown])
 
   return (
-    <div className='viewer' dangerouslySetInnerHTML={{ __html: html }}></div>
+    <div className="viewer" dangerouslySetInnerHTML={{ __html: html }}></div>
   )
 }

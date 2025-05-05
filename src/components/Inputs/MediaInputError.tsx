@@ -18,28 +18,28 @@ export const MediaInputError = ({
 
   return (
     <div className={['accordion-item', styles['accordion-item']].join(' ')}>
-      <h2 className='accordion-header' role='tab'>
+      <h2 className="accordion-header" role="tab">
         <button
           className={[
             'accordion-button collapsed',
             styles['accordion-button']
           ].join(' ')}
-          type='button'
-          data-bs-toggle='collapse'
+          type="button"
+          data-bs-toggle="collapse"
           data-bs-target={`#${rootId} .item-${index}`}
-          aria-expanded='false'
+          aria-expanded="false"
           aria-controls={`${rootId} .item-${index}`}
         >
-          <div className='errorMain'>
-            <div className='errorMainColor'></div>
-            <p className='errorMainText'>{message}</p>
+          <div className="errorMain">
+            <div className="errorMainColor"></div>
+            <p className="errorMainText">{message}</p>
           </div>
         </button>
       </h2>
       {errors && (
         <div
           className={`accordion-collapse collapse item-${index}`}
-          role='tabpanel'
+          role="tabpanel"
           data-bs-parent={`#${rootId}`}
         >
           <div
@@ -47,11 +47,11 @@ export const MediaInputError = ({
           >
             {errors.map((e) => {
               return typeof e === 'string' ? (
-                <div className='errorMain' key={e}>
+                <div className="errorMain" key={e}>
                   {e}
                 </div>
               ) : (
-                <div className='errorMain' key={e.code}>
+                <div className="errorMain" key={e.code}>
                   {e.message}
                 </div>
               )

@@ -19,7 +19,8 @@ import {
   useNDKContext,
   useNSFWList,
   useServer,
-  useSessionStorage
+  useSessionStorage,
+  useUserWoTOverride
 } from 'hooks'
 import { useCallback, useEffect, useMemo, useRef, useState } from 'react'
 import { useParams, useSearchParams } from 'react-router-dom'
@@ -41,6 +42,7 @@ import {
 import { useCuratedSet } from 'hooks/useCuratedSet'
 import { CategoryFilterPopup } from 'components/Filters/CategoryFilterPopup'
 import { PaginatedRequest, ServerService } from 'controllers'
+import { ModCardWot } from 'components/ModCardWoT'
 
 export const GamePage = () => {
   const scrollTargetRef = useRef<HTMLDivElement>(null)
@@ -49,6 +51,7 @@ export const GamePage = () => {
   const { ndk } = useNDKContext()
   const muteLists = useMuteLists()
   const nsfwList = useNSFWList()
+  const [isUserWoT, setOverride] = useUserWoTOverride('filter')
   const repostList = useCuratedSet(CurationSetIdentifiers.Repost)
   const { isServerActive, isRelayFallbackActive } = useServer()
   const { userWot, userWotLevel } = useAppSelector((state) => state.wot)
@@ -211,8 +214,6 @@ export const GamePage = () => {
         authors: [...muteLists.user.authors],
         events: [...muteLists.user.replaceableEvents]
       },
-      userWot,
-      userWotScore: userWotLevel,
       '#game': [gameName]
     }
 
@@ -310,24 +311,24 @@ export const GamePage = () => {
 
   return (
     <>
-      <div className='InnerBodyMain'>
-        <div className='ContainerMain'>
+      <div className="InnerBodyMain">
+        <div className="ContainerMain">
           <div
-            className='IBMSecMainGroup IBMSecMainGroupAlt'
+            className="IBMSecMainGroup IBMSecMainGroupAlt"
             ref={scrollTargetRef}
           >
-            <div className='IBMSecMain'>
-              <div className='SearchMainWrapper'>
-                <div className='IBMSMTitleMain'>
-                  <h2 className='IBMSMTitleMainHeading'>
+            <div className="IBMSecMain">
+              <div className="SearchMainWrapper">
+                <div className="IBMSMTitleMain">
+                  <h2 className="IBMSMTitleMainHeading">
                     Game:&nbsp;
-                    <span className='IBMSMTitleMainHeadingSpan'>
+                    <span className="IBMSMTitleMainHeadingSpan">
                       {gameName}
                     </span>
                     {searchTerm !== '' && (
                       <>
                         &nbsp;&mdash;&nbsp;
-                        <span className='IBMSMTitleMainHeadingSpan'>
+                        <span className="IBMSMTitleMainHeadingSpan">
                           {searchTerm}
                         </span>
                       </>
@@ -342,10 +343,10 @@ export const GamePage = () => {
               </div>
             </div>
             <ModFilter>
-              <div className='FiltersMainElement'>
+              <div className="FiltersMainElement">
                 <button
-                  className='btn btnMain btnMainDropdown'
-                  type='button'
+                  className="btn btnMain btnMainDropdown"
+                  type="button"
                   onClick={() => {
                     setShowCategoryPopup(true)
                   }}
@@ -354,34 +355,44 @@ export const GamePage = () => {
                   {isCategoryFilterActive ||
                   (linkedHierarchy && linkedHierarchy !== '') ? (
                     <svg
-                      xmlns='http://www.w3.org/2000/svg'
-                      viewBox='0 0 576 512'
-                      width='1em'
-                      height='1em'
-                      fill='currentColor'
+                      xmlns="http://www.w3.org/2000/svg"
+                      viewBox="0 0 576 512"
+                      width="1em"
+                      height="1em"
+                      fill="currentColor"
                     >
-                      <path d='M 3.9,22.9 C 10.5,8.9 24.5,0 40,0 h 432 c 15.5,0 29.5,8.9 36.1,22.9 6.6,14 4.6,30.5 -5.2,42.5 L 396.4,195.6 C 316.2,212.1 256,283 256,368 c 0,27.4 6.3,53.4 17.5,76.5 -1.6,-0.8 -3.2,-1.8 -4.7,-2.9 l -64,-48 C 196.7,387.6 192,378.1 192,368 V 288.9 L 9,65.3 C -0.7,53.4 -2.8,36.8 3.9,22.9 Z M 432,224 c 79.52906,0 143.99994,64.471 143.99994,144 0,79.529 -64.47088,144 -143.99994,144 -79.52906,0 -143.99994,-64.471 -143.99994,-144 0,-79.529 64.47088,-144 143.99994,-144 z' />
+                      <path d="M 3.9,22.9 C 10.5,8.9 24.5,0 40,0 h 432 c 15.5,0 29.5,8.9 36.1,22.9 6.6,14 4.6,30.5 -5.2,42.5 L 396.4,195.6 C 316.2,212.1 256,283 256,368 c 0,27.4 6.3,53.4 17.5,76.5 -1.6,-0.8 -3.2,-1.8 -4.7,-2.9 l -64,-48 C 196.7,387.6 192,378.1 192,368 V 288.9 L 9,65.3 C -0.7,53.4 -2.8,36.8 3.9,22.9 Z M 432,224 c 79.52906,0 143.99994,64.471 143.99994,144 0,79.529 -64.47088,144 -143.99994,144 -79.52906,0 -143.99994,-64.471 -143.99994,-144 0,-79.529 64.47088,-144 143.99994,-144 z" />
                     </svg>
                   ) : (
                     <svg
-                      xmlns='http://www.w3.org/2000/svg'
-                      viewBox='0 0 512 512'
-                      width='1em'
-                      height='1em'
-                      fill='currentColor'
+                      xmlns="http://www.w3.org/2000/svg"
+                      viewBox="0 0 512 512"
+                      width="1em"
+                      height="1em"
+                      fill="currentColor"
                     >
-                      <path d='M3.9 54.9C10.5 40.9 24.5 32 40 32l432 0c15.5 0 29.5 8.9 36.1 22.9s4.6 30.5-5.2 42.5L320 320.9 320 448c0 12.1-6.8 23.2-17.7 28.6s-23.8 4.3-33.5-3l-64-48c-8.1-6-12.8-15.5-12.8-25.6l0-79.1L9 97.3C-.7 85.4-2.8 68.8 3.9 54.9z' />
+                      <path d="M3.9 54.9C10.5 40.9 24.5 32 40 32l432 0c15.5 0 29.5 8.9 36.1 22.9s4.6 30.5-5.2 42.5L320 320.9 320 448c0 12.1-6.8 23.2-17.7 28.6s-23.8 4.3-33.5-3l-64-48c-8.1-6-12.8-15.5-12.8-25.6l0-79.1L9 97.3C-.7 85.4-2.8 68.8 3.9 54.9z" />
                     </svg>
                   )}
                 </button>
               </div>
             </ModFilter>
 
-            <div className='IBMSecMain IBMSMListWrapper'>
-              <div className='IBMSMList'>
-                {(isServerActive ? mods : currentMods).map((mod) => (
-                  <ModCard key={mod.id} {...mod} />
-                ))}
+            <div className="IBMSecMain IBMSMListWrapper">
+              <div className="IBMSMList">
+                {isServerActive
+                  ? mods.map((mod) =>
+                      isUserWoT(mod) ? (
+                        <ModCard key={mod.id} {...mod} />
+                      ) : (
+                        <ModCardWot
+                          key={mod.id}
+                          id={mod.id}
+                          setOverride={setOverride}
+                        />
+                      )
+                    )
+                  : currentMods.map((mod) => <ModCard key={mod.id} {...mod} />)}
               </div>
             </div>
             {isServerActive ? (

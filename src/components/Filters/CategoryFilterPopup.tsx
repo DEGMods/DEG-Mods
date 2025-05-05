@@ -123,60 +123,65 @@ export const CategoryFilterPopup = ({
   }
 
   return createPortal(
-    <div className='popUpMain'>
-      <div className='ContainerMain'>
-        <div className='popUpMainCardWrapper'>
-          <div className='popUpMainCard'>
-            <div className='popUpMainCardTop'>
-              <div className='popUpMainCardTopInfo'>
+    <div className="popUpMain">
+      <div className="ContainerMain">
+        <div className="popUpMainCardWrapper">
+          <div className="popUpMainCard">
+            <div className="popUpMainCardTop">
+              <div className="popUpMainCardTopInfo">
                 <h3>Categories filter</h3>
               </div>
-              <div className='popUpMainCardTopClose' onClick={handleClose}>
+              <div className="popUpMainCardTopClose" onClick={handleClose}>
                 <svg
-                  xmlns='http://www.w3.org/2000/svg'
-                  viewBox='-96 0 512 512'
-                  width='1em'
-                  height='1em'
-                  fill='currentColor'
+                  xmlns="http://www.w3.org/2000/svg"
+                  viewBox="-96 0 512 512"
+                  width="1em"
+                  height="1em"
+                  fill="currentColor"
                   style={{ zIndex: 1 }}
                 >
-                  <path d='M310.6 361.4c12.5 12.5 12.5 32.75 0 45.25C304.4 412.9 296.2 416 288 416s-16.38-3.125-22.62-9.375L160 301.3L54.63 406.6C48.38 412.9 40.19 416 32 416S15.63 412.9 9.375 406.6c-12.5-12.5-12.5-32.75 0-45.25l105.4-105.4L9.375 150.6c-12.5-12.5-12.5-32.75 0-45.25s32.75-12.5 45.25 0L160 210.8l105.4-105.4c12.5-12.5 32.75-12.5 45.25 0s12.5 32.75 0 45.25l-105.4 105.4L310.6 361.4z'></path>
+                  <path d="M310.6 361.4c12.5 12.5 12.5 32.75 0 45.25C304.4 412.9 296.2 416 288 416s-16.38-3.125-22.62-9.375L160 301.3L54.63 406.6C48.38 412.9 40.19 416 32 416S15.63 412.9 9.375 406.6c-12.5-12.5-12.5-32.75 0-45.25l105.4-105.4L9.375 150.6c-12.5-12.5-12.5-32.75 0-45.25s32.75-12.5 45.25 0L160 210.8l105.4-105.4c12.5-12.5 32.75-12.5 45.25 0s12.5 32.75 0 45.25l-105.4 105.4L310.6 361.4z"></path>
                 </svg>
               </div>
             </div>
-            <div className='pUMCB_Zaps'>
-              <div className='pUMCB_ZapsInside'>
-                <div className='inputLabelWrapperMain'>
+            <div className="pUMCB_Zaps">
+              <div className="pUMCB_ZapsInside">
+                <div className="inputLabelWrapperMain">
                   <label
-                    className='form-label labelMain'
+                    className="form-label labelMain"
                     style={{ fontWeight: 'bold' }}
                   >
                     Choose categories...
                   </label>
-                  <p className='labelDescriptionMain'>
-                    Choose one or more pre-definied or custom categories to filter out mods with.
+                  <p className="labelDescriptionMain">
+                    Choose one or more pre-definied or custom categories to
+                    filter out mods with.
                   </p>
                 </div>
                 <input
-                  type='text'
-                  className='inputMain inputMainWithBtn'
-                  placeholder='Select some categories...'
+                  type="text"
+                  className="inputMain inputMainWithBtn"
+                  placeholder="Select some categories..."
                   value={inputValue}
                   onChange={handleInputChange}
                 />
                 {userHierarchies.length > 0 && (
                   <>
-                    <div className='inputLabelWrapperMain'>
+                    <div className="inputLabelWrapperMain">
                       <label
-                        className='form-label labelMain'
+                        className="form-label labelMain"
                         style={{ fontWeight: 'bold' }}
                       >
                         Custom categories
                       </label>
-                        <p className='labelDescriptionMain'>Here&apos;s where your custom categories appear (You can add them in the above field. Example &gt; banana &gt; seed)</p>
+                      <p className="labelDescriptionMain">
+                        Here&apos;s where your custom categories appear (You can
+                        add them in the above field. Example &gt; banana &gt;
+                        seed)
+                      </p>
                     </div>
                     <div
-                      className='inputMain'
+                      className="inputMain"
                       style={{
                         minHeight: '40px',
                         maxHeight: '500px',
@@ -222,18 +227,21 @@ export const CategoryFilterPopup = ({
                     </div>
                   </>
                 )}
-                <div className='inputLabelWrapperMain'>
-                  <div className='inputLabelWrapperMain'>
+                <div className="inputLabelWrapperMain">
+                  <div className="inputLabelWrapperMain">
                     <label
-                      className='form-label labelMain'
+                      className="form-label labelMain"
                       style={{ fontWeight: 'bold' }}
                     >
                       Categories
                     </label>
-                    <p className='labelDescriptionMain'>Here&apos;s where you select any of the pre-defined categories</p>
+                    <p className="labelDescriptionMain">
+                      Here&apos;s where you select any of the pre-defined
+                      categories
+                    </p>
                   </div>
                   <div
-                    className='inputMain'
+                    className="inputMain"
                     style={{
                       minHeight: '40px',
                       maxHeight: '500px',
@@ -248,23 +256,23 @@ export const CategoryFilterPopup = ({
                         <div>Already defined in your categories</div>
                       ) : (
                         <div
-                          className='dropdown-item dropdownMainMenuItem dropdownMainMenuItemCategory'
+                          className="dropdown-item dropdownMainMenuItem dropdownMainMenuItemCategory"
                           onClick={handleAddNew}
                         >
                           Add and search for "{inputValue}" category
                           <button
-                            type='button'
-                            className='btn btnMain btnMainInsideField btnMainAdd'
-                            title='Add'
+                            type="button"
+                            className="btn btnMain btnMainInsideField btnMainAdd"
+                            title="Add"
                           >
                             <svg
-                              xmlns='http://www.w3.org/2000/svg'
-                              viewBox='-32 0 512 512'
-                              width='1em'
-                              height='1em'
-                              fill='currentColor'
+                              xmlns="http://www.w3.org/2000/svg"
+                              viewBox="-32 0 512 512"
+                              width="1em"
+                              height="1em"
+                              fill="currentColor"
                             >
-                              <path d='M432 256c0 17.69-14.33 32.01-32 32.01H256v144c0 17.69-14.33 31.99-32 31.99s-32-14.3-32-31.99v-144H48c-17.67 0-32-14.32-32-32.01s14.33-31.99 32-31.99H192v-144c0-17.69 14.33-32.01 32-32.01s32 14.32 32 32.01v144h144C417.7 224 432 238.3 432 256z'></path>
+                              <path d="M432 256c0 17.69-14.33 32.01-32 32.01H256v144c0 17.69-14.33 31.99-32 31.99s-32-14.3-32-31.99v-144H48c-17.67 0-32-14.32-32-32.01s14.33-31.99 32-31.99H192v-144c0-17.69 14.33-32.01 32-32.01s32 14.32 32 32.01v144h144C417.7 224 432 238.3 432 256z"></path>
                             </svg>
                           </button>
                         </div>
@@ -298,15 +306,15 @@ export const CategoryFilterPopup = ({
                   }}
                 >
                   <button
-                    className='btn btnMain btnMainPopup'
-                    type='button'
+                    className="btn btnMain btnMainPopup"
+                    type="button"
                     onPointerDown={handleClose}
                   >
                     Cancel
                   </button>
                   <button
-                    className='btn btnMain btnMainPopup'
-                    type='button'
+                    className="btn btnMain btnMainPopup"
+                    type="button"
                     onPointerDown={() => {
                       // Clear the linked hierarchy
                       searchParams.delete('h')
@@ -320,8 +328,8 @@ export const CategoryFilterPopup = ({
                     Reset
                   </button>
                   <button
-                    className='btn btnMain btnMainPopup'
-                    type='button'
+                    className="btn btnMain btnMainPopup"
+                    type="button"
                     onPointerDown={() => {
                       handleApply()
                       handleClose()
@@ -442,7 +450,7 @@ const CategoryCheckbox: React.FC<CategoryCheckboxProps> = ({
     <>
       {isMatching && (
         <div
-          className='dropdown-item dropdownMainMenuItem dropdownMainMenuItemCategory dropdownMainMenuItemCategoryAlt'
+          className="dropdown-item dropdownMainMenuItem dropdownMainMenuItemCategory dropdownMainMenuItemCategoryAlt"
           style={{
             marginLeft: `${indentLevel * 20}px`,
             width: `calc(100% - ${indentLevel * 20}px)`
@@ -456,7 +464,7 @@ const CategoryCheckbox: React.FC<CategoryCheckboxProps> = ({
           >
             <input
               id={name}
-              type='checkbox'
+              type="checkbox"
               ref={(input) => {
                 if (input) {
                   input.indeterminate = isIndeterminate
@@ -470,7 +478,7 @@ const CategoryCheckbox: React.FC<CategoryCheckboxProps> = ({
             />
             <label
               htmlFor={name}
-              className='form-label labelMain labelMainCategory'
+              className="form-label labelMain labelMainCategory"
             >
               {capitalizeEachWord(name)}
             </label>
@@ -479,27 +487,27 @@ const CategoryCheckbox: React.FC<CategoryCheckboxProps> = ({
                 display: 'none'
               }}
               id={name}
-              type='checkbox'
-              className='CheckboxMain'
+              type="checkbox"
+              className="CheckboxMain"
               name={name}
               checked={isSingleChecked}
               onChange={handleSingleChange}
             />
             {typeof handleRemove === 'function' && (
               <button
-                className='btn btnMain btnMainInsideField btnMainRemove'
-                title='Remove'
-                type='button'
+                className="btn btnMain btnMainInsideField btnMainRemove"
+                title="Remove"
+                type="button"
                 onClick={() => handleRemove(path)}
               >
                 <svg
-                  xmlns='http://www.w3.org/2000/svg'
-                  viewBox='-32 0 512 512'
-                  width='1em'
-                  height='1em'
-                  fill='currentColor'
+                  xmlns="http://www.w3.org/2000/svg"
+                  viewBox="-32 0 512 512"
+                  width="1em"
+                  height="1em"
+                  fill="currentColor"
                 >
-                  <path d='M323.3 32.01H188.7C172.3 32.01 160 44.31 160 60.73V96.01H32C14.33 96.01 0 110.3 0 128S14.33 160 32 160H480c17.67 0 32-14.33 32-32.01S497.7 96.01 480 96.01H352v-35.28C352 44.31 339.7 32.01 323.3 32.01zM64.9 477.5C66.5 492.3 79.31 504 94.72 504H417.3c15.41 0 28.22-11.72 29.81-26.5L480 192.2H32L64.9 477.5z'></path>
+                  <path d="M323.3 32.01H188.7C172.3 32.01 160 44.31 160 60.73V96.01H32C14.33 96.01 0 110.3 0 128S14.33 160 32 160H480c17.67 0 32-14.33 32-32.01S497.7 96.01 480 96.01H352v-35.28C352 44.31 339.7 32.01 323.3 32.01zM64.9 477.5C66.5 492.3 79.31 504 94.72 504H417.3c15.41 0 28.22-11.72 29.81-26.5L480 192.2H32L64.9 477.5z"></path>
                 </svg>
               </button>
             )}

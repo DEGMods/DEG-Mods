@@ -1,4 +1,4 @@
-import axios, { CanceledError } from 'axios'
+import axios, { AxiosError, CanceledError, isAxiosError } from 'axios'
 import { SERVER_URL_STORAGE_KEY } from '../constants'
 import {
   getLocalStorageItem,
@@ -9,7 +9,6 @@ import {
 import { NDKFilter } from '@nostr-dev-kit/ndk'
 import { NostrEvent } from 'nostr-tools'
 import { BaseError, ModeratedFilter, WOTFilterOptions } from 'types'
-import _ from 'lodash'
 
 interface PaginatedParams {
   offset?: number
@@ -26,8 +25,6 @@ interface ModerationParams {
   pubkey?: string
   moderation?: ModeratedFilter
   wot?: WOTFilterOptions
-  userWot?: { [key: string]: number | 'Infinity' | '-Infinity' }
-  userWotScore?: number
   userMuteList?: {
     authors: string[]
     events: string[]
@@ -312,24 +309,10 @@ export class ServerService extends EventTarget {
     this.fetchControllers.set(key, controller)
     const signal = controller.signal
 
-    // Exception for userWot and infinity values
-    // This is a workaround for the server to accept Infinity and -Infinity values
-    // as strings. This is because JSON.stringify replaces them with null
-    const _data = _.cloneDeep(data)
-    if (_data.userWot) {
-      for (const attr in _data.userWot) {
-        if (_data.userWot[attr] === Infinity) {
-          _data.userWot[attr] = 'Infinity'
-        } else if (_data.userWot[attr] === -Infinity) {
-          _data.userWot[attr] = '-Infinity'
-        }
-      }
-    }
-
     try {
       const response = await axios.post<PaginationResult>(
         `${this.serverUrl}/paginated-events`,
-        _data,
+        data,
         {
           signal,
           timeout: FETCH_TIMEOUT
@@ -338,6 +321,18 @@ export class ServerService extends EventTarget {
       this.fetchControllers.delete(key)
       return response.data
     } catch (err) {
+      if (isAxiosError(err) && err instanceof AxiosError) {
+        // Payload size error, no need to retry
+        // {
+        //    "error": "Bad Request",
+        //    "message": "request entity too large"
+        // }
+        if (err.response?.data?.message === 'request entity too large') {
+          this.setState('inactive')
+          throw new Error('Error. Payload too large. Aborting.')
+        }
+      }
+
       if (!(err instanceof CanceledError)) {
         console.error(
           '[DEG Mods] Fetch failed. Re-establishing server connection.'
@@ -349,7 +344,10 @@ export class ServerService extends EventTarget {
     }
   }
 
-  async games(): Promise<string[]> {
+  async games(
+    sort: 'Most Popular' | 'Latest' = 'Most Popular',
+    source: 'Show All' | string
+  ): Promise<string[]> {
     if (this.state !== 'active') {
       throw new Error('Server is not active. Cannot fetch data.')
     }
@@ -370,6 +368,10 @@ export class ServerService extends EventTarget {
 
     try {
       const response = await axios.get(`${this.serverUrl}/games`, {
+        params: {
+          sort,
+          source
+        },
         signal,
         timeout: FETCH_TIMEOUT
       })

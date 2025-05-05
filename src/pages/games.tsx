@@ -1,6 +1,6 @@
 import { PaginationWithPageNumbers } from 'components/Pagination'
 import { MAX_GAMES_PER_PAGE } from 'constants.ts'
-import { useGames, useNDKContext, useServer } from 'hooks'
+import { useGames, useLocalStorage, useNDKContext, useServer } from 'hooks'
 import { useEffect, useMemo, useRef, useState } from 'react'
 import { GameCard } from '../components/GameCard'
 import '../styles/pagination.css'
@@ -11,6 +11,15 @@ import { appRoutes } from 'routes'
 import { scrollIntoView } from 'utils'
 import { SearchInput } from 'components/SearchInput'
 import { ServerService } from 'controllers'
+import { Filter } from 'components/Filters'
+import { Dropdown } from 'components/Filters/Dropdown'
+import { Option } from 'components/Filters/Option'
+import { FetchModsOptions } from 'contexts/NDKContext'
+
+enum GamesSortBy {
+  Popular = 'Most Popular',
+  Latest = 'Latest'
+}
 
 export const GamesPage = () => {
   const scrollTargetRef = useRef<HTMLDivElement>(null)
@@ -20,17 +29,32 @@ export const GamesPage = () => {
   const games = useGames()
   const [gamesWithMods, setGamesWithMods] = useState<string[]>([])
   const [currentPage, setCurrentPage] = useState(1)
-  const { isServerActive } = useServer()
+  const { isServerActive, isRelayFallbackActive } = useServer()
+  const filterKey = 'filter-games'
+  const [filterOptions, setFilterOptions] = useLocalStorage(filterKey, {
+    sort: GamesSortBy.Popular,
+    source: window.location.host
+  })
 
   useEffect(() => {
     if (isServerActive) {
       const serverService = ServerService.getInstance()
-      serverService.games().then((games) => {
-        const gameNames = new Set<string>(games)
-        setGamesWithMods(Array.from(gameNames))
-      })
-    } else {
-      fetchMods({ limit: 100, source: window.location.host }).then((mods) => {
+      serverService
+        .games(filterOptions.sort, filterOptions.source)
+        .then((games) => {
+          const gameNames = new Set<string>(games)
+          setGamesWithMods(Array.from(gameNames))
+        })
+    }
+  }, [filterOptions.sort, filterOptions.source, isServerActive])
+
+  useEffect(() => {
+    if (isRelayFallbackActive) {
+      const filter: FetchModsOptions = { limit: 100 }
+      if (filterOptions.source === window.location.host) {
+        filter.source = window.location.host
+      }
+      fetchMods(filter).then((mods) => {
         mods.sort((a, b) => b.published_at - a.published_at)
 
         const gameNames = new Set<string>()
@@ -39,7 +63,7 @@ export const GamesPage = () => {
         setGamesWithMods(Array.from(gameNames))
       })
     }
-  }, [fetchMods, isServerActive])
+  }, [fetchMods, filterOptions.source, isRelayFallbackActive])
 
   const sortedGames = useMemo(() => {
     // Create a map for the order array, assigning each game name a rank based on its index.
@@ -100,16 +124,16 @@ export const GamesPage = () => {
   }
 
   return (
-    <div className='InnerBodyMain'>
-      <div className='ContainerMain'>
+    <div className="InnerBodyMain">
+      <div className="ContainerMain">
         <div
-          className='IBMSecMainGroup IBMSecMainGroupAlt'
+          className="IBMSecMainGroup IBMSecMainGroupAlt"
           ref={scrollTargetRef}
         >
-          <div className='IBMSecMain'>
-            <div className='SearchMainWrapper'>
-              <div className='IBMSMTitleMain'>
-                <h2 className='IBMSMTitleMainHeading'>Games</h2>
+          <div className="IBMSecMain">
+            <div className="SearchMainWrapper">
+              <div className="IBMSMTitleMain">
+                <h2 className="IBMSMTitleMainHeading">Games</h2>
               </div>
               <SearchInput
                 ref={searchTermRef}
@@ -118,8 +142,61 @@ export const GamesPage = () => {
               />
             </div>
           </div>
-          <div className='IBMSecMain IBMSMListWrapper'>
-            <div className='IBMSMList IBMSMListFeaturedAlt'>
+          <div className="IBMSecMain">
+            <div className="SearchMainWrapper">
+              <Filter>
+                {isServerActive && (
+                  <Dropdown label={'Show: ' + filterOptions.sort}>
+                    {Object.values(GamesSortBy).map((item, index) => {
+                      return (
+                        <Option
+                          key={`sortByItem-${index}`}
+                          onClick={() =>
+                            setFilterOptions((prev) => ({
+                              ...prev,
+                              sort: item
+                            }))
+                          }
+                        >
+                          {item}
+                        </Option>
+                      )
+                    })}
+                  </Dropdown>
+                )}
+                <Dropdown
+                  label={
+                    filterOptions.source === window.location.host
+                      ? `Show From: ${filterOptions.source}`
+                      : 'Show All'
+                  }
+                >
+                  <Option
+                    onClick={() =>
+                      setFilterOptions((prev) => ({
+                        ...prev,
+                        source: window.location.host
+                      }))
+                    }
+                  >
+                    Show From: {window.location.host}
+                  </Option>
+                  <Option
+                    onClick={() =>
+                      setFilterOptions((prev) => ({
+                        ...prev,
+                        source: 'Show All'
+                      }))
+                    }
+                  >
+                    Show All
+                  </Option>
+                </Dropdown>
+              </Filter>
+            </div>
+          </div>
+          <div className="IBMSecMain IBMSMListWrapper">
+            <div className="IBMSMList IBMSMListFeaturedAlt">
               {currentGames.map((game) => (
                 <GameCard
                   key={game['Game Name']}

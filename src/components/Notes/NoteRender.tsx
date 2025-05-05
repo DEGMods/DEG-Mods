@@ -101,9 +101,9 @@ export const NoteRender = ({ content }: NoteRenderProps) => {
               return (
                 <img
                   key={key}
-                  className='imgFeedRender'
+                  className="imgFeedRender"
                   src={href}
-                  alt=''
+                  alt=""
                   onClick={() => openLightBoxOnSlide(href)}
                 />
               )
@@ -112,7 +112,7 @@ export const NoteRender = ({ content }: NoteRenderProps) => {
               return (
                 <video
                   key={key}
-                  className='videoFeedRender'
+                  className="videoFeedRender"
                   src={href}
                   controls
                 />
@@ -126,13 +126,13 @@ export const NoteRender = ({ content }: NoteRenderProps) => {
                 return (
                   <iframe
                     key={key}
-                    className='videoFeedRender'
-                    title='Video embed'
-                    width='560'
-                    height='315'
+                    className="videoFeedRender"
+                    title="Video embed"
+                    width="560"
+                    height="315"
                     src={`https://www.youtube.com/embed/${id}`}
-                    frameBorder='0'
-                    allow='accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share'
+                    frameBorder="0"
+                    allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share"
                     allowFullScreen
                   ></iframe>
                 )
@@ -142,7 +142,7 @@ export const NoteRender = ({ content }: NoteRenderProps) => {
 
           // Link
           return (
-            <a key={key} target='_blank' href={href}>
+            <a key={key} target="_blank" href={href}>
               {href}
             </a>
           )
@@ -164,16 +164,16 @@ export const NoteRender = ({ content }: NoteRenderProps) => {
                   return (
                     <Link
                       to={baseUrl + encoded}
-                      className='IBMSMSMBSSCL_CADDate'
+                      className="IBMSMSMBSSCL_CADDate"
                     >
                       <svg
-                        xmlns='http://www.w3.org/2000/svg'
-                        viewBox='0 0 512 512'
-                        width='1em'
-                        height='1em'
-                        fill='currentColor'
+                        xmlns="http://www.w3.org/2000/svg"
+                        viewBox="0 0 512 512"
+                        width="1em"
+                        height="1em"
+                        fill="currentColor"
                       >
-                        <path d='M256 31.1c-141.4 0-255.1 93.09-255.1 208c0 49.59 21.38 94.1 56.97 130.7c-12.5 50.39-54.31 95.3-54.81 95.8C0 468.8-.5938 472.2 .6875 475.2c1.312 3 4.125 4.797 7.312 4.797c66.31 0 116-31.8 140.6-51.41c32.72 12.31 69.01 19.41 107.4 19.41C397.4 447.1 512 354.9 512 239.1S397.4 31.1 256 31.1zM368 266c0 8.836-7.164 16-16 16h-54V336c0 8.836-7.164 16-16 16h-52c-8.836 0-16-7.164-16-16V282H160c-8.836 0-16-7.164-16-16V214c0-8.838 7.164-16 16-16h53.1V144c0-8.838 7.164-16 16-16h52c8.836 0 16 7.162 16 16v54H352c8.836 0 16 7.162 16 16V266z'></path>
+                        <path d="M256 31.1c-141.4 0-255.1 93.09-255.1 208c0 49.59 21.38 94.1 56.97 130.7c-12.5 50.39-54.31 95.3-54.81 95.8C0 468.8-.5938 472.2 .6875 475.2c1.312 3 4.125 4.797 7.312 4.797c66.31 0 116-31.8 140.6-51.41c32.72 12.31 69.01 19.41 107.4 19.41C397.4 447.1 512 354.9 512 239.1S397.4 31.1 256 31.1zM368 266c0 8.836-7.164 16-16 16h-54V336c0 8.836-7.164 16-16 16h-52c-8.836 0-16-7.164-16-16V282H160c-8.836 0-16-7.164-16-16V214c0-8.838 7.164-16 16-16h53.1V144c0-8.838 7.164-16 16-16h52c8.836 0 16 7.162 16 16v54H352c8.836 0 16 7.162 16 16V266z"></path>
                       </svg>{' '}
                       {truncate(encoded)}
                     </Link>
@@ -184,16 +184,16 @@ export const NoteRender = ({ content }: NoteRenderProps) => {
                   return (
                     <Link
                       to={baseUrl + encoded}
-                      className='IBMSMSMBSSCL_CADDate'
+                      className="IBMSMSMBSSCL_CADDate"
                     >
                       <svg
-                        xmlns='http://www.w3.org/2000/svg'
-                        viewBox='0 0 512 512'
-                        width='1em'
-                        height='1em'
-                        fill='currentColor'
+                        xmlns="http://www.w3.org/2000/svg"
+                        viewBox="0 0 512 512"
+                        width="1em"
+                        height="1em"
+                        fill="currentColor"
                       >
-                        <path d='M256 31.1c-141.4 0-255.1 93.09-255.1 208c0 49.59 21.38 94.1 56.97 130.7c-12.5 50.39-54.31 95.3-54.81 95.8C0 468.8-.5938 472.2 .6875 475.2c1.312 3 4.125 4.797 7.312 4.797c66.31 0 116-31.8 140.6-51.41c32.72 12.31 69.01 19.41 107.4 19.41C397.4 447.1 512 354.9 512 239.1S397.4 31.1 256 31.1zM368 266c0 8.836-7.164 16-16 16h-54V336c0 8.836-7.164 16-16 16h-52c-8.836 0-16-7.164-16-16V282H160c-8.836 0-16-7.164-16-16V214c0-8.838 7.164-16 16-16h53.1V144c0-8.838 7.164-16 16-16h52c8.836 0 16 7.162 16 16v54H352c8.836 0 16 7.162 16 16V266z'></path>
+                        <path d="M256 31.1c-141.4 0-255.1 93.09-255.1 208c0 49.59 21.38 94.1 56.97 130.7c-12.5 50.39-54.31 95.3-54.81 95.8C0 468.8-.5938 472.2 .6875 475.2c1.312 3 4.125 4.797 7.312 4.797c66.31 0 116-31.8 140.6-51.41c32.72 12.31 69.01 19.41 107.4 19.41C397.4 447.1 512 354.9 512 239.1S397.4 31.1 256 31.1zM368 266c0 8.836-7.164 16-16 16h-54V336c0 8.836-7.164 16-16 16h-52c-8.836 0-16-7.164-16-16V282H160c-8.836 0-16-7.164-16-16V214c0-8.838 7.164-16 16-16h53.1V144c0-8.838 7.164-16 16-16h52c8.836 0 16 7.162 16 16v54H352c8.836 0 16 7.162 16 16V266z"></path>
                       </svg>{' '}
                       {truncate(encoded)}
                     </Link>
@@ -248,7 +248,7 @@ export const NoteRender = ({ content }: NoteRenderProps) => {
           groupedParts.push(
             <div
               key={imgGroup.join('-')}
-              className='IBMSMSMBSSCL_CBImgGroup'
+              className="IBMSMSMBSSCL_CBImgGroup"
               style={{
                 gridTemplateColumns: `repeat(${Math.min(
                   imgGroup.length,
@@ -269,7 +269,7 @@ export const NoteRender = ({ content }: NoteRenderProps) => {
       groupedParts.push(
         <div
           key={imgGroup.join('-')}
-          className='IBMSMSMBSSCL_CBImgGroup'
+          className="IBMSMSMBSSCL_CBImgGroup"
           style={{
             gridTemplateColumns: `repeat(${imgGroup.length}, 1fr)`
           }}

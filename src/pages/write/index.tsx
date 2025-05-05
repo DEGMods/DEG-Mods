@@ -120,32 +120,32 @@ export const WritePage = () => {
   )
 
   return (
-    <div className='InnerBodyMain'>
-      <div className='ContainerMain'>
-        <div className='IBMSecMainGroup IBMSecMainGroupAlt'>
-          <div className='IBMSMSplitMain'>
-            <div className='IBMSMSplitMainBigSide'>
-              <div className='IBMSMTitleMain'>
-                <h2 className='IBMSMTitleMainHeading'>{title}</h2>
+    <div className="InnerBodyMain">
+      <div className="ContainerMain">
+        <div className="IBMSecMainGroup IBMSecMainGroupAlt">
+          <div className="IBMSMSplitMain">
+            <div className="IBMSMSplitMainBigSide">
+              <div className="IBMSMTitleMain">
+                <h2 className="IBMSMTitleMainHeading">{title}</h2>
               </div>
               {navigation.state === 'loading' && (
-                <LoadingSpinner desc='Loading..' />
+                <LoadingSpinner desc="Loading.." />
               )}
               {navigation.state === 'submitting' && (
-                <LoadingSpinner desc='Publishing blog to relays' />
+                <LoadingSpinner desc="Publishing blog to relays" />
               )}
-              <form className='IBMSMSMBS_Write' onSubmit={handleFormSubmit}>
+              <form className="IBMSMSMBS_Write" onSubmit={handleFormSubmit}>
                 <InputField
-                  label='Title'
-                  name='title'
+                  label="Title"
+                  name="title"
                   value={formState.title}
                   error={formErrors?.title}
                   onChange={handleInputChange}
-                  placeholder='Blog title'
+                  placeholder="Blog title"
                 />
-                <div className='inputLabelWrapperMain'>
-                  <label className='form-label labelMain'>Content</label>
-                  <div className='inputMain'>
+                <div className="inputLabelWrapperMain">
+                  <label className="form-label labelMain">Content</label>
+                  <div className="inputMain">
                     <Editor
                       ref={editorRef}
                       markdown={formState.content}
@@ -157,44 +157,44 @@ export const WritePage = () => {
                   )}
                 </div>
                 <InputFieldWithImageUpload
-                  label='Featured Image URL'
-                  name='image'
-                  inputMode='url'
+                  label="Featured Image URL"
+                  name="image"
+                  inputMode="url"
                   value={formState.image}
                   error={formErrors?.image}
                   onInputChange={handleImageChange}
-                  placeholder='Image URL'
+                  placeholder="Image URL"
                 />
                 <InputField
-                  label='Summary'
-                  name='summary'
-                  type='textarea'
+                  label="Summary"
+                  name="summary"
+                  type="textarea"
                   value={formState.summary}
                   error={formErrors?.summary}
                   onChange={handleInputChange}
                   placeholder={'This is a quick description of my blog'}
                 />
                 <InputField
-                  label='Tags'
-                  description='Separate each tag with a comma. (Example: tag1, tag2, tag3)'
-                  placeholder='Tags'
-                  name='tags'
+                  label="Tags"
+                  description="Separate each tag with a comma. (Example: tag1, tag2, tag3)"
+                  placeholder="Tags"
+                  name="tags"
                   value={formState.tags}
                   error={formErrors?.tags}
                   onChange={handleInputChange}
                 />
                 <CheckboxField
-                  label='This post is not safe for work (NSFW)'
-                  name='nsfw'
+                  label="This post is not safe for work (NSFW)"
+                  name="nsfw"
                   isChecked={formState.nsfw}
                   handleChange={handleCheckboxChange}
-                  type='stylized'
+                  type="stylized"
                 />
 
-                <div className='IBMSMSMBS_WriteAction'>
+                <div className="IBMSMSMBS_WriteAction">
                   <button
-                    className='btn btnMain'
-                    type='button'
+                    className="btn btnMain"
+                    type="button"
                     onClick={handleReset}
                     disabled={
                       navigation.state === 'loading' ||
@@ -204,8 +204,8 @@ export const WritePage = () => {
                     {isEditing ? 'Reset' : 'Clear fields'}
                   </button>
                   <button
-                    className='btn btnMain'
-                    type='submit'
+                    className="btn btnMain"
+                    type="submit"
                     disabled={
                       navigation.state === 'loading' ||
                       navigation.state === 'submitting'

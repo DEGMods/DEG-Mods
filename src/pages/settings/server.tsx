@@ -50,21 +50,21 @@ export const ServerSetting = () => {
   return (
     <>
       {isSaving && <LoadingSpinner desc={''} />}
-      <div className='IBMSMSplitMainFullSideFWMid'>
-        <div className='IBMSMSplitMainFullSideSec'>
-          <div className='IBMSMSMBS_Write'>
-            <div className='inputLabelWrapperMain'>
-              <div className='labelWrapperMain'>
-                <p className='labelMain'>Server</p>
+      <div className="IBMSMSplitMainFullSideFWMid">
+        <div className="IBMSMSplitMainFullSideSec">
+          <div className="IBMSMSMBS_Write">
+            <div className="inputLabelWrapperMain">
+              <div className="labelWrapperMain">
+                <p className="labelMain">Server</p>
               </div>
-              <p className='labelDescriptionMain'>
+              <p className="labelDescriptionMain">
                 The server aggregates the mods and blogs to reduce load on the
                 browsers. Changing the server connection URL will heavily affect
                 your experience on the site.
               </p>
               {serverUrl !== '' && (
                 <>
-                  <p className='labelDescriptionMain'>
+                  <p className="labelDescriptionMain">
                     Used URLs:
                     <br />
                     <code>
@@ -76,29 +76,29 @@ export const ServerSetting = () => {
                 </>
               )}
               <InputField
-                label='Server connection URL'
-                placeholder=''
-                name='server'
-                inputMode='url'
+                label="Server connection URL"
+                placeholder=""
+                name="server"
+                inputMode="url"
                 value={url}
                 onChange={(_, value) => setUrl(value)}
                 error={error}
               />
             </div>
-            <div className='IBMSMSMBS_WriteAction'>
+            <div className="IBMSMSMBS_WriteAction">
               <code>{server.state.toUpperCase()}</code>
 
               <button
-                className='btn btnMain'
-                type='button'
+                className="btn btnMain"
+                type="button"
                 onClick={handleReset}
                 disabled={isSaving}
               >
                 Default
               </button>
               <button
-                className='btn btnMain'
-                type='button'
+                className="btn btnMain"
+                type="button"
                 onClick={handleSave}
                 disabled={isSaving}
               >
@@ -110,8 +110,8 @@ export const ServerSetting = () => {
       </div>
       {showAlertPopup && (
         <AlertPopup
-          header='Server connection'
-          label='Are you sure you want to remove server URL?'
+          header="Server connection"
+          label="Are you sure you want to remove server URL?"
           handleConfirm={(confirm) => {
             if (confirm) {
               const serverService = ServerService.getInstance()
@@ -123,7 +123,7 @@ export const ServerSetting = () => {
           }}
           handleClose={() => setShowAlertPopup(false)}
         >
-          <div className='IBMSMSMBSSWarning'>
+          <div className="IBMSMSMBSSWarning">
             <p>
               Warning: Expect a worse experience on the site if you remove
               default server URL.

@@ -74,6 +74,7 @@
   -webkit-box-orient: vertical;
   overflow: hidden;
   -webkit-line-clamp: 3;
+  line-clamp: 3;
   font-size: 14px;
   line-height: 1.5;
   color: rgba(255,255,255,0.25);
@@ -151,6 +152,7 @@
   -webkit-box-orient: vertical;
   overflow: hidden;
   -webkit-line-clamp: 1;
+  line-clamp: 1;
 }
 
 .IBMSMSMSSS_Author_Top_PPWrapper {
@@ -166,6 +168,7 @@
   -webkit-box-orient: vertical;
   overflow: hidden;
   -webkit-line-clamp: 1;
+  line-clamp: 1;
 }
 
 .IBMSMSMSSS_Author_Top_Handle.IBMSMSMSSS_Author_Top_HandleNomen {
@@ -202,9 +205,6 @@
   cursor: pointer;
   transform: scale(1.02);
   background: rgba(255,255,255,0.05);
-}
-
-.IBMSMSMSSS_Author_Top_Left_InsidePic {
 }
 
 .IBMSMSMSSS_Author_Top_Left_InsideDetails {
@@ -251,9 +251,6 @@
   color: rgba(255,255,255,0.25);
   cursor: pointer;
   transform: scale(1);
-}
-
-.IBMSMSMSSS_Author_Top_IconWrappedQR {
 }
 
 .IBMSMSMSSS_Author_Top_IconWrapped > .IBMSMSMSSS_Author_Top_Icon {

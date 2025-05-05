@@ -14,7 +14,8 @@ import {
   useAppSelector,
   useServer,
   useLocalStorage,
-  useFilteredMods
+  useFilteredMods,
+  useUserWoTOverride
 } from 'hooks'
 import { useState, useCallback, useMemo, useEffect, useRef } from 'react'
 import { useLoaderData } from 'react-router-dom'
@@ -35,12 +36,14 @@ import {
 import { ProfilePageLoaderResult } from './loader'
 import { PaginationOffset } from 'components/Pagination'
 import { ServerService, PaginatedRequest } from 'controllers'
+import { ModCardWot } from 'components/ModCardWoT'
 
 export const ProfileTabMods = () => {
   const { profilePubkey, repostList, muteLists, nsfwList } =
     useLoaderData() as ProfilePageLoaderResult
   const { ndk, fetchMods } = useNDKContext()
   const userState = useAppSelector((state) => state.user)
+  const [isUserWoT, setOverride] = useUserWoTOverride('filter-profile')
   const [isLoading, setIsLoading] = useState(false)
   const [loadingSpinnerDesc, setLoadingSpinnerDesc] = useState('')
   const [mods, setMods] = useState<ModDetails[]>([])
@@ -68,15 +71,18 @@ export const ProfileTabMods = () => {
   const lastMod: ModDetails | undefined = useMemo(() => {
     // For the latest sort find oldest mod
     // for the oldest sort find newest mod
-    return mods.reduce((prev, current) => {
-      if (!prev) return current
-      if (filterOptions.sort === SortBy.Latest) {
-        return current.edited_at < prev.edited_at ? current : prev
-      } else if (filterOptions.sort === SortBy.Oldest) {
-        return current.edited_at > prev.edited_at ? current : prev
-      }
-      return prev
-    }, undefined as ModDetails | undefined)
+    return mods.reduce(
+      (prev, current) => {
+        if (!prev) return current
+        if (filterOptions.sort === SortBy.Latest) {
+          return current.edited_at < prev.edited_at ? current : prev
+        } else if (filterOptions.sort === SortBy.Oldest) {
+          return current.edited_at > prev.edited_at ? current : prev
+        }
+        return prev
+      },
+      undefined as ModDetails | undefined
+    )
   }, [mods, filterOptions.sort])
 
   useEffect(() => {
@@ -226,37 +232,32 @@ export const ProfileTabMods = () => {
       if (filterOptions.source === window.location.host) {
         filter['#r'] = [window.location.host]
       }
-      sub = ndk.subscribe(
-        filter,
-        {
-          closeOnEose: false,
-          cacheUsage: NDKSubscriptionCacheUsage.PARALLEL
-        },
-        undefined,
-        {
-          onEvent: (ndkEvent) => {
-            setMods((prevMods) => {
-              // Skip if not valid
-              if (!isModDataComplete(ndkEvent)) {
-                return prevMods
-              }
-
-              // Skip existing
-              if (
-                prevMods.find(
-                  (e) =>
-                    e.id === ndkEvent.id ||
-                    prevMods.findIndex((n) => n.id === ndkEvent.id) !== -1
-                )
-              ) {
-                return prevMods
-              }
-              const newMod = extractModData(ndkEvent)
-              return [...prevMods, newMod]
-            })
+      sub = ndk.subscribe(filter, {
+        closeOnEose: false,
+        cacheUsage: NDKSubscriptionCacheUsage.PARALLEL
+      })
+      sub.on('event', (ndkEvent) => {
+        setMods((prevMods) => {
+          // Skip if not valid
+          if (!isModDataComplete(ndkEvent)) {
+            return prevMods
           }
-        }
-      )
+
+          // Skip existing
+          if (
+            prevMods.find(
+              (e) =>
+                e.id === ndkEvent.id ||
+                prevMods.findIndex((n) => n.id === ndkEvent.id) !== -1
+            )
+          ) {
+            return prevMods
+          }
+          const newMod = extractModData(ndkEvent)
+          return [...prevMods, newMod]
+        })
+      })
+      sub.start()
     }
     return () => {
       if (sub) sub.stop()
@@ -286,10 +287,20 @@ export const ProfileTabMods = () => {
 
       <ModFilter filterKey={filterKey} author={profilePubkey} />
 
-      <div className='IBMSMList IBMSMListAlt' ref={scrollTargetRef}>
-        {filteredModList.map((mod) => (
-          <ModCard key={mod.id} {...mod} />
-        ))}
+      <div className="IBMSMList IBMSMListAlt" ref={scrollTargetRef}>
+        {isServerActive
+          ? mods.map((mod) =>
+              isUserWoT(mod) ? (
+                <ModCard key={mod.id} {...mod} />
+              ) : (
+                <ModCardWot
+                  key={mod.id}
+                  id={mod.id}
+                  setOverride={setOverride}
+                />
+              )
+            )
+          : filteredModList.map((mod) => <ModCard key={mod.id} {...mod} />)}
       </div>
 
       {isServerActive ? (
@@ -304,10 +315,10 @@ export const ProfileTabMods = () => {
         !isLoading &&
         isLoadMoreVisible &&
         filteredModList.length > 0 && (
-          <div className='IBMSMListFeedLoadMore'>
+          <div className="IBMSMListFeedLoadMore">
             <button
-              className='btn btnMain IBMSMListFeedLoadMoreBtn'
-              type='button'
+              className="btn btnMain IBMSMListFeedLoadMoreBtn"
+              type="button"
               onClick={handleLoadMore}
             >
               Load More

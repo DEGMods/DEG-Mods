@@ -9,7 +9,7 @@ export const Option = ({
   children
 }: PropsWithChildren<OptionProps>) => {
   return (
-    <div className='dropdown-item dropdownMainMenuItem' onClick={onClick}>
+    <div className="dropdown-item dropdownMainMenuItem" onClick={onClick}>
       {children}
     </div>
   )

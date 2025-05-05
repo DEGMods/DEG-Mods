@@ -42,7 +42,7 @@ import React, {
   useRef
 } from 'react'
 import { ImageDialog } from './ImageDialog'
-import { LinkDialog } from './LinkDialog'
+import { LinkDialog } from './LinkDialog/LinkDialog'
 
 export interface EditorRef {
   setMarkdown: (md: string) => void
@@ -135,8 +135,8 @@ export const Editor = React.memo(
     return (
       <MDXEditor
         ref={editorRef}
-        contentEditableClassName='editor'
-        className='dark-theme dark-editor'
+        contentEditableClassName="editor"
+        className="dark-theme dark-editor"
         markdown={markdown}
         plugins={plugins}
         onChange={onChange}

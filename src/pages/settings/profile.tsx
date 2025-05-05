@@ -187,65 +187,65 @@ export const ProfileSettings = () => {
 
   return (
     <>
-      {isPublishing && <LoadingSpinner desc='Publishing event' />}
-      <div className='IBMSMSplitMainFullSideFWMid'>
-        <div className='IBMSMSplitMainFullSideSec'>
-          <div className='IBMSMSMBSS_Profile'>
-            <div className='IBMSMSMBSS_ProfilePreview'>
-              <div className='IBMSMSMSSS_Author_Top_Left'>
+      {isPublishing && <LoadingSpinner desc="Publishing event" />}
+      <div className="IBMSMSplitMainFullSideFWMid">
+        <div className="IBMSMSplitMainFullSideSec">
+          <div className="IBMSMSMBSS_Profile">
+            <div className="IBMSMSMBSS_ProfilePreview">
+              <div className="IBMSMSMSSS_Author_Top_Left">
                 <div
-                  className='IBMSMSMSSS_Author_Top_Banner'
+                  className="IBMSMSMSSS_Author_Top_Banner"
                   style={{
                     background: `url(${banner}) center / cover no-repeat`
                   }}
                 ></div>
                 <Link
-                  className='IBMSMSMSSS_Author_Top_Left_InsideLinkWrapper'
+                  className="IBMSMSMSSS_Author_Top_Left_InsideLinkWrapper"
                   to={profileRoute}
                 >
-                  <div className='IBMSMSMSSS_Author_Top_Left_Inside'>
-                    <div className='IBMSMSMSSS_Author_Top_Left_InsidePic'>
-                      <div className='IBMSMSMSSS_Author_Top_PPWrapper'>
+                  <div className="IBMSMSMSSS_Author_Top_Left_Inside">
+                    <div className="IBMSMSMSSS_Author_Top_Left_InsidePic">
+                      <div className="IBMSMSMSSS_Author_Top_PPWrapper">
                         <div
-                          className='IBMSMSMSSS_Author_Top_PP'
+                          className="IBMSMSMSSS_Author_Top_PP"
                           style={{
                             background: `url(${picture}) center / cover no-repeat`
                           }}
                         ></div>
                       </div>
                     </div>
-                    <div className='IBMSMSMSSS_Author_Top_Left_InsideDetails'>
-                      <div className='IBMSMSMSSS_Author_TopWrapper'>
-                        <p className='IBMSMSMSSS_Author_Top_Name'>{name}</p>
-                        <p className='IBMSMSMSSS_Author_Top_Handle'>{nip05}</p>
+                    <div className="IBMSMSMSSS_Author_Top_Left_InsideDetails">
+                      <div className="IBMSMSMSSS_Author_TopWrapper">
+                        <p className="IBMSMSMSSS_Author_Top_Name">{name}</p>
+                        <p className="IBMSMSMSSS_Author_Top_Handle">{nip05}</p>
                       </div>
                     </div>
                   </div>
                 </Link>
-                <div className='IBMSMSMSSS_Author_Top_AddressWrapper'>
-                  <div className='IBMSMSMSSS_Author_Top_AddressWrapped'>
+                <div className="IBMSMSMSSS_Author_Top_AddressWrapper">
+                  <div className="IBMSMSMSSS_Author_Top_AddressWrapped">
                     <p
-                      id='SiteOwnerAddress-1'
-                      className='IBMSMSMSSS_Author_Top_Address'
+                      id="SiteOwnerAddress-1"
+                      className="IBMSMSMSSS_Author_Top_Address"
                     >
                       {npub}
                     </p>
                   </div>
-                  <div className='IBMSMSMSSS_Author_Top_IconWrapper'>
+                  <div className="IBMSMSMSSS_Author_Top_IconWrapper">
                     <div
-                      id='copySiteOwnerAddress'
-                      className='IBMSMSMSSS_Author_Top_IconWrapped'
+                      id="copySiteOwnerAddress"
+                      className="IBMSMSMSSS_Author_Top_IconWrapped"
                       onClick={handleCopy}
                     >
                       <svg
-                        xmlns='http://www.w3.org/2000/svg'
-                        viewBox='0 0 512 512'
-                        width='1em'
-                        height='1em'
-                        fill='currentColor'
-                        className='IBMSMSMSSS_Author_Top_Icon'
+                        xmlns="http://www.w3.org/2000/svg"
+                        viewBox="0 0 512 512"
+                        width="1em"
+                        height="1em"
+                        fill="currentColor"
+                        className="IBMSMSMSSS_Author_Top_Icon"
                       >
-                        <path d='M384 96L384 0h-112c-26.51 0-48 21.49-48 48v288c0 26.51 21.49 48 48 48H464c26.51 0 48-21.49 48-48V128h-95.1C398.4 128 384 113.6 384 96zM416 0v96h96L416 0zM192 352V128h-144c-26.51 0-48 21.49-48 48v288c0 26.51 21.49 48 48 48h192c26.51 0 48-21.49 48-48L288 416h-32C220.7 416 192 387.3 192 352z'></path>
+                        <path d="M384 96L384 0h-112c-26.51 0-48 21.49-48 48v288c0 26.51 21.49 48 48 48H464c26.51 0 48-21.49 48-48V128h-95.1C398.4 128 384 113.6 384 96zM416 0v96h96L416 0zM192 352V128h-144c-26.51 0-48 21.49-48 48v288c0 26.51 21.49 48 48 48h192c26.51 0 48-21.49 48-48L288 416h-32C220.7 416 192 387.3 192 352z"></path>
                       </svg>
                     </div>
                     {typeof nprofile !== 'undefined' && (
@@ -253,72 +253,72 @@ export const ProfileSettings = () => {
                     )}
                   </div>
                 </div>
-                <div className='IBMSMSMSSS_Author_Top_Details'>
-                  <p className='IBMSMSMSSS_Author_Top_Bio'>{bio}</p>
+                <div className="IBMSMSMSSS_Author_Top_Details">
+                  <p className="IBMSMSMSSS_Author_Top_Bio">{bio}</p>
                   <div
-                    id='OwnerFollowLogin-1'
-                    className='IBMSMSMSSS_Author_Top_NostrLinks'
+                    id="OwnerFollowLogin-1"
+                    className="IBMSMSMSSS_Author_Top_NostrLinks"
                     style={{ display: 'flex' }}
                   ></div>
                 </div>
               </div>
             </div>
-            <div className='IBMSMSMBSS_ProfileEdit'>
+            <div className="IBMSMSMBSS_ProfileEdit">
               <InputField
-                label='Name'
-                placeholder=''
-                name='name'
+                label="Name"
+                placeholder=""
+                name="name"
                 value={formState.name}
                 onChange={handleInputChange}
               />
               <InputField
-                label='Display name'
-                placeholder=''
-                name='displayName'
+                label="Display name"
+                placeholder=""
+                name="displayName"
                 value={formState.displayName}
                 onChange={handleInputChange}
               />
               <InputField
-                label='Bio'
-                placeholder=''
-                name='bio'
-                type='textarea'
+                label="Bio"
+                placeholder=""
+                name="bio"
+                type="textarea"
                 value={formState.bio}
                 onChange={handleInputChange}
               />
               <InputFieldWithImageUpload
-                label='Profile picture URL'
-                placeholder=''
-                name='picture'
-                inputMode='url'
+                label="Profile picture URL"
+                placeholder=""
+                name="picture"
+                inputMode="url"
                 value={formState.picture}
                 onInputChange={handleInputChange}
               />
               <InputFieldWithImageUpload
-                label='Banner picture URL'
-                placeholder=''
-                name='banner'
-                inputMode='url'
+                label="Banner picture URL"
+                placeholder=""
+                name="banner"
+                inputMode="url"
                 value={formState.banner}
                 onInputChange={handleInputChange}
               />
               <InputField
-                label='Nip-05 address'
-                placeholder=''
-                name='nip05'
+                label="Nip-05 address"
+                placeholder=""
+                name="nip05"
                 value={formState.nip05}
                 onChange={handleInputChange}
               />
               <InputField
-                label='Lightning Address (lud16)'
-                placeholder=''
-                name='lud16'
+                label="Lightning Address (lud16)"
+                placeholder=""
+                name="lud16"
                 value={formState.lud16}
                 onChange={handleInputChange}
               />
             </div>
             <div
-              className='IBMSMSMBSS_ProfileActions'
+              className="IBMSMSMBSS_ProfileActions"
               style={{
                 padding: 'unset',
                 border: 'unset',
@@ -326,8 +326,8 @@ export const ProfileSettings = () => {
               }}
             >
               <button
-                className='btn btnMain'
-                type='button'
+                className="btn btnMain"
+                type="button"
                 disabled={isPublishing}
                 onClick={handlePublish}
               >

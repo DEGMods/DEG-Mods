@@ -43,9 +43,9 @@ export const NsfwCommentWrapper = ({
 
   return (
     <>
-      <div className='IBMSMSMBSSCL_CommentNSFW'>
+      <div className="IBMSMSMBSSCL_CommentNSFW">
         <p>This post is hidden as it&#39;s marked as NSFW</p>
-        <button className='btnMain' type='button' onClick={handleShowNSFW}>
+        <button className="btnMain" type="button" onClick={handleShowNSFW}>
           View this NSFW post
         </button>
       </div>

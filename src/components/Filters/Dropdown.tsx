@@ -8,17 +8,17 @@ export const Dropdown = ({
   children
 }: PropsWithChildren<DropdownProps>) => {
   return (
-    <div className='FiltersMainElement'>
-      <div className='dropdown dropdownMain'>
+    <div className="FiltersMainElement">
+      <div className="dropdown dropdownMain">
         <button
-          className='btn dropdown-toggle btnMain btnMainDropdown'
-          aria-expanded='false'
-          data-bs-toggle='dropdown'
-          type='button'
+          className="btn dropdown-toggle btnMain btnMainDropdown"
+          aria-expanded="false"
+          data-bs-toggle="dropdown"
+          type="button"
         >
           {label}
         </button>
-        <div className='dropdown-menu dropdownMainMenu'>{children}</div>
+        <div className="dropdown-menu dropdownMainMenu">{children}</div>
       </div>
     </div>
   )

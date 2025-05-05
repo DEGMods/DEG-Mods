@@ -9,10 +9,10 @@ export const Footer = () => {
         <p className={styles.secMainFooterPara}>
           Built with&nbsp;
           <a
-            rel='noopener'
+            rel="noopener"
             className={styles.secMainFooterParaLink}
-            href='https://github.com/nostr-protocol/nostr'
-            target='_blank'
+            href="https://github.com/nostr-protocol/nostr"
+            target="_blank"
           >
             Nostr
           </a>{' '}
@@ -22,7 +22,7 @@ export const Footer = () => {
             to={getProfilePageRoute(
               'nprofile1qqsre6jgq6c7r2vzn5cdtju20qq36sn3cer5avc4x8kfru5pzrlr7sqnancjp'
             )}
-            target='_blank'
+            target="_blank"
           >
             Freakoverse
           </Link>

@@ -28,7 +28,8 @@ import {
   useMuteLists,
   useNDKContext,
   useNSFWList,
-  useServer
+  useServer,
+  useUserWoTOverride
 } from 'hooks'
 import React, { useCallback, useEffect, useMemo, useRef, useState } from 'react'
 import { useSearchParams } from 'react-router-dom'
@@ -55,6 +56,7 @@ import {
 import { useCuratedSet } from 'hooks/useCuratedSet'
 import dedup from 'utils/nostr'
 import { PaginatedRequest, ServerService } from 'controllers'
+import { ModCardWot } from 'components/ModCardWoT'
 
 enum SearchKindEnum {
   Mods = 'Mods',
@@ -103,18 +105,18 @@ export const SearchPage = () => {
   }
 
   return (
-    <div className='InnerBodyMain'>
-      <div className='ContainerMain'>
+    <div className="InnerBodyMain">
+      <div className="ContainerMain">
         <div
-          className='IBMSecMainGroup IBMSecMainGroupAlt'
+          className="IBMSecMainGroup IBMSecMainGroupAlt"
           ref={scrollTargetRef}
         >
-          <div className='IBMSecMain'>
-            <div className='SearchMainWrapper'>
-              <div className='IBMSMTitleMain'>
-                <h2 className='IBMSMTitleMainHeading'>
+          <div className="IBMSecMain">
+            <div className="SearchMainWrapper">
+              <div className="IBMSMTitleMain">
+                <h2 className="IBMSMTitleMainHeading">
                   Search:&nbsp;
-                  <span className='IBMSMTitleMainHeadingSpan'>
+                  <span className="IBMSMTitleMainHeadingSpan">
                     {searchTerm}
                   </span>
                 </h2>
@@ -171,22 +173,22 @@ const Filters = React.memo(() => {
   }
 
   return (
-    <div className='IBMSecMain'>
-      <div className='FiltersMain'>
+    <div className="IBMSecMain">
+      <div className="FiltersMain">
         {searchKind === SearchKindEnum.Mods && <ModFilter />}
 
         {searchKind === SearchKindEnum.Users && (
-          <div className='FiltersMainElement'>
-            <div className='dropdown dropdownMain'>
+          <div className="FiltersMainElement">
+            <div className="dropdown dropdownMain">
               <button
-                className='btn dropdown-toggle btnMain btnMainDropdown'
-                aria-expanded='false'
-                data-bs-toggle='dropdown'
-                type='button'
+                className="btn dropdown-toggle btnMain btnMainDropdown"
+                aria-expanded="false"
+                data-bs-toggle="dropdown"
+                type="button"
               >
                 {filterOptions.moderated}
               </button>
-              <div className='dropdown-menu dropdownMainMenu'>
+              <div className="dropdown-menu dropdownMainMenu">
                 {Object.values(ModeratedFilter).map((item, index) => {
                   const isAdmin =
                     userState.user?.npub === import.meta.env.VITE_REPORTING_NPUB
@@ -202,7 +204,7 @@ const Filters = React.memo(() => {
                   return (
                     <div
                       key={`moderatedFilterItem-${index}`}
-                      className='dropdown-item dropdownMainMenuItem'
+                      className="dropdown-item dropdownMainMenuItem"
                       onClick={() =>
                         setFilterOptions((prev) => ({
                           ...prev,
@@ -219,21 +221,21 @@ const Filters = React.memo(() => {
           </div>
         )}
 
-        <div className='FiltersMainElement'>
-          <div className='dropdown dropdownMain'>
+        <div className="FiltersMainElement">
+          <div className="dropdown dropdownMain">
             <button
-              className='btn dropdown-toggle btnMain btnMainDropdown'
-              aria-expanded='false'
-              data-bs-toggle='dropdown'
-              type='button'
+              className="btn dropdown-toggle btnMain btnMainDropdown"
+              aria-expanded="false"
+              data-bs-toggle="dropdown"
+              type="button"
             >
               Searching: {searchKind}
             </button>
-            <div className='dropdown-menu dropdownMainMenu'>
+            <div className="dropdown-menu dropdownMainMenu">
               {Object.values(SearchKindEnum).map((item, index) => (
                 <div
                   key={`searchingFilterItem-${index}`}
-                  className='dropdown-item dropdownMainMenuItem'
+                  className="dropdown-item dropdownMainMenuItem"
                   onClick={() => handleChangeSearchKind(item)}
                 >
                   {item}
@@ -269,6 +271,7 @@ const ModsResult = ({
 }: ModsResultProps) => {
   const { ndk } = useNDKContext()
   const [mods, setMods] = useState<ModDetails[]>([])
+  const [isUserWoT, setOverride] = useUserWoTOverride('filter')
   const [page, setPage] = useState(1)
   const userState = useAppSelector((state) => state.user)
   const { isServerActive, isRelayFallbackActive } = useServer()
@@ -318,9 +321,7 @@ const ModsResult = ({
       userMuteList: {
         authors: [...muteLists.user.authors],
         events: [...muteLists.user.replaceableEvents]
-      },
-      userWot,
-      userWotScore: userWotLevel
+      }
     }
 
     const loggedInUserPubkey =
@@ -448,17 +449,23 @@ const ModsResult = ({
 
   return (
     <>
-      <div className='IBMSecMain IBMSMListWrapper'>
-        <div className='IBMSMList'>
-          {(isServerActive
-            ? mods
-            : filteredModList.slice(
-                (page - 1) * MAX_MODS_PER_PAGE,
-                page * MAX_MODS_PER_PAGE
+      <div className="IBMSecMain IBMSMListWrapper">
+        <div className="IBMSMList">
+          {isServerActive
+            ? mods.map((mod) =>
+                isUserWoT(mod) ? (
+                  <ModCard key={mod.id} {...mod} />
+                ) : (
+                  <ModCardWot
+                    key={mod.id}
+                    id={mod.id}
+                    setOverride={setOverride}
+                  />
+                )
               )
-          ).map((mod) => (
-            <ModCard key={mod.id} {...mod} />
-          ))}
+            : filteredModList
+                .slice((page - 1) * MAX_MODS_PER_PAGE, page * MAX_MODS_PER_PAGE)
+                .map((mod) => <ModCard key={mod.id} {...mod} />)}
         </div>
       </div>
       {isServerActive ? (
@@ -524,8 +531,14 @@ const UsersResult = ({
         }
       }, 10000)
 
-      const onEvent = (event: NostrEvent | NDKEvent) => {
-        if (!(event instanceof NDKEvent)) event = new NDKEvent(undefined, event)
+      const onEvent = (_event: NostrEvent | NDKEvent) => {
+        let event
+        if (_event instanceof NDKEvent) {
+          event = _event
+        } else {
+          event = new NDKEvent(undefined, _event)
+        }
+
         const dedupKey = event.deduplicationKey()
         const existingEvent = events.get(dedupKey)
         if (existingEvent) {
@@ -591,8 +604,8 @@ const UsersResult = ({
   }, [userState.user?.npub, moderationFilter, profiles, muteLists])
   return (
     <>
-      <div className='IBMSecMain IBMSMListWrapper'>
-        <div className='IBMSMList'>
+      <div className="IBMSecMain IBMSMListWrapper">
+        <div className="IBMSMList">
           {filteredProfiles.map((profile) => {
             if (profile.pubkey) {
               return (
@@ -645,12 +658,12 @@ const GamesResult = ({ searchTerm }: GamesResultProps) => {
   return (
     <>
       {searchTerm !== '' && filteredGames.length === 0 && (
-        <div className='IBMSecMain IBMSMListWrapper'>
+        <div className="IBMSecMain IBMSMListWrapper">
           Game not found. Send us a message where you can reach us to add it
         </div>
       )}
-      <div className='IBMSecMain IBMSMListWrapper'>
-        <div className='IBMSMList IBMSMListFeaturedAlt'>
+      <div className="IBMSecMain IBMSMListWrapper">
+        <div className="IBMSMList IBMSMListFeaturedAlt">
           {filteredGames
             .slice((page - 1) * MAX_GAMES_PER_PAGE, page * MAX_GAMES_PER_PAGE)
             .map((game) => (

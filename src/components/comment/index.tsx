@@ -91,15 +91,15 @@ export const Comments = ({ addressable, setCommentCount }: Props) => {
 
   const discoveredCount = commentEvents.length - visible.length
   return (
-    <div className='IBMSMSMBSSCommentsWrapper'>
-      <h4 className='IBMSMSMBSSTitle'>Comments</h4>
-      <div className='IBMSMSMBSSComments'>
+    <div className="IBMSMSMBSSCommentsWrapper">
+      <h4 className="IBMSMSMBSSTitle">Comments</h4>
+      <div className="IBMSMSMBSSComments">
         {/* Hide comment form if aTag is missing */}
         {!!addressable.aTag && <CommentForm handleSubmit={handleSubmit} />}
         <div>
           <button
-            type='button'
-            className='btnMain'
+            type="button"
+            className="btnMain"
             onClick={discoveredCount ? handleDiscoveredClick : undefined}
           >
             <span>
@@ -120,7 +120,7 @@ export const Comments = ({ addressable, setCommentCount }: Props) => {
           filterOptions={filterOptions}
           setFilterOptions={setFilterOptions}
         />
-        <div className='IBMSMSMBSSCommentsList'>
+        <div className="IBMSMSMBSSCommentsList">
           {comments.map((comment) => (
             <Comment key={comment.event.id} comment={comment} />
           ))}

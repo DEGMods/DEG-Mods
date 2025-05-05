@@ -157,17 +157,17 @@ export const BlogsPage = () => {
   }
 
   return (
-    <div className='InnerBodyMain'>
+    <div className="InnerBodyMain">
       {navigation.state !== 'idle' && <LoadingSpinner desc={'Loading'} />}
-      <div className='ContainerMain'>
+      <div className="ContainerMain">
         <div
-          className='IBMSecMainGroup IBMSecMainGroupAlt'
+          className="IBMSecMainGroup IBMSecMainGroupAlt"
           ref={scrollTargetRef}
         >
-          <div className='IBMSecMain'>
-            <div className='SearchMainWrapper'>
-              <div className='IBMSMTitleMain'>
-                <h2 className='IBMSMTitleMainHeading'>Blogs</h2>
+          <div className="IBMSecMain">
+            <div className="SearchMainWrapper">
+              <div className="IBMSMTitleMain">
+                <h2 className="IBMSMTitleMainHeading">Blogs</h2>
               </div>
               <SearchInput
                 ref={searchTermRef}
@@ -200,8 +200,8 @@ export const BlogsPage = () => {
             </Dropdown>
           </Filter>
 
-          <div className='IBMSecMain IBMSMListWrapper'>
-            <div className='IBMSMList'>
+          <div className="IBMSecMain IBMSMListWrapper">
+            <div className="IBMSMList">
               {currentMods &&
                 currentMods.map((b) => <BlogCard key={b.id} {...b} />)}
             </div>

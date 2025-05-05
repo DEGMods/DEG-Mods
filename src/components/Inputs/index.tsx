@@ -34,12 +34,12 @@ export const InputField = React.memo(
     }
 
     return (
-      <div className='inputLabelWrapperMain'>
-        <label className='form-label labelMain'>{label}</label>
-        {description && <p className='labelDescriptionMain'>{description}</p>}
+      <div className="inputLabelWrapperMain">
+        <label className="form-label labelMain">{label}</label>
+        {description && <p className="labelDescriptionMain">{description}</p>}
         {type === 'textarea' ? (
           <textarea
-            className='inputMain'
+            className="inputMain"
             placeholder={placeholder}
             name={name}
             value={value}
@@ -48,7 +48,7 @@ export const InputField = React.memo(
         ) : (
           <input
             type={type}
-            className='inputMain'
+            className="inputMain"
             placeholder={placeholder}
             name={name}
             inputMode={inputMode}
@@ -83,13 +83,13 @@ export const CheckboxField = React.memo(
         type === 'stylized' ? ` inputLabelWrapperMainAltStylized` : ''
       }`}
     >
-      <label htmlFor={name} className='form-label labelMain'>
+      <label htmlFor={name} className="form-label labelMain">
         {label}
       </label>
       <input
         id={name}
-        type='checkbox'
-        className='CheckboxMain'
+        type="checkbox"
+        className="CheckboxMain"
         name={name}
         checked={isChecked}
         onChange={handleChange}
@@ -119,12 +119,12 @@ export const InputFieldUncontrolled = ({
   error,
   ...rest
 }: InputFieldUncontrolledProps) => (
-  <div className='inputLabelWrapperMain'>
-    <label htmlFor={rest.id} className='form-label labelMain'>
+  <div className="inputLabelWrapperMain">
+    <label htmlFor={rest.id} className="form-label labelMain">
       {label}
     </label>
-    {description && <p className='labelDescriptionMain'>{description}</p>}
-    <input className='inputMain' {...rest} />
+    {description && <p className="labelDescriptionMain">{description}</p>}
+    <input className="inputMain" {...rest} />
     {error && <InputError message={error} />}
   </div>
 )
@@ -137,11 +137,11 @@ export const CheckboxFieldUncontrolled = ({
   label,
   ...rest
 }: CheckboxFieldUncontrolledProps) => (
-  <div className='inputLabelWrapperMain inputLabelWrapperMainAlt inputLabelWrapperMainAltStylized'>
-    <label htmlFor={rest.id} className='form-label labelMain'>
+  <div className="inputLabelWrapperMain inputLabelWrapperMainAlt inputLabelWrapperMainAltStylized">
+    <label htmlFor={rest.id} className="form-label labelMain">
       {label}
     </label>
-    <input type='checkbox' className='CheckboxMain' {...rest} />
+    <input type="checkbox" className="CheckboxMain" {...rest} />
   </div>
 )
 
@@ -182,17 +182,17 @@ export const InputFieldWithImageUpload = React.memo(
     )
 
     return (
-      <div className='inputLabelWrapperMain'>
-        <label className='form-label labelMain'>{label}</label>
+      <div className="inputLabelWrapperMain">
+        <label className="form-label labelMain">{label}</label>
         {typeof description !== 'undefined' && (
-          <p className='labelDescriptionMain'>{description}</p>
+          <p className="labelDescriptionMain">{description}</p>
         )}
 
         <ImageUpload onChange={handleFileChange} />
 
         <input
-          type='text'
-          className='inputMain'
+          type="text"
+          className="inputMain"
           placeholder={placeholder}
           name={name}
           inputMode={inputMode}

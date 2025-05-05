@@ -26,10 +26,10 @@ export const SettingsPage = () => {
   const userState = useAppSelector((state) => state.user)
 
   return (
-    <div className='InnerBodyMain'>
-      <div className='ContainerMain'>
-        <div className='IBMSecMainGroup IBMSecMainGroupAlt'>
-          <div className='IBMSMSplitMain IBMSMSplitMainThree'>
+    <div className="InnerBodyMain">
+      <div className="ContainerMain">
+        <div className="IBMSecMainGroup IBMSecMainGroupAlt">
+          <div className="IBMSMSplitMain IBMSMSplitMainThree">
             <SettingTabs />
             <Outlet />
             {userState.auth && userState.user?.pubkey && (
@@ -93,7 +93,7 @@ const SettingTabs = () => {
       className={`btn btnMain btnMainAltText btnMainClear ${
         location.pathname === path ? 'btnMainClearActive' : ''
       }`}
-      role='button'
+      role="button"
       to={path}
     >
       {icon}
@@ -102,12 +102,12 @@ const SettingTabs = () => {
   )
 
   return (
-    <div className='IBMSMSplitMainSmallSide'>
-      <div className='IBMSMSplitMainSmallSideSec'>
-        <div className='IBMSMSplitMainSmallSideSec'>
-          <h3 className='IBMSMSMSSS_Text'>Settings</h3>
+    <div className="IBMSMSplitMainSmallSide">
+      <div className="IBMSMSplitMainSmallSideSec">
+        <div className="IBMSMSplitMainSmallSideSec">
+          <h3 className="IBMSMSMSSS_Text">Settings</h3>
         </div>
-        <div className='IBMSMSMSSS_Buttons'>
+        <div className="IBMSMSMSSS_Buttons">
           {navLinks.map(({ path, label, icon }) =>
             renderNavLink(path, label, icon)
           )}
@@ -116,21 +116,21 @@ const SettingTabs = () => {
         {userState.auth &&
           userState.auth.method === AuthMethod.Local &&
           userState.auth.localNsec && (
-            <div className='inputLabelWrapperMain'>
-              <label className='form-label labelMain'>Your Private Key</label>
-              <p className='labelDescriptionMain'>
+            <div className="inputLabelWrapperMain">
+              <label className="form-label labelMain">Your Private Key</label>
+              <p className="labelDescriptionMain">
                 NOTICE: Make sure you save your private key (nsec) somewhere
                 safe.
               </p>
-              <div className='inputWrapperMain'>
+              <div className="inputWrapperMain">
                 <input
-                  type='password'
-                  className='inputMain inputMainWithBtn'
+                  type="password"
+                  className="inputMain inputMainWithBtn"
                   value={userState.auth.localNsec}
                 />
                 <button
-                  className='btn btnMain btnMainInsideField'
-                  type='button'
+                  className="btn btnMain btnMainInsideField"
+                  type="button"
                   onClick={() => {
                     copyTextToClipboard(
                       userState.auth?.localNsec as string
@@ -140,17 +140,17 @@ const SettingTabs = () => {
                   }}
                 >
                   <svg
-                    xmlns='http://www.w3.org/2000/svg'
-                    viewBox='0 0 512 512'
-                    width='1em'
-                    height='1em'
-                    fill='currentColor'
+                    xmlns="http://www.w3.org/2000/svg"
+                    viewBox="0 0 512 512"
+                    width="1em"
+                    height="1em"
+                    fill="currentColor"
                   >
-                    <use href='#copy-icon'></use>
+                    <use href="#copy-icon"></use>
                   </svg>
                 </button>
               </div>
-              <p className='labelDescriptionMain'>
+              <p className="labelDescriptionMain">
                 WARNING: Do not sign-out without saving your nsec somewhere
                 safe. Otherwise, you'll lose access to your "account".
               </p>
@@ -158,7 +158,7 @@ const SettingTabs = () => {
           )}
 
         {userState.auth && (
-          <button className='btn btnMain' type='button' onClick={handleSignOut}>
+          <button className="btn btnMain" type="button" onClick={handleSignOut}>
             Sign out
           </button>
         )}

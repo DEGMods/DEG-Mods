@@ -12,15 +12,15 @@ export const GameCard = ({ title, imageUrl }: GameCardProps) => {
   const route = getGamePageRoute(title)
 
   return (
-    <Link className='cardGameMainWrapperLink' to={route}>
-      <div className='cardGameMainWrapper'>
+    <Link className="cardGameMainWrapperLink" to={route}>
+      <div className="cardGameMainWrapper">
         <img
           src={imageUrl}
           onError={handleGameImageError}
-          className='cardGameMain'
+          className="cardGameMain"
         />
       </div>
-      <div className='cardGameMainTitle'>
+      <div className="cardGameMainTitle">
         <p>{title}</p>
       </div>
     </Link>

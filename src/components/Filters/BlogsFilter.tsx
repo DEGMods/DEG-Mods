@@ -27,7 +27,7 @@ export const BlogsFilter = React.memo(
           {Object.values(SortBy).map((item, index) => (
             <div
               key={`sortByItem-${index}`}
-              className='dropdown-item dropdownMainMenuItem'
+              className="dropdown-item dropdownMainMenuItem"
               onClick={() =>
                 setFilterOptions((prev) => ({
                   ...prev,

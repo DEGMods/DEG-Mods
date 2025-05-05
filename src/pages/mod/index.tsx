@@ -101,14 +101,14 @@ export const ModPage = () => {
   return (
     <>
       <RouterLoadingSpinner />
-      <div className='InnerBodyMain'>
-        <div className='ContainerMain'>
-          <div className='IBMSecMainGroup IBMSecMainGroupAlt'>
-            <div className='IBMSMSplitMain'>
-              <div className='IBMSMSplitMainBigSide'>
+      <div className="InnerBodyMain">
+        <div className="ContainerMain">
+          <div className="IBMSecMainGroup IBMSecMainGroupAlt">
+            <div className="IBMSMSplitMain">
+              <div className="IBMSMSplitMainBigSide">
                 {mod ? (
                   <>
-                    <div className='IBMSMSplitMainBigSideSec'>
+                    <div className="IBMSMSplitMainBigSideSec">
                       <Game />
                       {postWarning && <PostWarnings type={postWarning} />}
                       <Body {...mod} />
@@ -122,19 +122,19 @@ export const ModPage = () => {
                         site={mod.rTag}
                       />
                     </div>
-                    <div className='IBMSMSplitMainBigSideSec'>
-                      <div className='IBMSMSMBSSDownloadsWrapper'>
-                        <h4 className='IBMSMSMBSSDownloadsTitle'>
+                    <div className="IBMSMSplitMainBigSideSec">
+                      <div className="IBMSMSMBSSDownloadsWrapper">
+                        <h4 className="IBMSMSMBSSDownloadsTitle">
                           Mod Download
                         </h4>
                         {postWarning && <PostWarnings type={postWarning} />}
                         {mod.downloadUrls.length > 0 && (
-                          <div className='IBMSMSMBSSDownloadsPrime'>
+                          <div className="IBMSMSMBSSDownloadsPrime">
                             <Download {...mod.downloadUrls[0]} />
                           </div>
                         )}
                         {mod.downloadUrls.length > 1 && (
-                          <div className='IBMSMSMBSSDownloads'>
+                          <div className="IBMSMSMBSSDownloads">
                             {mod.downloadUrls
                               .slice(1)
                               .map((download, index) => (
@@ -148,7 +148,7 @@ export const ModPage = () => {
                       </div>
                     </div>
                     <DisplayModAuthorBlogs />
-                    <div className='IBMSMSplitMainBigSideSec'>
+                    <div className="IBMSMSplitMainBigSideSec">
                       <Comments
                         addressable={mod}
                         setCommentCount={setCommentCount}
@@ -244,19 +244,19 @@ const Game = () => {
 
   return (
     <>
-      <div className='IBMSMSMBSSModFor'>
-        <p className='IBMSMSMBSSModForPara'>
+      <div className="IBMSMSMBSSModFor">
+        <p className="IBMSMSMBSSModForPara">
           Mod for:&nbsp;
-          <ReactRouterLink className='IBMSMSMBSSModForLink' to={gameRoute}>
+          <ReactRouterLink className="IBMSMSMBSSModForLink" to={gameRoute}>
             {game}
           </ReactRouterLink>
         </p>
-        <div className='dropdown dropdownMain' style={{ flexGrow: 'unset' }}>
+        <div className="dropdown dropdownMain" style={{ flexGrow: 'unset' }}>
           <button
-            className='btn btnMain btnMainDropdown'
-            aria-expanded='false'
-            data-bs-toggle='dropdown'
-            type='button'
+            className="btn btnMain btnMainDropdown"
+            aria-expanded="false"
+            data-bs-toggle="dropdown"
+            type="button"
             style={{
               borderRadius: '5px',
               background: 'unset',
@@ -264,37 +264,37 @@ const Game = () => {
             }}
           >
             <svg
-              xmlns='http://www.w3.org/2000/svg'
-              viewBox='-192 0 512 512'
-              width='1em'
-              height='1em'
-              fill='currentColor'
+              xmlns="http://www.w3.org/2000/svg"
+              viewBox="-192 0 512 512"
+              width="1em"
+              height="1em"
+              fill="currentColor"
             >
-              <path d='M64 360C94.93 360 120 385.1 120 416C120 446.9 94.93 472 64 472C33.07 472 8 446.9 8 416C8 385.1 33.07 360 64 360zM64 200C94.93 200 120 225.1 120 256C120 286.9 94.93 312 64 312C33.07 312 8 286.9 8 256C8 225.1 33.07 200 64 200zM64 152C33.07 152 8 126.9 8 96C8 65.07 33.07 40 64 40C94.93 40 120 65.07 120 96C120 126.9 94.93 152 64 152z'></path>
+              <path d="M64 360C94.93 360 120 385.1 120 416C120 446.9 94.93 472 64 472C33.07 472 8 446.9 8 416C8 385.1 33.07 360 64 360zM64 200C94.93 200 120 225.1 120 256C120 286.9 94.93 312 64 312C33.07 312 8 286.9 8 256C8 225.1 33.07 200 64 200zM64 152C33.07 152 8 126.9 8 96C8 65.07 33.07 40 64 40C94.93 40 120 65.07 120 96C120 126.9 94.93 152 64 152z"></path>
             </svg>
           </button>
           <div className={`dropdown-menu dropdown-menu-end dropdownMainMenu`}>
             {userState.auth && userState.user?.pubkey === mod?.author && (
               <ReactRouterLink
-                className='dropdown-item dropdownMainMenuItem'
+                className="dropdown-item dropdownMainMenuItem"
                 to={editRoute}
               >
                 <svg
-                  xmlns='http://www.w3.org/2000/svg'
-                  viewBox='0 0 512 512'
-                  width='1em'
-                  height='1em'
-                  fill='currentColor'
-                  className='IBMSMSMSSS_Author_Top_Icon'
+                  xmlns="http://www.w3.org/2000/svg"
+                  viewBox="0 0 512 512"
+                  width="1em"
+                  height="1em"
+                  fill="currentColor"
+                  className="IBMSMSMSSS_Author_Top_Icon"
                 >
-                  <path d='M362.7 19.32C387.7-5.678 428.3-5.678 453.3 19.32L492.7 58.75C517.7 83.74 517.7 124.3 492.7 149.3L444.3 197.7L314.3 67.72L362.7 19.32zM421.7 220.3L188.5 453.4C178.1 463.8 165.2 471.5 151.1 475.6L30.77 511C22.35 513.5 13.24 511.2 7.03 504.1C.8198 498.8-1.502 489.7 .976 481.2L36.37 360.9C40.53 346.8 48.16 333.9 58.57 323.5L291.7 90.34L421.7 220.3z'></path>
+                  <path d="M362.7 19.32C387.7-5.678 428.3-5.678 453.3 19.32L492.7 58.75C517.7 83.74 517.7 124.3 492.7 149.3L444.3 197.7L314.3 67.72L362.7 19.32zM421.7 220.3L188.5 453.4C178.1 463.8 165.2 471.5 151.1 475.6L30.77 511C22.35 513.5 13.24 511.2 7.03 504.1C.8198 498.8-1.502 489.7 .976 481.2L36.37 360.9C40.53 346.8 48.16 333.9 58.57 323.5L291.7 90.34L421.7 220.3z"></path>
                 </svg>
                 Edit
               </ReactRouterLink>
             )}
 
             <a
-              className='dropdown-item dropdownMainMenuItem'
+              className="dropdown-item dropdownMainMenuItem"
               onClick={() => {
                 copyTextToClipboard(window.location.href).then((isCopied) => {
                   if (isCopied) toast.success('Url copied to clipboard!')
@@ -302,98 +302,98 @@ const Game = () => {
               }}
             >
               <svg
-                xmlns='http://www.w3.org/2000/svg'
-                viewBox='0 0 512 512'
-                width='1em'
-                height='1em'
-                fill='currentColor'
-                className='IBMSMSMSSS_Author_Top_Icon'
+                xmlns="http://www.w3.org/2000/svg"
+                viewBox="0 0 512 512"
+                width="1em"
+                height="1em"
+                fill="currentColor"
+                className="IBMSMSMSSS_Author_Top_Icon"
               >
-                <path d='M384 96L384 0h-112c-26.51 0-48 21.49-48 48v288c0 26.51 21.49 48 48 48H464c26.51 0 48-21.49 48-48V128h-95.1C398.4 128 384 113.6 384 96zM416 0v96h96L416 0zM192 352V128h-144c-26.51 0-48 21.49-48 48v288c0 26.51 21.49 48 48 48h192c26.51 0 48-21.49 48-48L288 416h-32C220.7 416 192 387.3 192 352z'></path>
+                <path d="M384 96L384 0h-112c-26.51 0-48 21.49-48 48v288c0 26.51 21.49 48 48 48H464c26.51 0 48-21.49 48-48V128h-95.1C398.4 128 384 113.6 384 96zM416 0v96h96L416 0zM192 352V128h-144c-26.51 0-48 21.49-48 48v288c0 26.51 21.49 48 48 48h192c26.51 0 48-21.49 48-48L288 416h-32C220.7 416 192 387.3 192 352z"></path>
               </svg>
               Copy URL
             </a>
-            <a className='dropdown-item dropdownMainMenuItem' href='#'>
+            <a className="dropdown-item dropdownMainMenuItem" href="#">
               <svg
-                xmlns='http://www.w3.org/2000/svg'
-                viewBox='0 0 512 512'
-                width='1em'
-                height='1em'
-                fill='currentColor'
-                className='IBMSMSMSSS_Author_Top_Icon'
+                xmlns="http://www.w3.org/2000/svg"
+                viewBox="0 0 512 512"
+                width="1em"
+                height="1em"
+                fill="currentColor"
+                className="IBMSMSMSSS_Author_Top_Icon"
               >
-                <path d='M503.7 226.2l-176 151.1c-15.38 13.3-39.69 2.545-39.69-18.16V272.1C132.9 274.3 66.06 312.8 111.4 457.8c5.031 16.09-14.41 28.56-28.06 18.62C39.59 444.6 0 383.8 0 322.3c0-152.2 127.4-184.4 288-186.3V56.02c0-20.67 24.28-31.46 39.69-18.16l176 151.1C514.8 199.4 514.8 216.6 503.7 226.2z'></path>
+                <path d="M503.7 226.2l-176 151.1c-15.38 13.3-39.69 2.545-39.69-18.16V272.1C132.9 274.3 66.06 312.8 111.4 457.8c5.031 16.09-14.41 28.56-28.06 18.62C39.59 444.6 0 383.8 0 322.3c0-152.2 127.4-184.4 288-186.3V56.02c0-20.67 24.28-31.46 39.69-18.16l176 151.1C514.8 199.4 514.8 216.6 503.7 226.2z"></path>
               </svg>
               Share
             </a>
             {isLoggedIn && (
               <a
-                className='dropdown-item dropdownMainMenuItem'
-                id='reportPost'
+                className="dropdown-item dropdownMainMenuItem"
+                id="reportPost"
                 onClick={() => {
                   setShowReportPopUp(Date.now())
                 }}
               >
                 <svg
-                  xmlns='http://www.w3.org/2000/svg'
-                  viewBox='0 0 512 512'
-                  width='1em'
-                  height='1em'
-                  fill='currentColor'
-                  className='IBMSMSMSSS_Author_Top_Icon'
+                  xmlns="http://www.w3.org/2000/svg"
+                  viewBox="0 0 512 512"
+                  width="1em"
+                  height="1em"
+                  fill="currentColor"
+                  className="IBMSMSMSSS_Author_Top_Icon"
                 >
-                  <path d='M506.3 417l-213.3-364c-16.33-28-57.54-28-73.98 0l-213.2 364C-10.59 444.9 9.849 480 42.74 480h426.6C502.1 480 522.6 445 506.3 417zM232 168c0-13.25 10.75-24 24-24S280 154.8 280 168v128c0 13.25-10.75 24-23.1 24S232 309.3 232 296V168zM256 416c-17.36 0-31.44-14.08-31.44-31.44c0-17.36 14.07-31.44 31.44-31.44s31.44 14.08 31.44 31.44C287.4 401.9 273.4 416 256 416z'></path>
+                  <path d="M506.3 417l-213.3-364c-16.33-28-57.54-28-73.98 0l-213.2 364C-10.59 444.9 9.849 480 42.74 480h426.6C502.1 480 522.6 445 506.3 417zM232 168c0-13.25 10.75-24 24-24S280 154.8 280 168v128c0 13.25-10.75 24-23.1 24S232 309.3 232 296V168zM256 416c-17.36 0-31.44-14.08-31.44-31.44c0-17.36 14.07-31.44 31.44-31.44s31.44 14.08 31.44 31.44C287.4 401.9 273.4 416 256 416z"></path>
                 </svg>
                 Report
               </a>
             )}
             <a
-              className='dropdown-item dropdownMainMenuItem'
+              className="dropdown-item dropdownMainMenuItem"
               onClick={handleBlock}
             >
               <svg
-                xmlns='http://www.w3.org/2000/svg'
-                viewBox='-32 0 512 512'
-                width='1em'
-                height='1em'
-                fill='currentColor'
-                className='IBMSMSMSSS_Author_Top_Icon'
+                xmlns="http://www.w3.org/2000/svg"
+                viewBox="-32 0 512 512"
+                width="1em"
+                height="1em"
+                fill="currentColor"
+                className="IBMSMSMSSS_Author_Top_Icon"
               >
-                <path d='M323.5 51.25C302.8 70.5 284 90.75 267.4 111.1C240.1 73.62 206.2 35.5 168 0C69.75 91.12 0 210 0 281.6C0 408.9 100.2 512 224 512s224-103.1 224-230.4C448 228.4 396 118.5 323.5 51.25zM304.1 391.9C282.4 407 255.8 416 226.9 416c-72.13 0-130.9-47.73-130.9-125.2c0-38.63 24.24-72.64 65.13-83.3c10.14-2.656 19.94 4.78 19.94 15.27c0 6.941-4.469 13.16-11.16 15.19c-17.5 4.578-34.41 23.94-34.41 52.84c0 50.81 39.31 94.81 91.41 94.81c24.66 0 45.22-6.5 63.19-18.75c11.75-8 27.91 3.469 23.91 16.69C314.6 384.7 309.8 388.4 304.1 391.9z'></path>
+                <path d="M323.5 51.25C302.8 70.5 284 90.75 267.4 111.1C240.1 73.62 206.2 35.5 168 0C69.75 91.12 0 210 0 281.6C0 408.9 100.2 512 224 512s224-103.1 224-230.4C448 228.4 396 118.5 323.5 51.25zM304.1 391.9C282.4 407 255.8 416 226.9 416c-72.13 0-130.9-47.73-130.9-125.2c0-38.63 24.24-72.64 65.13-83.3c10.14-2.656 19.94 4.78 19.94 15.27c0 6.941-4.469 13.16-11.16 15.19c-17.5 4.578-34.41 23.94-34.41 52.84c0 50.81 39.31 94.81 91.41 94.81c24.66 0 45.22-6.5 63.19-18.75c11.75-8 27.91 3.469 23.91 16.69C314.6 384.7 309.8 388.4 304.1 391.9z"></path>
               </svg>
               {isBlocked ? 'Unblock' : 'Block'} Post
             </a>
             {isAdmin && (
               <>
                 <a
-                  className='dropdown-item dropdownMainMenuItem'
+                  className="dropdown-item dropdownMainMenuItem"
                   onClick={handleNSFW}
                 >
                   <svg
-                    xmlns='http://www.w3.org/2000/svg'
-                    viewBox='-32 0 512 512'
-                    width='1em'
-                    height='1em'
-                    fill='currentColor'
-                    className='IBMSMSMSSS_Author_Top_Icon'
+                    xmlns="http://www.w3.org/2000/svg"
+                    viewBox="-32 0 512 512"
+                    width="1em"
+                    height="1em"
+                    fill="currentColor"
+                    className="IBMSMSMSSS_Author_Top_Icon"
                   >
-                    <path d='M323.5 51.25C302.8 70.5 284 90.75 267.4 111.1C240.1 73.62 206.2 35.5 168 0C69.75 91.12 0 210 0 281.6C0 408.9 100.2 512 224 512s224-103.1 224-230.4C448 228.4 396 118.5 323.5 51.25zM304.1 391.9C282.4 407 255.8 416 226.9 416c-72.13 0-130.9-47.73-130.9-125.2c0-38.63 24.24-72.64 65.13-83.3c10.14-2.656 19.94 4.78 19.94 15.27c0 6.941-4.469 13.16-11.16 15.19c-17.5 4.578-34.41 23.94-34.41 52.84c0 50.81 39.31 94.81 91.41 94.81c24.66 0 45.22-6.5 63.19-18.75c11.75-8 27.91 3.469 23.91 16.69C314.6 384.7 309.8 388.4 304.1 391.9z'></path>
+                    <path d="M323.5 51.25C302.8 70.5 284 90.75 267.4 111.1C240.1 73.62 206.2 35.5 168 0C69.75 91.12 0 210 0 281.6C0 408.9 100.2 512 224 512s224-103.1 224-230.4C448 228.4 396 118.5 323.5 51.25zM304.1 391.9C282.4 407 255.8 416 226.9 416c-72.13 0-130.9-47.73-130.9-125.2c0-38.63 24.24-72.64 65.13-83.3c10.14-2.656 19.94 4.78 19.94 15.27c0 6.941-4.469 13.16-11.16 15.19c-17.5 4.578-34.41 23.94-34.41 52.84c0 50.81 39.31 94.81 91.41 94.81c24.66 0 45.22-6.5 63.19-18.75c11.75-8 27.91 3.469 23.91 16.69C314.6 384.7 309.8 388.4 304.1 391.9z"></path>
                   </svg>
                   {isAddedToNSFW ? 'Un-mark' : 'Mark'} as NSFW
                 </a>
                 <a
-                  className='dropdown-item dropdownMainMenuItem'
+                  className="dropdown-item dropdownMainMenuItem"
                   onClick={handleRepost}
                 >
                   <svg
-                    xmlns='http://www.w3.org/2000/svg'
-                    viewBox='-32 0 512 512'
-                    width='1em'
-                    height='1em'
-                    fill='currentColor'
-                    className='IBMSMSMSSS_Author_Top_Icon'
+                    xmlns="http://www.w3.org/2000/svg"
+                    viewBox="-32 0 512 512"
+                    width="1em"
+                    height="1em"
+                    fill="currentColor"
+                    className="IBMSMSMSSS_Author_Top_Icon"
                   >
-                    <path d='M323.5 51.25C302.8 70.5 284 90.75 267.4 111.1C240.1 73.62 206.2 35.5 168 0C69.75 91.12 0 210 0 281.6C0 408.9 100.2 512 224 512s224-103.1 224-230.4C448 228.4 396 118.5 323.5 51.25zM304.1 391.9C282.4 407 255.8 416 226.9 416c-72.13 0-130.9-47.73-130.9-125.2c0-38.63 24.24-72.64 65.13-83.3c10.14-2.656 19.94 4.78 19.94 15.27c0 6.941-4.469 13.16-11.16 15.19c-17.5 4.578-34.41 23.94-34.41 52.84c0 50.81 39.31 94.81 91.41 94.81c24.66 0 45.22-6.5 63.19-18.75c11.75-8 27.91 3.469 23.91 16.69C314.6 384.7 309.8 388.4 304.1 391.9z'></path>
+                    <path d="M323.5 51.25C302.8 70.5 284 90.75 267.4 111.1C240.1 73.62 206.2 35.5 168 0C69.75 91.12 0 210 0 281.6C0 408.9 100.2 512 224 512s224-103.1 224-230.4C448 228.4 396 118.5 323.5 51.25zM304.1 391.9C282.4 407 255.8 416 226.9 416c-72.13 0-130.9-47.73-130.9-125.2c0-38.63 24.24-72.64 65.13-83.3c10.14-2.656 19.94 4.78 19.94 15.27c0 6.941-4.469 13.16-11.16 15.19c-17.5 4.578-34.41 23.94-34.41 52.84c0 50.81 39.31 94.81 91.41 94.81c24.66 0 45.22-6.5 63.19-18.75c11.75-8 27.91 3.469 23.91 16.69C314.6 384.7 309.8 388.4 304.1 391.9z"></path>
                   </svg>
                   {isRepost ? 'Un-mark' : 'Mark'} as Repost
                 </a>
@@ -483,39 +483,39 @@ const Body = ({
 
   return (
     <>
-      <div className='IBMSMSMBSSPost'>
+      <div className="IBMSMSMBSSPost">
         <div
-          className='IBMSMSMBSSPostPicture'
+          className="IBMSMSMBSSPostPicture"
           style={{
             background: `url(${featuredImageUrl}) center / cover no-repeat`
           }}
         ></div>
-        <div className='IBMSMSMBSSPostInside'>
-          <div className='IBMSMSMBSSPostTitle'>
-            <h1 className='IBMSMSMBSSPostTitleHeading'>{title}</h1>
+        <div className="IBMSMSMBSSPostInside">
+          <div className="IBMSMSMBSSPostTitle">
+            <h1 className="IBMSMSMBSSPostTitleHeading">{title}</h1>
           </div>
           <div
             ref={postBodyRef}
-            className='IBMSMSMBSSPostBody'
+            className="IBMSMSMBSSPostBody"
             style={{
               maxHeight: `${COLLAPSED_MAX_SIZE}px`,
               padding: '10px 18px'
             }}
           >
             <Viewer markdown={body} />
-            <div ref={viewFullPostBtnRef} className='IBMSMSMBSSPostBodyHide'>
-              <div className='IBMSMSMBSSPostBodyHideText'>
+            <div ref={viewFullPostBtnRef} className="IBMSMSMBSSPostBodyHide">
+              <div className="IBMSMSMBSSPostBodyHideText">
                 <p onClick={viewFullPost}>Read Full</p>
               </div>
             </div>
           </div>
-          <div className='IBMSMSMBSSShotsWrapper'>
-            <div className='IBMSMSMBSSShots'>
+          <div className="IBMSMSMBSSShotsWrapper">
+            <div className="IBMSMSMBSSShots">
               {screenshotsUrls.map((url, index) => (
                 <img
-                  className='IBMSMSMBSSShotsImg'
+                  className="IBMSMSMBSSShotsImg"
                   src={url}
-                  alt=''
+                  alt=""
                   key={`ScreenShot-${index}`}
                   onClick={() => openLightBoxOnSlide(index + 1)}
                 />
@@ -532,15 +532,15 @@ const Body = ({
             publisherNotes={publisherNotes}
             extraCredits={extraCredits}
           />
-          <div className='IBMSMSMBSSTags'>
+          <div className="IBMSMSMBSSTags">
             {nsfw && (
-              <div className='IBMSMSMBSSTagsTag IBMSMSMBSSTagsTagNSFW'>
+              <div className="IBMSMSMBSSTagsTag IBMSMSMBSSTagsTagNSFW">
                 <p>NSFW</p>
               </div>
             )}
 
             {repost && (
-              <div className='IBMSMSMBSSTagsTag IBMSMSMBSSTagsTagRepost'>
+              <div className="IBMSMSMBSSTagsTag IBMSMSMBSSTagsTagRepost">
                 <p>
                   REPOST
                   {originalAuthor && originalAuthor !== '' && (
@@ -554,13 +554,13 @@ const Body = ({
             )}
 
             {tags.map((tag, index) => (
-              <a className='IBMSMSMBSSTagsTag' href='#' key={`tag-${index}`}>
+              <a className="IBMSMSMBSSTagsTag" href="#" key={`tag-${index}`}>
                 {tag}
               </a>
             ))}
 
             {LTags.length > 0 && (
-              <div className='IBMSMSMBSSCategories'>
+              <div className="IBMSMSMBSSCategories">
                 {LTags.map((hierarchy) => {
                   const hierarchicalCategories = hierarchy.split(`:`)
                   const categories = hierarchicalCategories
@@ -571,9 +571,9 @@ const Body = ({
 
                       return (
                         <ReactRouterLink
-                          className='IBMSMSMBSSCategoriesBoxItem'
+                          className="IBMSMSMBSSCategoriesBoxItem"
                           key={`category-${i}`}
-                          target='_blank'
+                          target="_blank"
                           to={{
                             pathname: getGamePageRoute(game),
                             search: `h=${partialHierarchy}`
@@ -587,15 +587,15 @@ const Body = ({
                       prev,
                       <div
                         key={`separator-${i}`}
-                        className='IBMSMSMBSSCategoriesBoxSeparator'
+                        className="IBMSMSMBSSCategoriesBoxSeparator"
                       >
-                        <i className='fas fa-chevron-right'></i>
+                        <i className="fas fa-chevron-right"></i>
                       </div>,
                       curr
                     ])
 
                   return (
-                    <div key={hierarchy} className='IBMSMSMBSSCategoriesBox'>
+                    <div key={hierarchy} className="IBMSMSMBSSCategoriesBox">
                       {categories}
                     </div>
                   )
@@ -646,21 +646,21 @@ const Download = (props: DownloadUrl) => {
   }
 
   return (
-    <div className='IBMSMSMBSSDownloadsElement'>
+    <div className="IBMSMSMBSSDownloadsElement">
       {typeof title !== 'undefined' && title !== '' && (
-        <span className='IBMSMSMBSSDownloadsElementDtitle'>{title}</span>
+        <span className="IBMSMSMBSSDownloadsElementDtitle">{title}</span>
       )}
-      <div className='IBMSMSMBSSDownloadsElementInside'>
+      <div className="IBMSMSMBSSDownloadsElementInside">
         <button
-          className='btn btnMain IBMSMSMBSSDownloadsElementBtn'
-          type='button'
+          className="btn btnMain IBMSMSMBSSDownloadsElementBtn"
+          type="button"
           onClick={handleDownload}
         >
           Download
         </button>
       </div>
       {showNotice && (
-        <div className='IBMSMSMBSSNote'>
+        <div className="IBMSMSMBSSNote">
           <p>
             Notice: The creator has provided a download link that doesn&#39;t
             download the files immediately, but rather redirects you to a
@@ -670,7 +670,7 @@ const Download = (props: DownloadUrl) => {
         </div>
       )}
       {showScanNotice && (
-        <div className='IBMSMSMBSSWarning'>
+        <div className="IBMSMSMBSSWarning">
           <p>
             The mod poster hasn't provided a malware scan report for these
             files. Be careful.
@@ -844,9 +844,9 @@ const Download = (props: DownloadUrl) => {
           </div>
         </div>
       </div>*/}
-      <div className='IBMSMSMBSSDownloadsElementInside IBMSMSMBSSDownloadsElementInsideAlt'>
+      <div className="IBMSMSMBSSDownloadsElementInside IBMSMSMBSSDownloadsElementInsideAlt">
         <p
-          className='IBMSMSMBSSDownloadsElementInsideAltText'
+          className="IBMSMSMBSSDownloadsElementInsideAltText"
           onClick={() => setShowAuthDetails((prev) => !prev)}
         >
           Authentication Details
@@ -868,13 +868,11 @@ const DisplayModAuthorBlogs = () => {
   if (!latest?.length) return null
 
   return (
-    <div className='IBMSMSplitMainBigSideSec'>
-      <div className='IBMSMSMBSSPostsWrapper'>
-        <h4 className='IBMSMSMBSSPostsTitle'>Creator's Blog Posts</h4>
-        <div className='IBMSMList IBMSMListAlt'>
-          {latest?.map((b) => (
-            <BlogCard key={b.id} {...b} />
-          ))}
+    <div className="IBMSMSplitMainBigSideSec">
+      <div className="IBMSMSMBSSPostsWrapper">
+        <h4 className="IBMSMSMBSSPostsTitle">Creator's Blog Posts</h4>
+        <div className="IBMSMList IBMSMListAlt">
+          {latest?.map((b) => <BlogCard key={b.id} {...b} />)}
         </div>
       </div>
     </div>
@@ -908,22 +906,22 @@ const ExtraDetails = ({
     }
   }
   return (
-    <div className='IBMSMSMBSSExtra'>
+    <div className="IBMSMSMBSSExtra">
       <button
-        className='btn btnMain IBMSMSMBSSExtraBtn'
-        type='button'
+        className="btn btnMain IBMSMSMBSSExtraBtn"
+        type="button"
         onClick={handleClick}
       >
         Permissions &amp; Details
       </button>
       <div
-        className='IBMSMSMBSSExtraBox'
+        className="IBMSMSMBSSExtraBox"
         ref={extraBoxRef}
         style={{
           display: 'none'
         }}
       >
-        <div className='IBMSMSMBSSExtraBoxElementWrapper'>
+        <div className="IBMSMSMBSSExtraBoxElementWrapper">
           {Object.keys(MODPERMISSIONS_CONF).map((k) => {
             const permKey = k as keyof ModPermissions
             const confKey = k as keyof typeof MODPERMISSIONS_CONF
@@ -934,38 +932,38 @@ const ExtraDetails = ({
             const text = MODPERMISSIONS_DESC[`${permKey}_${value}`]
 
             return (
-              <div className='IBMSMSMBSSExtraBoxElement' key={k}>
-                <div className='IBMSMSMBSSExtraBoxElementCol IBMSMSMBSSExtraBoxElementColStart'>
+              <div className="IBMSMSMBSSExtraBoxElement" key={k}>
+                <div className="IBMSMSMBSSExtraBoxElementCol IBMSMSMBSSExtraBoxElementColStart">
                   <p>{modPermission.header}</p>
                   {value ? (
-                    <div className='IBMSMSMBSSExtraBoxElementColMark IBMSMSMBSSExtraBoxElementColMarkGreen'>
+                    <div className="IBMSMSMBSSExtraBoxElementColMark IBMSMSMBSSExtraBoxElementColMarkGreen">
                       <svg
-                        className='IBMSMSMSSS_Author_Top_Icon'
-                        xmlns='http://www.w3.org/2000/svg'
-                        viewBox='0 0 512 512'
-                        width='1em'
-                        height='1em'
-                        fill='currentColor'
+                        className="IBMSMSMSSS_Author_Top_Icon"
+                        xmlns="http://www.w3.org/2000/svg"
+                        viewBox="0 0 512 512"
+                        width="1em"
+                        height="1em"
+                        fill="currentColor"
                       >
-                        <path d='M0 256C0 114.6 114.6 0 256 0C397.4 0 512 114.6 512 256C512 397.4 397.4 512 256 512C114.6 512 0 397.4 0 256zM371.8 211.8C382.7 200.9 382.7 183.1 371.8 172.2C360.9 161.3 343.1 161.3 332.2 172.2L224 280.4L179.8 236.2C168.9 225.3 151.1 225.3 140.2 236.2C129.3 247.1 129.3 264.9 140.2 275.8L204.2 339.8C215.1 350.7 232.9 350.7 243.8 339.8L371.8 211.8z'></path>
+                        <path d="M0 256C0 114.6 114.6 0 256 0C397.4 0 512 114.6 512 256C512 397.4 397.4 512 256 512C114.6 512 0 397.4 0 256zM371.8 211.8C382.7 200.9 382.7 183.1 371.8 172.2C360.9 161.3 343.1 161.3 332.2 172.2L224 280.4L179.8 236.2C168.9 225.3 151.1 225.3 140.2 236.2C129.3 247.1 129.3 264.9 140.2 275.8L204.2 339.8C215.1 350.7 232.9 350.7 243.8 339.8L371.8 211.8z"></path>
                       </svg>
                     </div>
                   ) : (
-                    <div className='IBMSMSMBSSExtraBoxElementColMark IBMSMSMBSSExtraBoxElementColMarkRed'>
+                    <div className="IBMSMSMBSSExtraBoxElementColMark IBMSMSMBSSExtraBoxElementColMarkRed">
                       <svg
-                        className='IBMSMSMSSS_Author_Top_Icon'
-                        xmlns='http://www.w3.org/2000/svg'
-                        viewBox='0 0 512 512'
-                        width='1em'
-                        height='1em'
-                        fill='currentColor'
+                        className="IBMSMSMSSS_Author_Top_Icon"
+                        xmlns="http://www.w3.org/2000/svg"
+                        viewBox="0 0 512 512"
+                        width="1em"
+                        height="1em"
+                        fill="currentColor"
                       >
-                        <path d='M0 256C0 114.6 114.6 0 256 0C397.4 0 512 114.6 512 256C512 397.4 397.4 512 256 512C114.6 512 0 397.4 0 256zM175 208.1L222.1 255.1L175 303C165.7 312.4 165.7 327.6 175 336.1C184.4 346.3 199.6 346.3 208.1 336.1L255.1 289.9L303 336.1C312.4 346.3 327.6 346.3 336.1 336.1C346.3 327.6 346.3 312.4 336.1 303L289.9 255.1L336.1 208.1C346.3 199.6 346.3 184.4 336.1 175C327.6 165.7 312.4 165.7 303 175L255.1 222.1L208.1 175C199.6 165.7 184.4 165.7 175 175C165.7 184.4 165.7 199.6 175 208.1V208.1z'></path>
+                        <path d="M0 256C0 114.6 114.6 0 256 0C397.4 0 512 114.6 512 256C512 397.4 397.4 512 256 512C114.6 512 0 397.4 0 256zM175 208.1L222.1 255.1L175 303C165.7 312.4 165.7 327.6 175 336.1C184.4 346.3 199.6 346.3 208.1 336.1L255.1 289.9L303 336.1C312.4 346.3 327.6 346.3 336.1 336.1C346.3 327.6 346.3 312.4 336.1 303L289.9 255.1L336.1 208.1C346.3 199.6 346.3 184.4 336.1 175C327.6 165.7 312.4 165.7 303 175L255.1 222.1L208.1 175C199.6 165.7 184.4 165.7 175 175C165.7 184.4 165.7 199.6 175 208.1V208.1z"></path>
                       </svg>
                     </div>
                   )}
                 </div>
-                <div className='IBMSMSMBSSExtraBoxElementCol IBMSMSMBSSExtraBoxElementColSecond'>
+                <div className="IBMSMSMBSSExtraBoxElementCol IBMSMSMBSSExtraBoxElementColSecond">
                   <p>
                     {text}
                     <br />
@@ -975,21 +973,21 @@ const ExtraDetails = ({
             )
           })}
           {typeof publisherNotes !== 'undefined' && publisherNotes !== '' && (
-            <div className='IBMSMSMBSSExtraBoxElement'>
-              <div className='IBMSMSMBSSExtraBoxElementCol IBMSMSMBSSExtraBoxElementColStart'>
+            <div className="IBMSMSMBSSExtraBoxElement">
+              <div className="IBMSMSMBSSExtraBoxElementCol IBMSMSMBSSExtraBoxElementColStart">
                 <p>Publisher Notes</p>
               </div>
-              <div className='IBMSMSMBSSExtraBoxElementCol IBMSMSMBSSExtraBoxElementColSecond'>
+              <div className="IBMSMSMBSSExtraBoxElementCol IBMSMSMBSSExtraBoxElementColSecond">
                 <p>{publisherNotes}</p>
               </div>
             </div>
           )}
           {typeof extraCredits !== 'undefined' && extraCredits !== '' && (
-            <div className='IBMSMSMBSSExtraBoxElement'>
-              <div className='IBMSMSMBSSExtraBoxElementCol IBMSMSMBSSExtraBoxElementColStart'>
+            <div className="IBMSMSMBSSExtraBoxElement">
+              <div className="IBMSMSMBSSExtraBoxElementCol IBMSMSMBSSExtraBoxElementColStart">
                 <p>Extra Credits</p>
               </div>
-              <div className='IBMSMSMBSSExtraBoxElementCol IBMSMSMBSSExtraBoxElementColSecond'>
+              <div className="IBMSMSMBSSExtraBoxElementCol IBMSMSMBSSExtraBoxElementColSecond">
                 <p>{extraCredits}</p>
               </div>
             </div>

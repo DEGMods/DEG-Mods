@@ -68,44 +68,44 @@ export const ImageUpload = React.memo(
         isFileDialogActive
           ? 'Select files in dialog'
           : isDragActive
-          ? isDragAccept
-            ? 'Drop the files here...'
-            : isDragReject
-            ? 'Drop the files here (one more more unsupported types)...'
-            : 'Drop the files here...'
-          : 'Click or drag files here',
+            ? isDragAccept
+              ? 'Drop the files here...'
+              : isDragReject
+                ? 'Drop the files here (one more more unsupported types)...'
+                : 'Drop the files here...'
+            : 'Click or drag files here',
       [isDragAccept, isDragActive, isDragReject, isFileDialogActive]
     )
 
     return (
-      <div aria-label='upload featuredImageUrl' className='uploadBoxMain'>
+      <div aria-label="upload featuredImageUrl" className="uploadBoxMain">
         <MediaInputPopover
           acceptedFiles={acceptedFiles}
           fileRejections={fileRejections}
         />
-        <div className='uploadBoxMainInside' {...getRootProps()} tabIndex={-1}>
-          <input id='featuredImageUrl-upload' {...getInputProps()} />
+        <div className="uploadBoxMainInside" {...getRootProps()} tabIndex={-1}>
+          <input id="featuredImageUrl-upload" {...getInputProps()} />
           <span>{dropzoneLabel}</span>
           <div
-            className='FiltersMainElement'
+            className="FiltersMainElement"
             onClick={(e) => e.stopPropagation()}
           >
-            <div className='dropdown dropdownMain'>
+            <div className="dropdown dropdownMain">
               <button
-                className='btn dropdown-toggle btnMain btnMainDropdown'
-                aria-expanded='false'
-                data-bs-toggle='dropdown'
-                type='button'
+                className="btn dropdown-toggle btnMain btnMainDropdown"
+                aria-expanded="false"
+                data-bs-toggle="dropdown"
+                type="button"
               >
                 Image Host: {mediaOption.name}
               </button>
-              <div className='dropdown-menu dropdownMainMenu'>
+              <div className="dropdown-menu dropdownMainMenu">
                 {MEDIA_OPTIONS.map((mo) => {
                   return (
                     <div
                       key={mo.host}
                       onClick={handleOptionChange(mo)}
-                      className='dropdown-item dropdownMainMenuItem'
+                      className="dropdown-item dropdownMainMenuItem"
                     >
                       {mo.name}
                     </div>
