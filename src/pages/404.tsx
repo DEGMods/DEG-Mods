@@ -35,6 +35,10 @@ export const NotFoundPage = ({
                 to={location.pathname}
                 className="btn btnMain IBMSMActionBtn"
                 type="button"
+                style={{
+                  background: 'rgb(150 80 200)',
+                  color: 'rgb(255 255 255 / 75%)'
+                }}
               >
                 Try again
               </Link>

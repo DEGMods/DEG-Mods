@@ -10,9 +10,12 @@
   color: unset;
   overflow: hidden;
   border-radius: 10px;
-  box-shadow: 0 0 8px 0 rgb(0,0,0,0.1);
   position: relative;
   border: solid 1px #232323;
+}
+
+.cardBlogMainWrapperLink:hover {
+  text-decoration:none;
 }
 
 .cardBlogMainWrapperLink:hover {
@@ -55,6 +58,19 @@
   line-height: 1.5;
   color: rgba(255,255,255,0.75);
   text-shadow: 0 0 8px rgba(0,0,0,0.25);
+}
+
+.cardBlogMainInsideTitleWrapper {
+  padding: 10px;
+  border-radius: 10px;
+  background: #313131;
+  z-index: 2;
+  position: relative;
+  margin: 10px;
+  margin-top: -25px;
+  text-decoration: unset;
+  border: solid 1px rgb(255 255 255 / 5%);
+  box-shadow: 0 0 4px 0 rgb(0, 0, 0, 0.1);
 }
 
 .IBMSMSMBSSTagsTag.IBMSMSMBSSTagsTagNSFW.IBMSMSMBSSTagsTagNSFWCard.IBMSMSMBSSTagsTagNSFWCardAlt {

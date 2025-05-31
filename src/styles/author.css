@@ -33,11 +33,19 @@
 }
 
 .IBMSMSMSSS_Author_Top_Details {
+  transition: ease 0.4s;
   display: flex;
   flex-direction: column;
   grid-gap: 15px;
   flex-grow: 1;
   width: 100%;
+  border-radius: 8px;
+  padding: 5px 10px;
+}
+
+.IBMSMSMSSS_Author_Top_Details:hover {
+  background:rgb(248 248 248 / 10%);
+  cursor: pointer;
 }
 
 .HBSS_Author_Top_NostrLinks {
