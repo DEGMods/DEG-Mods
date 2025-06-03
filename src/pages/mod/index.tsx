@@ -58,6 +58,7 @@ import { Viewer } from 'components/Markdown/Viewer'
 import { PostWarnings } from 'components/PostWarning'
 import { DownloadDetailsPopup } from 'components/DownloadDetailsPopup'
 import { NsfwAlertPopup } from 'components/NsfwAlertPopup'
+import useModData from './useModData'
 
 const MOD_REPORT_REASONS = [
   { label: 'Actually CP', key: 'actuallyCP' },
@@ -71,7 +72,7 @@ const MOD_REPORT_REASONS = [
 ]
 
 export const ModPage = () => {
-  const { mod, postWarning } = useLoaderData() as ModPageLoaderResult
+  const { mod: mod, postWarning } = useModData()
 
   // We can get author right away from naddr, no need to wait for mod data
   const { naddr, nevent } = useParams()
@@ -180,6 +181,7 @@ export const ModPage = () => {
 const Game = () => {
   const { naddr } = useParams()
   const navigation = useNavigation()
+  // const { mod, isAddedToNSFW, isBlocked, isRepost } = useModData()
   const { mod, isAddedToNSFW, isBlocked, isRepost } =
     useLoaderData() as ModPageLoaderResult
   const userState = useAppSelector((state) => state.user)
@@ -863,6 +865,7 @@ const Download = (props: DownloadUrl) => {
 }
 
 const DisplayModAuthorBlogs = () => {
+  // const { latest } = useModData()
   const { latest } = useLoaderData() as ModPageLoaderResult
 
   if (!latest?.length) return null
