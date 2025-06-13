@@ -4,7 +4,8 @@ import {
   useBodyScrollDisable,
   useDidMount,
   useNDKContext,
-  useReplies
+  useReplies,
+  useDeleted
 } from 'hooks'
 import { nip19 } from 'nostr-tools'
 import {
@@ -48,6 +49,7 @@ import {
 import { NoteQuoteRepostPopup } from 'components/Notes/NoteQuoteRepostPopup'
 import { NoteRepostPopup } from 'components/Notes/NoteRepostPopup'
 import _ from 'lodash'
+import { LoadingSpinner } from 'components/LoadingSpinner'
 
 interface CommentsPopupProps {
   title: string
@@ -71,6 +73,13 @@ export const CommentsPopup = ({ title }: CommentsPopupProps) => {
       ? `${appRoutes.feed}/`
       : undefined
   const { event } = useLoaderData() as CommentsLoaderResult
+  const { isDeleted, loading: isDeletionLoading } = useDeleted(
+    event.id,
+    event.pubkey
+  )
+
+  console.log('MARK: isDeleted', isDeleted, isDeletionLoading)
+
   const eTags = event.getMatchingTags('e')
   const lastETag = _.last(eTags)
   const {
@@ -335,7 +344,14 @@ export const CommentsPopup = ({ title }: CommentsPopupProps) => {
                     </div>
                   </div>
                   <div className="IBMSMSMBSSCL_CommentBottom">
-                    <CommentContent content={event.content} />
+                    {isDeletionLoading ? (
+                      <LoadingSpinner desc="Loading comment..." />
+                    ) : (
+                      <CommentContent
+                        content={event.content}
+                        isDeleted={isDeleted}
+                      />
+                    )}
                   </div>
                   <div className="IBMSMSMBSSCL_CommentActions">
                     <div className="IBMSMSMBSSCL_CommentActionsInside">
@@ -439,31 +455,33 @@ export const CommentsPopup = ({ title }: CommentsPopupProps) => {
                   </div>
                 </div>
               </div>
-              <div className="pUMCB_CommentToPrime">
-                <div className="IBMSMSMBSSCC_Top">
-                  <textarea
-                    ref={ref}
-                    className="IBMSMSMBSSCC_Top_Box postSocialTextarea"
-                    placeholder="Got something to say?"
-                    value={replyText}
-                    onChange={handleChange}
-                    style={{ height: '0px' }}
-                  ></textarea>
+              {!isDeleted && !isDeletionLoading && (
+                <div className="pUMCB_CommentToPrime">
+                  <div className="IBMSMSMBSSCC_Top">
+                    <textarea
+                      ref={ref}
+                      className="IBMSMSMBSSCC_Top_Box postSocialTextarea"
+                      placeholder="Got something to say?"
+                      value={replyText}
+                      onChange={handleChange}
+                      style={{ height: '0px' }}
+                    ></textarea>
+                  </div>
+                  <div className="IBMSMSMBSSCC_Bottom">
+                    {/* <a className='IBMSMSMBSSCC_BottomButton'>Quote-Repost</a> */}
+                    <button
+                      onClick={handleComment}
+                      disabled={isSubmitting}
+                      className="IBMSMSMBSSCC_BottomButton"
+                    >
+                      {isSubmitting ? 'Replying...' : 'Reply'}
+                      <div className="IBMSMSMBSSCL_CAElementLoadWrapper">
+                        <div className="IBMSMSMBSSCL_CAElementLoad"></div>
+                      </div>
+                    </button>
+                  </div>
                 </div>
-                <div className="IBMSMSMBSSCC_Bottom">
-                  {/* <a className='IBMSMSMBSSCC_BottomButton'>Quote-Repost</a> */}
-                  <button
-                    onClick={handleComment}
-                    disabled={isSubmitting}
-                    className="IBMSMSMBSSCC_BottomButton"
-                  >
-                    {isSubmitting ? 'Replying...' : 'Reply'}
-                    <div className="IBMSMSMBSSCL_CAElementLoadWrapper">
-                      <div className="IBMSMSMBSSCL_CAElementLoad"></div>
-                    </div>
-                  </button>
-                </div>
-              </div>
+              )}
               {commentEvents.length + quoteRepostEvents.length > 0 && (
                 <>
                   <h3 className="IBMSMSMBSSCL_CommentNoteRepliesTitle">

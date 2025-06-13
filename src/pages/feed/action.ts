@@ -58,6 +58,9 @@ export const feedPostRouteAction =
         case 'repost':
           return await handleActionRepost(ndkContext.ndk, action.data)
 
+        case 'delete':
+          return await handleActionDelete(ndkContext.ndk, action.data)
+
         default:
           throw new Error('Unsupported feed action. Intent missing.')
       }
@@ -140,6 +143,20 @@ async function handleActionRepost(ndk: NDK, data: NostrEvent) {
     return null
   } else {
     toast.success('Note published successfully')
+    return null
+  }
+}
+
+async function handleActionDelete(ndk: NDK, data: NostrEvent) {
+  const ndkEvent = new NDKEvent(ndk, data)
+  await ndkEvent.sign()
+
+  const publishedOnRelays = await ndkEvent.publish()
+  if (publishedOnRelays.size === 0) {
+    toast.error('Failed to publish deletion event on any relay')
+    return null
+  } else {
+    toast.success('Deletion request published successfully')
     return null
   }
 }

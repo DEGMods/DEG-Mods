@@ -12,6 +12,8 @@ import {
 } from 'types'
 import { useAppSelector } from './redux'
 import { isInWoT } from 'utils/wot'
+import { useDeletedMods } from './useDeletedMods'
+import { useLoadingTimeout } from './useLoadingTimeout'
 
 export const useFilteredMods = (
   mods: ModDetails[],
@@ -28,8 +30,17 @@ export const useFilteredMods = (
   const { siteWot, siteWotLevel, userWot, userWotLevel } = useAppSelector(
     (state) => state.wot
   )
+  const { deletedModIds, loading: checkingDeletedMods } = useDeletedMods(mods)
+  const shouldBlock = useLoadingTimeout(checkingDeletedMods)
 
   return useMemo(() => {
+    if (shouldBlock) {
+      return []
+    }
+
+    // Filter out deleted mods
+    const nonDeletedMods = mods.filter((mod) => !deletedModIds.has(mod.id))
+
     const nsfwFilter = (mods: ModDetails[]) => {
       // Add nsfw tag to mods included in nsfwList
       if (filterOptions.nsfw !== NSFWFilter.Hide_NSFW) {
@@ -98,7 +109,7 @@ export const useFilteredMods = (
             ? mods
             : mods.filter((mod) => isInWoT(siteWot, siteWotLevel, mod.author))
         case WOTFilterOptions.Exclude:
-          // Only admins (and own profile) can choose Exlude, use siteWot for others
+          // Only admins (and own profile) can choose Exlude, use siteWoT for others
           // Exlude returns the mods not in the site's WoT
           return isWoTNpub || isOwnProfile
             ? mods.filter((mod) => !isInWoT(siteWot, siteWotLevel, mod.author))
@@ -121,7 +132,7 @@ export const useFilteredMods = (
       }
     }
 
-    let filtered = nsfwFilter(mods)
+    let filtered = nsfwFilter(nonDeletedMods)
     filtered = repostFilter(filtered)
     filtered = wotFilter(filtered)
 
@@ -184,6 +195,8 @@ export const useFilteredMods = (
     muteLists.admin.authors,
     muteLists.admin.replaceableEvents,
     muteLists.user.authors,
-    muteLists.user.replaceableEvents
+    muteLists.user.replaceableEvents,
+    deletedModIds,
+    shouldBlock
   ])
 }

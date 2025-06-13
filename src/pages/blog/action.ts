@@ -53,6 +53,52 @@ export const blogRouteAction =
       userState.user?.npub &&
       userState.user.npub === import.meta.env.VITE_REPORTING_NPUB
 
+    // Parse the request body
+    const formData = await request.json()
+    const { intent, data } = formData
+
+    // Handle delete action
+    if (intent === 'delete') {
+      try {
+        // Verify that the user is the author of the blog post
+        const [kind, author] = aTag.split(':')
+        if (author !== hexPubkey) {
+          toast.error(`Kind ${kind}: Only the author can delete this blog post`)
+          return null
+        }
+
+        // Create and publish the deletion event
+        const unsignedEvent: UnsignedEvent = {
+          pubkey: hexPubkey,
+          kind: 5, // Deletion event kind
+          content: 'Requesting deletion of blog post',
+          created_at: now(),
+          tags: [
+            ['e', data.tags.find((tag: string[]) => tag[0] === 'e')?.[1] || ''],
+            ['a', aTag]
+          ]
+        }
+
+        const isUpdated = await signAndPublish(
+          unsignedEvent,
+          ndkContext.ndk,
+          ndkContext.publish
+        )
+
+        if (!isUpdated) {
+          toast.error('Failed to publish deletion event')
+          return null
+        }
+
+        toast.success('Blog post deletion requested')
+        return null
+      } catch (error) {
+        log(true, LogType.Error, 'Failed to handle blog deletion', error)
+        toast.error('Failed to delete blog post')
+        return null
+      }
+    }
+
     const handleBlock = async () => {
       // Define the event filter to search for the user's mute list events.
       // We look for events of a specific kind (Mutelist) authored by the given hexPubkey.
@@ -241,14 +287,9 @@ export const blogRouteAction =
       return null
     }
 
-    const requestData = (await request.json()) as {
-      intent: 'nsfw' | 'block'
-      value: boolean
-    }
-
-    switch (requestData.intent) {
+    switch (intent) {
       case 'block':
-        await (requestData.value ? handleBlock() : handleUnblock())
+        await (formData.value ? handleBlock() : handleUnblock())
         break
 
       case 'nsfw':
@@ -256,7 +297,7 @@ export const blogRouteAction =
           log(true, LogType.Error, 'Unable to update NSFW list. No permission')
           return null
         }
-        await (requestData.value ? handleAddNSFW() : handleRemoveNSFW())
+        await (formData.value ? handleAddNSFW() : handleRemoveNSFW())
         break
 
       default:

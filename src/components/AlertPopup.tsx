@@ -8,7 +8,9 @@ export const AlertPopup = ({
   handleConfirm,
   handleClose,
   yesButtonLabel = 'Yes',
+  yesButtonColor,
   noButtonLabel = 'No',
+  noButtonColor,
   children
 }: PropsWithChildren<AlertPopupProps>) => {
   return createPortal(
@@ -53,6 +55,7 @@ export const AlertPopup = ({
                 >
                   <button
                     className="btn btnMain btnMainPopup"
+                    style={{ backgroundColor: yesButtonColor }}
                     type="button"
                     onPointerDown={() => handleConfirm(true)}
                   >
@@ -60,6 +63,7 @@ export const AlertPopup = ({
                   </button>
                   <button
                     className="btn btnMain btnMainPopup"
+                    style={{ backgroundColor: noButtonColor }}
                     type="button"
                     onPointerDown={() => handleConfirm(false)}
                   >

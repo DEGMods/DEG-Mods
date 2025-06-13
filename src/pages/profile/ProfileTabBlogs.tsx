@@ -8,7 +8,9 @@ import {
   useNDKContext,
   useLocalStorage,
   useAppSelector,
-  useServer
+  useServer,
+  useDeletedBlogs,
+  useLoadingTimeout
 } from 'hooks'
 import { useState, useMemo, useEffect, useCallback, useRef } from 'react'
 import { useLoaderData, useNavigation } from 'react-router-dom'
@@ -182,6 +184,10 @@ export const ProfileTabBlogs = () => {
     }
   }, [blogfilter, blogs, fetchEvents, isLoading])
 
+  const { deletedBlogIds, loading: checkingDeletedBlogs } =
+    useDeletedBlogs(blogs)
+  const shouldBlock = useLoadingTimeout(checkingDeletedBlogs)
+
   const moderatedAndSortedBlogs = useMemo(() => {
     let _blogs = blogs || []
     const isAdmin = userState.user?.npub === import.meta.env.VITE_REPORTING_NPUB
@@ -191,6 +197,13 @@ export const ProfileTabBlogs = () => {
       filterOptions.moderated === ModeratedFilter.Unmoderated_Fully
     const isOnlyBlocked =
       filterOptions.moderated === ModeratedFilter.Only_Blocked
+
+    if (shouldBlock) {
+      return []
+    }
+
+    // Filter out deleted blog posts
+    _blogs = _blogs.filter((b) => !b.id || !deletedBlogIds.has(b.id))
 
     // Add nsfw tag to blogs included in nsfwList
     if (filterOptions.nsfw !== NSFWFilter.Hide_NSFW) {
@@ -254,12 +267,14 @@ export const ProfileTabBlogs = () => {
     nsfwList,
     profilePubkey,
     userState.user?.npub,
-    userState.user?.pubkey
+    userState.user?.pubkey,
+    deletedBlogIds,
+    shouldBlock
   ])
 
   return (
     <>
-      {(isLoading || navigation.state !== 'idle') && (
+      {(isLoading || navigation.state !== 'idle' || shouldBlock) && (
         <LoadingSpinner desc={'Loading...'} />
       )}
 

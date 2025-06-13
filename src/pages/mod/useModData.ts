@@ -120,13 +120,10 @@ const useModData = (): ModPageLoaderResult => {
         throw new Error('Required naddr.')
       }
 
-      const start = performance.now()
       const result = await Promise.race([
         ndkContext.fetchEvent(modFilter),
         timeout(2000)
       ])
-      const end = performance.now()
-      log(true, LogType.Info, `MARK: fetchEvent took ${end - start}ms`)
       return result
     }, [naddr, ndkContext, modFilter])
   )
@@ -137,13 +134,11 @@ const useModData = (): ModPageLoaderResult => {
         throw new Error('NDK context is not available')
       }
 
-      const start = performance.now()
       const result = await Promise.race([
         ndkContext.fetchEvents(latestFilter),
         timeout(2000)
       ])
-      const end = performance.now()
-      log(true, LogType.Info, `MARK: fetchEvents took ${end - start}ms`)
+
       return result
     }, [ndkContext, latestFilter])
   )
@@ -154,10 +149,7 @@ const useModData = (): ModPageLoaderResult => {
         throw new Error('NDK context is not available')
       }
 
-      const start = performance.now()
       const result = await ndkContext.getMuteLists(loggedInUserPubkey)
-      const end = performance.now()
-      log(true, LogType.Info, `MARK: getMuteLists took ${end - start}ms`)
       return result
     }, [ndkContext, loggedInUserPubkey])
   )
@@ -168,13 +160,10 @@ const useModData = (): ModPageLoaderResult => {
         throw new Error('NDK context is not available')
       }
 
-      const start = performance.now()
       const result = await getReportingSet(
         CurationSetIdentifiers.NSFW,
         ndkContext
       )
-      const end = performance.now()
-      log(true, LogType.Info, `MARK: getNSFWReportingSet took ${end - start}ms`)
       return result
     }, [ndkContext])
   )
@@ -185,16 +174,9 @@ const useModData = (): ModPageLoaderResult => {
         throw new Error('NDK context is not available')
       }
 
-      const start = performance.now()
       const result = await getReportingSet(
         CurationSetIdentifiers.Repost,
         ndkContext
-      )
-      const end = performance.now()
-      log(
-        true,
-        LogType.Info,
-        `MARK: getRepostReportingSet took ${end - start}ms`
       )
       return result
     }, [ndkContext])

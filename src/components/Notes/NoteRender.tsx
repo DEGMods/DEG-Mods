@@ -23,6 +23,7 @@ import { truncate } from 'lodash'
 
 interface NoteRenderProps {
   content: string
+  isDeleted?: boolean
 }
 const link =
   /(?:https?:\/\/|www\.)(?:[a-zA-Z0-9.-]+\.[a-zA-Z]+(?::\d+)?)(?:[/?#][\p{L}\p{N}\p{M}&.-/?=#\-@%+_,:!~*]*)?/u
@@ -33,7 +34,7 @@ const nostrEntity =
 const nostrNip05Mention = /(?:nostr:|@)[^\s]{1,64}@[^\s]+\.[^\s]{2,}/i
 const nip05Entity = /(?:nostr:|@)([^\s]{1,64}@[^\s]+\.[^\s]{2,})/i
 
-export const NoteRender = ({ content }: NoteRenderProps) => {
+export const NoteRender = ({ content, isDeleted }: NoteRenderProps) => {
   const depth = useContext(CommentDepthContext)
   const [lightBoxController, setLightBoxController] = useState({
     toggler: false,
@@ -284,7 +285,13 @@ export const NoteRender = ({ content }: NoteRenderProps) => {
 
   return (
     <>
-      {_content}
+      {isDeleted ? (
+        <div className="IBMSMSMBSSCL_CBDeleted">
+          <i>This post has been deleted by its author</i>
+        </div>
+      ) : (
+        _content
+      )}
       {slides.length > 0 &&
         createPortal(
           <FsLightbox

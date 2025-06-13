@@ -36,6 +36,7 @@ import {
 } from '@nostr-dev-kit/ndk'
 import { useProfile } from 'hooks/useProfile'
 import { createPortal } from 'react-dom'
+import { useDeletedPosts } from 'hooks/useDeletedPosts'
 
 type Props = {
   pubkey: string
@@ -48,7 +49,10 @@ export const ProfileSection = ({ pubkey }: Props) => {
   })
   const displayName =
     profile?.displayName || profile?.name || '[name not set up]'
-  const [posts, setPosts] = useState<Post[]>([])
+  const [posts, setPosts] = useState<NDKEvent[]>([])
+  const { deletedPostIds, loading: checkingDeletedPosts } =
+    useDeletedPosts(posts)
+
   useEffect(() => {
     const filter: NDKFilter = {
       authors: [pubkey],
@@ -62,16 +66,26 @@ export const ProfileSection = ({ pubkey }: Props) => {
       })
       .then((ndkEventSet) => {
         const ndkEvents = Array.from(ndkEventSet)
-        const posts: Post[] = ndkEvents
-          .sort((a, b) => (b.created_at ?? 0) - (a.created_at ?? 0))
-          .map((ndkEvent) => ({
-            content: ndkEvent.content,
-            link: getFeedNotePageRoute(ndkEvent.encode()),
-            name: displayName
-          }))
-        posts.splice(5)
-        for (const post of posts) {
-          const imageUrls = post.content.match(
+        setPosts(ndkEvents)
+      })
+  }, [ndk, pubkey])
+
+  const filteredPosts = useMemo(() => {
+    if (checkingDeletedPosts) {
+      return []
+    }
+
+    // Filter out deleted posts
+    return posts
+      .filter((post) => !post.id || !deletedPostIds.has(post.id))
+      .sort((a, b) => (b.created_at ?? 0) - (a.created_at ?? 0))
+      .slice(0, 5)
+      .map((ndkEvent) => ({
+        content: ndkEvent.content,
+        link: getFeedNotePageRoute(ndkEvent.encode()),
+        name: displayName,
+        imageUrl: (() => {
+          const imageUrls = ndkEvent.content.match(
             new RegExp(
               /(?:https?:\/\/|www\.)(?:[a-zA-Z0-9.-]+\.[a-zA-Z]+(?::\d+)?)(?:[/?#][\p{L}\p{N}\p{M}&.-/?=#\-@%+_,:!~*]*)?/gu
             )
@@ -79,15 +93,14 @@ export const ProfileSection = ({ pubkey }: Props) => {
           if (imageUrls) {
             for (const url of imageUrls) {
               if (isValidUrl(url) && isValidImageUrl(url)) {
-                post.imageUrl = url
-                break
+                return url
               }
             }
           }
-        }
-        setPosts(posts)
-      })
-  }, [displayName, ndk, pubkey])
+          return undefined
+        })()
+      }))
+  }, [posts, deletedPostIds, checkingDeletedPosts, displayName])
 
   return (
     <div className="IBMSMSplitMainSmallSide">
@@ -95,10 +108,10 @@ export const ProfileSection = ({ pubkey }: Props) => {
         <div className="IBMSMSplitMainSmallSideSec">
           <Profile pubkey={pubkey} />
         </div>
-        {posts.length > 0 && (
+        {filteredPosts.length > 0 && (
           <div className="IBMSMSplitMainSmallSideSec">
             <div className="IBMSMSMSSS_ShortPosts">
-              {posts.map((post, index) => (
+              {filteredPosts.map((post, index) => (
                 <a
                   key={'post' + index}
                   className="IBMSMSMSSS_ShortPostsPostLink"
@@ -268,13 +281,6 @@ export const Profile = ({ pubkey }: ProfileProps) => {
       <FollowButton pubkey={pubkey} />
     </div>
   )
-}
-
-interface Post {
-  name: string
-  link: string
-  content: string
-  imageUrl?: string
 }
 
 type QRButtonWithPopUpProps = {

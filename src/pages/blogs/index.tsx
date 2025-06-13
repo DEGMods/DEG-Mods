@@ -1,6 +1,6 @@
 import { useCallback, useEffect, useMemo, useRef, useState } from 'react'
 import { useLoaderData, useNavigation, useSearchParams } from 'react-router-dom'
-import { useLocalStorage } from 'hooks'
+import { useLocalStorage, useDeletedBlogs, useLoadingTimeout } from 'hooks'
 import { BlogCardDetails, NSFWFilter, SortBy } from 'types'
 import { SearchInput } from '../../components/SearchInput'
 import { BlogCard } from '../../components/BlogCard'
@@ -39,6 +39,10 @@ export const BlogsPage = () => {
     sort: SortBy.Latest,
     nsfw: NSFWFilter.Hide_NSFW
   })
+
+  const { deletedBlogIds, loading: checkingDeletedBlogs } =
+    useDeletedBlogs(blogs)
+  const shouldBlock = useLoadingTimeout(checkingDeletedBlogs)
 
   // Search
   const searchTermRef = useRef<HTMLInputElement>(null)
@@ -98,6 +102,12 @@ export const BlogsPage = () => {
 
   // Filter
   const filteredBlogs = useMemo(() => {
+    let _blogs = blogs || []
+
+    if (shouldBlock) {
+      return []
+    }
+
     const filterNsfwFn = (blog: Partial<BlogCardDetails>) => {
       switch (filterOptions.nsfw) {
         case NSFWFilter.Hide_NSFW:
@@ -109,7 +119,11 @@ export const BlogsPage = () => {
       }
     }
 
-    let filtered = blogs?.filter(filterNsfwFn) || []
+    _blogs = _blogs.filter(filterNsfwFn)
+
+    // Filter out deleted blog posts
+    _blogs = _blogs.filter((b) => !b.id || !deletedBlogIds.has(b.id))
+
     const normalizedSearchTerm = normalizeSearchString(searchTerm)
 
     if (normalizedSearchTerm !== '') {
@@ -122,21 +136,28 @@ export const BlogsPage = () => {
         (blog.tTags || []).findIndex((tag) =>
           tag.toLowerCase().includes(normalizedSearchTerm)
         ) > -1
-      filtered = filtered.filter(filterSearchTermFn)
+      _blogs = _blogs.filter(filterSearchTermFn)
     }
 
     if (filterOptions.sort === SortBy.Latest) {
-      filtered.sort((a, b) =>
+      _blogs.sort((a, b) =>
         a.published_at && b.published_at ? b.published_at - a.published_at : 0
       )
     } else if (filterOptions.sort === SortBy.Oldest) {
-      filtered.sort((a, b) =>
+      _blogs.sort((a, b) =>
         a.published_at && b.published_at ? a.published_at - b.published_at : 0
       )
     }
 
-    return filtered
-  }, [blogs, searchTerm, filterOptions.sort, filterOptions.nsfw])
+    return _blogs
+  }, [
+    blogs,
+    searchTerm,
+    filterOptions.sort,
+    filterOptions.nsfw,
+    deletedBlogIds,
+    shouldBlock
+  ])
 
   // Pagination logic
   const [currentPage, setCurrentPage] = useState(1)
@@ -158,7 +179,9 @@ export const BlogsPage = () => {
 
   return (
     <div className="InnerBodyMain">
-      {navigation.state !== 'idle' && <LoadingSpinner desc={'Loading'} />}
+      {(navigation.state !== 'idle' || shouldBlock) && (
+        <LoadingSpinner desc={'Loading'} />
+      )}
       <div className="ContainerMain">
         <div
           className="IBMSecMainGroup IBMSecMainGroupAlt"

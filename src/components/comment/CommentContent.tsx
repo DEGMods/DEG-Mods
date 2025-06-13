@@ -5,11 +5,13 @@ import { useTextLimit } from 'hooks'
 interface CommentContentProps {
   content: string
   isNsfw?: boolean
+  isDeleted?: boolean
 }
 
 export const CommentContent = ({
   content,
-  isNsfw = false
+  isNsfw = false,
+  isDeleted = false
 }: CommentContentProps) => {
   const { text, isTextOverflowing, isExpanded, toggle } = useTextLimit(content)
 
@@ -24,7 +26,7 @@ export const CommentContent = ({
         </div>
       )}
       <div className="IBMSMSMBSSCL_CBText">
-        <NoteRender content={text} />
+        <NoteRender content={text} isDeleted={isDeleted} />
       </div>
       {isTextOverflowing && !isExpanded && (
         <div className="IBMSMSMBSSCL_CBExpand" onClick={toggle}>

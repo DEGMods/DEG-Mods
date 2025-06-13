@@ -63,6 +63,51 @@ export const modRouteAction =
       userState.user?.npub &&
       userState.user.npub === import.meta.env.VITE_REPORTING_NPUB
 
+    // Parse the request body
+    const formData = await request.json()
+    const { data } = formData
+
+    const handleDelete = async () => {
+      try {
+        // Verify that the user is the author of the mod post
+        const [kind, author] = aTag.split(':')
+        if (author !== hexPubkey) {
+          toast.error(`Kind ${kind}: Only the author can delete this mod post`)
+          return null
+        }
+
+        // Create and publish the deletion event
+        const unsignedEvent: UnsignedEvent = {
+          pubkey: hexPubkey,
+          kind: 5, // Deletion event kind
+          content: 'Requesting deletion of mod post',
+          created_at: now(),
+          tags: [
+            ['e', data.tags.find((tag: string[]) => tag[0] === 'e')?.[1] || ''],
+            ['a', aTag]
+          ]
+        }
+
+        const isUpdated = await signAndPublish(
+          unsignedEvent,
+          ndkContext.ndk,
+          ndkContext.publish
+        )
+
+        if (!isUpdated) {
+          toast.error('Failed to publish deletion event')
+          return null
+        }
+
+        toast.success('Mod post deletion requested')
+        return null
+      } catch (error) {
+        log(true, LogType.Error, 'Failed to handle mod deletion', error)
+        toast.error('Failed to delete mod post')
+        return null
+      }
+    }
+
     const handleBlock = async () => {
       // Define the event filter to search for the user's mute list events.
       // We look for events of a specific kind (Mutelist) authored by the given hexPubkey.
@@ -155,6 +200,7 @@ export const modRouteAction =
       }
       return null
     }
+
     const handleAddNSFW = async () => {
       const success = await addToCurationSet(
         {
@@ -167,6 +213,7 @@ export const modRouteAction =
       log(true, LogType.Info, `ModAction - NSFW - Add - ${success}`)
       return null
     }
+
     const handleRemoveNSFW = async () => {
       const success = await removeFromCurationSet(
         {
@@ -206,8 +253,8 @@ export const modRouteAction =
       return null
     }
 
-    const requestData = (await request.json()) as {
-      intent: 'nsfw' | 'block' | 'repost'
+    const requestData = formData as {
+      intent: 'nsfw' | 'block' | 'repost' | 'delete'
       value: boolean
     }
 
@@ -226,6 +273,10 @@ export const modRouteAction =
           return null
         }
         await (requestData.value ? handleAddNSFW() : handleRemoveNSFW())
+        break
+
+      case 'delete':
+        await handleDelete()
         break
 
       default:

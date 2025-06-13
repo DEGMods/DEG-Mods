@@ -2,17 +2,12 @@ import {
   useAppSelector,
   useLocalStorage,
   useNDKContext,
-  useServer
+  useServer,
+  useFilteredMods
 } from 'hooks'
-import { useCallback, useEffect, useMemo, useRef, useState } from 'react'
+import { useCallback, useEffect, useRef, useState, useMemo } from 'react'
 import { useLoaderData } from 'react-router-dom'
-import {
-  FilterOptions,
-  ModDetails,
-  NSFWFilter,
-  RepostFilter,
-  SortBy
-} from 'types'
+import { FilterOptions, ModDetails, NSFWFilter, SortBy } from 'types'
 import {
   constructModListFromEvents,
   DEFAULT_FILTER_OPTIONS,
@@ -137,84 +132,22 @@ export const FeedTabMods = () => {
       })
   }, [filterOptions.source, followList, isRelayFallbackActive, ndk, userPubkey])
 
-  const filteredModList = useMemo(() => {
-    const nsfwFilter = (mods: ModDetails[]) => {
-      // Add nsfw tag to mods included in nsfwList
-      if (filterOptions.nsfw !== NSFWFilter.Hide_NSFW) {
-        mods = mods.map((mod) => {
-          return !mod.nsfw && nsfwList.includes(mod.aTag)
-            ? { ...mod, nsfw: true }
-            : mod
-        })
-      }
-
-      // Determine the filtering logic based on the NSFW filter option
-      switch (filterOptions.nsfw) {
-        case NSFWFilter.Hide_NSFW:
-          // If 'Hide_NSFW' is selected, filter out NSFW mods
-          return mods.filter((mod) => !mod.nsfw && !nsfwList.includes(mod.aTag))
-        case NSFWFilter.Show_NSFW:
-          // If 'Show_NSFW' is selected, return all mods (no filtering)
-          return mods
-        case NSFWFilter.Only_NSFW:
-          // If 'Only_NSFW' is selected, filter to show only NSFW mods
-          return mods.filter((mod) => mod.nsfw || nsfwList.includes(mod.aTag))
-      }
-    }
-
-    const repostFilter = (mods: ModDetails[]) => {
-      if (filterOptions.repost !== RepostFilter.Hide_Repost) {
-        // Add repost tag to mods included in repostList
-        mods = mods.map((mod) => {
-          return !mod.repost && repostList.includes(mod.aTag)
-            ? { ...mod, repost: true }
-            : mod
-        })
-      }
-      // Determine the filtering logic based on the Repost filter option
-      switch (filterOptions.repost) {
-        case RepostFilter.Hide_Repost:
-          return mods.filter(
-            (mod) => !mod.repost && !repostList.includes(mod.aTag)
-          )
-        case RepostFilter.Show_Repost:
-          return mods
-        case RepostFilter.Only_Repost:
-          return mods.filter(
-            (mod) => mod.repost || repostList.includes(mod.aTag)
-          )
-      }
-    }
-
-    let filtered = nsfwFilter(mods)
-    filtered = repostFilter(filtered)
-
-    // Filter out mods from muted authors and replaceable events
-    filtered = filtered.filter(
-      (mod) =>
-        !muteLists.admin.authors.includes(mod.author) &&
-        !muteLists.admin.replaceableEvents.includes(mod.aTag)
-    )
-
-    if (filterOptions.sort === SortBy.Latest) {
-      filtered.sort((a, b) => b.published_at - a.published_at)
-    } else if (filterOptions.sort === SortBy.Oldest) {
-      filtered.sort((a, b) => a.published_at - b.published_at)
-    }
-    showing > 0 && isRelayFallbackActive && filtered.splice(showing)
-    return filtered
-  }, [
-    filterOptions.nsfw,
-    filterOptions.repost,
-    filterOptions.sort,
-    isRelayFallbackActive,
+  const filteredModList = useFilteredMods(
     mods,
-    muteLists.admin.authors,
-    muteLists.admin.replaceableEvents,
+    userState,
+    filterOptions,
     nsfwList,
-    repostList,
-    showing
-  ])
+    muteLists,
+    repostList
+  )
+
+  const displayedMods = useMemo(() => {
+    const mods = [...filteredModList]
+    if (showing > 0 && isRelayFallbackActive) {
+      mods.splice(showing)
+    }
+    return mods
+  }, [filteredModList, showing, isRelayFallbackActive])
 
   if (!userPubkey) return null
 
@@ -274,14 +207,14 @@ export const FeedTabMods = () => {
   return (
     <>
       {isFetching && <LoadingSpinner desc="Fetching mod details from relays" />}
-      {filteredModList.length === 0 && !isFetching && (
+      {displayedMods.length === 0 && !isFetching && (
         <div className="IBMSMListFeedNoPosts">
           <p>You aren't following people (or there are no posts to show)</p>
         </div>
       )}
       <div className="IBMSMSplitMainFullSideSec IBMSMSMFSSContent">
         <div className="IBMSMList IBMSMListFeed" ref={scrollTargetRef}>
-          {filteredModList.map((mod) => (
+          {displayedMods.map((mod) => (
             <ModCard key={mod.id} {...mod} />
           ))}
         </div>
@@ -297,7 +230,7 @@ export const FeedTabMods = () => {
       ) : (
         !isFetching &&
         isLoadMoreVisible &&
-        filteredModList.length > 0 && (
+        displayedMods.length > 0 && (
           <div className="IBMSMListFeedLoadMore">
             <button
               className="btn btnMain IBMSMListFeedLoadMoreBtn"

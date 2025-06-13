@@ -8,7 +8,9 @@ import {
   useAppSelector,
   useLocalStorage,
   useNDKContext,
-  useServer
+  useServer,
+  useDeletedBlogs,
+  useLoadingTimeout
 } from 'hooks'
 import { useCallback, useEffect, useMemo, useRef, useState } from 'react'
 import { BlogCardDetails, FilterOptions, NSFWFilter, SortBy } from 'types'
@@ -57,6 +59,10 @@ export const FeedTabBlogs = () => {
     }))
     scrollIntoView(scrollTargetRef.current)
   }, [])
+
+  const { deletedBlogIds, loading: checkingDeletedBlogs } =
+    useDeletedBlogs(blogs)
+  const shouldBlock = useLoadingTimeout(checkingDeletedBlogs)
 
   useEffect(() => {
     if (!isServerActive || !userPubkey) return
@@ -147,6 +153,13 @@ export const FeedTabBlogs = () => {
   const filteredBlogs = useMemo(() => {
     let _blogs = blogs || []
 
+    if (shouldBlock) {
+      return []
+    }
+
+    // Filter out deleted blog posts
+    _blogs = _blogs.filter((b) => !b.id || !deletedBlogIds.has(b.id))
+
     // Add nsfw tag to blogs included in nsfwList
     if (filterOptions.nsfw !== NSFWFilter.Hide_NSFW) {
       _blogs = _blogs.map((b) => {
@@ -186,7 +199,9 @@ export const FeedTabBlogs = () => {
     muteLists.admin.authors,
     muteLists.admin.replaceableEvents,
     nsfwList,
-    showing
+    showing,
+    deletedBlogIds,
+    shouldBlock
   ])
 
   if (!userPubkey) return null
@@ -248,10 +263,10 @@ export const FeedTabBlogs = () => {
 
   return (
     <>
-      {isFetching && (
+      {(isFetching || shouldBlock) && (
         <LoadingSpinner desc="Fetching blog details from relays" />
       )}
-      {filteredBlogs.length === 0 && !isFetching && (
+      {filteredBlogs.length === 0 && !isFetching && !checkingDeletedBlogs && (
         <div className="IBMSMListFeedNoPosts">
           <p>You aren't following people (or there are no posts to show)</p>
         </div>

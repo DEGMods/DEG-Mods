@@ -95,57 +95,34 @@ export const modRouteLoader =
       // Parallel fetch mod event, latest events, mute, nsfw, repost lists
       const settled = await Promise.allSettled([
         (async () => {
-          const start = performance.now()
           const result = await Promise.race([
             ndkContext.fetchEvent(modFilter),
             timeout(2000)
           ])
-          const end = performance.now()
-          log(true, LogType.Info, `MARK: fetchEvent took ${end - start}ms`)
           return result
         })(),
         (async () => {
-          const start = performance.now()
           const result = await Promise.race([
             ndkContext.fetchEvents(latestFilter),
             timeout(2000)
           ])
-          const end = performance.now()
-          log(true, LogType.Info, `MARK: fetchEvents took ${end - start}ms`)
           return result
         })(),
         (async () => {
-          const start = performance.now()
           const result = await ndkContext.getMuteLists(loggedInUserPubkey)
-          const end = performance.now()
-          log(true, LogType.Info, `MARK: getMuteLists took ${end - start}ms`)
           return result
         })(),
         (async () => {
-          const start = performance.now()
           const result = await getReportingSet(
             CurationSetIdentifiers.NSFW,
             ndkContext
           )
-          const end = performance.now()
-          log(
-            true,
-            LogType.Info,
-            `MARK: getNSFWReportingSet took ${end - start}ms`
-          )
           return result
         })(),
         (async () => {
-          const start = performance.now()
           const result = await getReportingSet(
             CurationSetIdentifiers.Repost,
             ndkContext
-          )
-          const end = performance.now()
-          log(
-            true,
-            LogType.Info,
-            `MARK: getRepostReportingSet took ${end - start}ms`
           )
           return result
         })()

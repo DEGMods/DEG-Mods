@@ -17,7 +17,7 @@
   display: grid;
   grid-template-columns: 1fr;
   grid-gap: 20px;
-  border-bottom: solid 1px rgba(255,255,255,0.1);
+  border-bottom: solid 1px rgba(255, 255, 255, 0.1);
   padding: 0 0 15px 0;
 }
 
@@ -74,6 +74,11 @@
   border-radius: 4px;
   border: solid 1px rgba(255, 255, 255, 0.1);
   padding: 5px 10px;
+}
+
+.IBMSMSMBSSCL_CBDeleted {
+  font-style: italic;
+  color: rgba(255, 255, 255, 0.5);
 }
 
 .IBMSMSMBSSCL_CBTextStatusSpan {
@@ -302,7 +307,10 @@
 }
 
 .IBMSMSMBSSCC_Top_Box {
-  transition: border, background, box-shadow ease 0.4s;
+  transition:
+    border,
+    background,
+    box-shadow ease 0.4s;
   width: 100%;
   background: rgba(0, 0, 0, 0.05);
   border: solid 1px rgba(255, 255, 255, 0.05);
@@ -325,7 +333,10 @@
 
 .IBMSMSMBSSCC_Top_Box:focus,
 hover {
-  transition: border, background, box-shadow ease 0.4s;
+  transition:
+    border,
+    background,
+    box-shadow ease 0.4s;
   background: rgba(0, 0, 0, 0.1);
   border: solid 1px rgba(255, 255, 255, 0.1);
   box-shadow: inset 0 0 8px 0 rgb(0, 0, 0, 0.15);
@@ -333,7 +344,7 @@ hover {
 }
 
 .IBMSMSMBSSCC_BottomButton {
-  transition: ease .4s;
+  transition: ease 0.4s;
   display: flex;
   flex-direction: row;
   justify-content: center;
@@ -492,7 +503,7 @@ hover {
 }
 
 .IBMSMSMBSSCL_CommentNoteRepliesTitleBtn {
- font-size: 16px;
+  font-size: 16px;
 }
 
 .IBMSMSMBSSCL_CAElementLoadWrapper {
@@ -529,16 +540,16 @@ hover {
   justify-content: center;
   align-items: center;
   width: 50px;
-  color: rgba(255,255,255,0.51);
+  color: rgba(255, 255, 255, 0.51);
 }
 
 .IBMSMSMBSSCL_CommentRepostText {
   display: flex;
   flex-direction: row;
   grid-gap: 5px;
-  color: rgba(255,255,255,0.5);
+  color: rgba(255, 255, 255, 0.5);
   width: 100%;
-  background: rgba(255,255,255,0.05);
+  background: rgba(255, 255, 255, 0.05);
   padding: 5px 15px;
   border-radius: 5px;
 }
@@ -565,8 +576,8 @@ hover {
   align-items: center;
   padding: 15px;
   border-radius: 10px;
-  border: solid 1px rgba(255,255,255,0.1);
-  background: rgba(0,0,0,0.15);
+  border: solid 1px rgba(255, 255, 255, 0.1);
+  background: rgba(0, 0, 0, 0.15);
 }
 
 .IBMSMSMBSSCL_CommentQP > * {
@@ -599,7 +610,7 @@ hover {
 .IBMSMSMBSSCL_CBExpand:hover {
   transition: ease 0.3s;
   background: #363636;
-  color: rgba(255,255,255,0.25);
+  color: rgba(255, 255, 255, 0.25);
 }
 
 .IBMSMSMBSSCL_Comment.IBMSMSMBSSCL_CommentAlt {
@@ -608,13 +619,13 @@ hover {
 }
 
 .pUMCB_PrimeComment > *:last-child {
-    border: unset;
-    padding: unset;
+  border: unset;
+  padding: unset;
 }
 
 .IBMSMSMBSSCommentsList > * {
-    border: unset;
-    padding: unset;
+  border: unset;
+  padding: unset;
 }
 
 .IBMSMSMBSSCL_CommentNSWFTag {
@@ -622,59 +633,66 @@ hover {
   flex-direction: row;
   position: absolute;
   top: -15px;
-  background: rgba(255,39,0,0.35);
+  background: rgba(255, 39, 0, 0.35);
   border-radius: 2px;
   z-index: -1;
   font-size: 10px;
   padding: 5px 10px;
   line-height: 1;
   right: 15px;
-  color: rgba(255,255,255,0.5);
+  color: rgba(255, 255, 255, 0.5);
 }
 
-.IBMSMSMBSSCL_CBText >  * {
-    margin: 10px 0;
+.IBMSMSMBSSCL_CBText > * {
+  margin: 10px 0;
 }
 
-.IBMSMSMBSSCL_CBText >  *:last-child {
-    margin-bottom: 0;
+.IBMSMSMBSSCL_CBText > *:last-child {
+  margin-bottom: 0;
 }
 
 /* Lightbox exception */
-.IBMSMSMBSSCL_CBText > .fslightbox-container { 
-  margin: 0
+.IBMSMSMBSSCL_CBText > .fslightbox-container {
+  margin: 0;
 }
 
-.IBMSMSMBSSCL_CBText > video, .IBMSMSMBSSCL_CBText > img {
-    aspect-ratio: 16 / 9;
-    object-fit: contain;
-    background: rgb(255 255 255 / 2%);
-    outline: solid 1px rgb(255 255 255 / 10%);
+.IBMSMSMBSSCL_CBText > video,
+.IBMSMSMBSSCL_CBText > img {
+  aspect-ratio: 16 / 9;
+  object-fit: contain;
+  background: rgb(255 255 255 / 2%);
+  outline: solid 1px rgb(255 255 255 / 10%);
 }
 
 .IBMSMSMBSSCL_CBText > img {
-    object-fit: cover;
+  object-fit: cover;
 }
 
 .IBMSMSMBSSCL_CBText > audio {
-    width: 100%;
+  width: 100%;
 }
 
 .IBMSMSMBSSCL_CBImgGroup {
-    width: 100%;
-    display: grid;
-    grid-template-columns: 1fr;
-    grid-gap: 4px;
-    overflow: hidden;
-    border-radius: 6px;
+  width: 100%;
+  display: grid;
+  grid-template-columns: 1fr;
+  grid-gap: 4px;
+  overflow: hidden;
+  border-radius: 6px;
 }
 
 .IBMSMSMBSSCL_CBImgGroup > * {
-    transition: ease 0.2s;
-    object-fit: cover;
-    aspect-ratio: 16/9;
+  transition: ease 0.2s;
+  object-fit: cover;
+  aspect-ratio: 16/9;
 }
 
 .IBMSMSMBSSCL_CBImgGroup > *:hover {
-    transform: scale(1.01);
+  transform: scale(1.01);
+}
+
+.IBMSMSMBSSCL_CommentDeleted {
+  border-radius: 10px;
+  border: solid 1px rgb(255 255 255 / 10%);
+  padding: 10px;
 }

@@ -16,6 +16,10 @@ export type NoteAction =
       intent: 'repost'
       data: NostrEvent
     }
+  | {
+      intent: 'delete'
+      data: NostrEvent
+    }
 
 export type NoteSubmitActionResult =
   | {

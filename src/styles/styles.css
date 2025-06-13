@@ -169,10 +169,8 @@ h6 {
   bottom: 0;
   right: 0;
   left: 0;
-  background: linear-gradient(
-      rgba(255, 255, 255, 0.05),
-      rgba(255, 255, 255, 0.05)
-    ),
+  background:
+    linear-gradient(rgba(255, 255, 255, 0.05), rgba(255, 255, 255, 0.05)),
     linear-gradient(to top right, #262626, #292929, #262626),
     linear-gradient(to top right, #262626, #292929, #262626);
   z-index: -1;
@@ -238,10 +236,8 @@ h6 {
   border: unset;
   padding: 5px 15px;
   color: rgba(255, 255, 255, 0.5);
-  background: linear-gradient(
-      rgba(255, 255, 255, 0.03),
-      rgba(255, 255, 255, 0.03)
-    ),
+  background:
+    linear-gradient(rgba(255, 255, 255, 0.03), rgba(255, 255, 255, 0.03)),
     linear-gradient(to top right, #262626, #292929, #262626);
   font-size: 16px;
   display: flex;
@@ -268,6 +264,11 @@ h6 {
   max-height: 200px;
   overflow: auto;
   font-size: 16px;
+}
+
+/* Blog post dropdown specific styles */
+.dropdownMainMenu.blogPostDropdown {
+  min-width: 220px;
 }
 
 /* the 4 classes below here are a temp fix for the games dropdown stylings */
@@ -298,11 +299,11 @@ h6 {
 }
 
 .dropdownMainMenuItem {
-  transition: background ease 0.4s, color ease 0.4s;
-  background: linear-gradient(
-      rgba(255, 255, 255, 0.03),
-      rgba(255, 255, 255, 0.03)
-    ),
+  transition:
+    background ease 0.4s,
+    color ease 0.4s;
+  background:
+    linear-gradient(rgba(255, 255, 255, 0.03), rgba(255, 255, 255, 0.03)),
     linear-gradient(to top right, #262626, #292929, #262626);
   color: rgba(255, 255, 255, 0.75);
   border-radius: 5px;
@@ -327,11 +328,11 @@ h6 {
 }
 
 .dropdownMainMenuItem:hover {
-  transition: background ease 0.4s, color ease 0.4s;
-  background: linear-gradient(
-      rgba(255, 255, 255, 0.05),
-      rgba(255, 255, 255, 0.05)
-    ),
+  transition:
+    background ease 0.4s,
+    color ease 0.4s;
+  background:
+    linear-gradient(rgba(255, 255, 255, 0.05), rgba(255, 255, 255, 0.05)),
     linear-gradient(to top right, #262626, #292929, #262626);
   color: rgba(255, 255, 255, 0.75);
   text-decoration: unset;
@@ -741,17 +742,17 @@ a:hover {
 }
 
 .inputLabelWrapperMain.inputLabelWrapperMainQR {
-    align-items: center;
-    padding: 25px;
-    background: rgb(0 0 0 / 10%);
-    border-radius: 10px;
-    border: solid 1px rgb(255 255 255 / 10%);
+  align-items: center;
+  padding: 25px;
+  background: rgb(0 0 0 / 10%);
+  border-radius: 10px;
+  border: solid 1px rgb(255 255 255 / 10%);
 }
 
 iframe {
-    border: 0;
-    width: 100%;
-    border-radius: 8px;
-    aspect-ratio: 16 / 9;
-    height: unset;
+  border: 0;
+  width: 100%;
+  border-radius: 8px;
+  aspect-ratio: 16 / 9;
+  height: unset;
 }
