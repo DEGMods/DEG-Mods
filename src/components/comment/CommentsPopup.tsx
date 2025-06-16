@@ -88,10 +88,7 @@ export const CommentsPopup = ({ title }: CommentsPopupProps) => {
     isComplete,
     root: rootEvent
   } = useReplies(lastETag?.[1])
-  const isRoot =
-    event.kind === NDKKind.Text
-      ? !event.getMatchingTags('e').length
-      : event.tagValue('a') === event.tagValue('A')
+  const isRoot = event.tagValue('a') === event.tagValue('A')
   const [profile, setProfile] = useState<UserProfile>()
   const { commentEvents, setCommentEvents } = useComments(
     event.author.pubkey,
@@ -173,7 +170,7 @@ export const CommentsPopup = ({ title }: CommentsPopupProps) => {
       '#e': [event.id]
     }
     const quoteFilter: NDKFilter = {
-      kinds: [NDKKind.Text],
+      kinds: [NDKKind.GenericReply],
       '#q': [event.id]
     }
     ndk
@@ -186,7 +183,7 @@ export const CommentsPopup = ({ title }: CommentsPopupProps) => {
 
         if (ndkEventSet.size) {
           const quoteRepostEvents = ndkEvents.filter(
-            (n) => n.kind === NDKKind.Text
+            (n) => n.kind === NDKKind.GenericReply
           )
           userPubkey &&
             setHasQuoted(
@@ -357,9 +354,9 @@ export const CommentsPopup = ({ title }: CommentsPopupProps) => {
                     <div className="IBMSMSMBSSCL_CommentActionsInside">
                       <Reactions {...event.rawEvent()} />
 
-                      {event.kind === NDKKind.Text && (
+                      {event.kind === NDKKind.GenericReply && (
                         <>
-                          {/* Quote Repost, Kind 1 */}
+                          {/* Generice Reply, Kind 1111 */}
                           <div
                             className={`IBMSMSMBSSCL_CAElement IBMSMSMBSSCL_CAERepost ${
                               hasQuoted ? 'IBMSMSMBSSCL_CAERepostActive' : ''

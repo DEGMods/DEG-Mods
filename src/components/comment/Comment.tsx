@@ -83,7 +83,7 @@ export const Comment = ({ comment }: CommentProps) => {
       '#e': [comment.event.id]
     }
     const quoteFilter: NDKFilter = {
-      kinds: [NDKKind.Text],
+      kinds: [NDKKind.GenericReply],
       '#q': [comment.event.id]
     }
     ndk
@@ -96,7 +96,7 @@ export const Comment = ({ comment }: CommentProps) => {
 
         if (ndkEventSet.size) {
           const quoteRepostEvents = ndkEvents.filter(
-            (n) => n.kind === NDKKind.Text
+            (n) => n.kind === NDKKind.GenericReply
           )
           userPubkey &&
             setHasQuoted(
@@ -252,9 +252,9 @@ export const Comment = ({ comment }: CommentProps) => {
               <div className="IBMSMSMBSSCL_CommentActionsInside">
                 <Reactions {...comment.event.rawEvent()} />
 
-                {comment.event.kind === NDKKind.Text && (
+                {comment.event.kind === NDKKind.GenericReply && (
                   <>
-                    {/* Quote Repost, Kind 1 */}
+                    {/* Quote Repost, Kind 1111 */}
                     <div
                       className={`IBMSMSMBSSCL_CAElement IBMSMSMBSSCL_CAERepost ${
                         hasQuoted ? 'IBMSMSMBSSCL_CAERepostActive' : ''
