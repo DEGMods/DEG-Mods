@@ -388,4 +388,28 @@ export class ServerService extends EventTarget {
       throw new Error('Error fetching paginated data from the server')
     }
   }
+
+  // add /delete/:eventId
+  async delete(eventId: string): Promise<void> {
+    if (this.state !== 'active') {
+      throw new Error('Server is not active. Cannot delete data.')
+    }
+
+    if (!this.serverUrl) {
+      throw new Error('Server URL is not set.')
+    }
+
+    try {
+      const response = await axios.get(`${this.serverUrl}/delete/${eventId}`, {
+        timeout: FETCH_TIMEOUT
+      })
+      return response.data
+    } catch (err) {
+      if (!(err instanceof CanceledError)) {
+        console.error(
+          '[DEG Mods] Delete failed. Re-establishing server connection.'
+        )
+      }
+    }
+  }
 }

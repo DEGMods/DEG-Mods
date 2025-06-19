@@ -67,6 +67,7 @@ import { useDeleted } from 'hooks/useDeleted'
 import { LoadingSpinner } from 'components/LoadingSpinner'
 import { NDKEvent, NDKNip07Signer } from '@nostr-dev-kit/ndk'
 import { useDeletedBlogs } from 'hooks/useDeletedBlogs'
+import { ServerService } from 'controllers/server'
 
 const MOD_REPORT_REASONS = [
   { label: 'Actually CP', key: 'actuallyCP' },
@@ -299,6 +300,17 @@ const Game = () => {
           action: `?index`
         }
       )
+
+      // 3 seconds delay
+      await new Promise((resolve) => setTimeout(resolve, 3000))
+
+      // Send server delete request
+      const serverService = ServerService.getInstance()
+      try {
+        await serverService.delete(mod.id)
+      } catch (error) {
+        console.warn('Failed to send server delete request:', error)
+      }
     } catch (error) {
       toast.error('Failed to request mod deletion')
       log(true, LogType.Error, 'Failed to request mod deletion', error)

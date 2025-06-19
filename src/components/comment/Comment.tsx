@@ -35,6 +35,7 @@ import { toast } from 'react-toastify'
 import { log, LogType } from 'utils'
 import { useDeleted } from 'hooks/useDeleted'
 import { LoadingSpinner } from 'components/LoadingSpinner'
+import { ServerService } from 'controllers/server'
 
 interface CommentProps {
   comment: CommentEvent
@@ -83,7 +84,7 @@ export const Comment = ({ comment }: CommentProps) => {
       '#e': [comment.event.id]
     }
     const quoteFilter: NDKFilter = {
-      kinds: [NDKKind.GenericReply],
+      kinds: [NDKKind.Text],
       '#q': [comment.event.id]
     }
     ndk
@@ -96,7 +97,7 @@ export const Comment = ({ comment }: CommentProps) => {
 
         if (ndkEventSet.size) {
           const quoteRepostEvents = ndkEvents.filter(
-            (n) => n.kind === NDKKind.GenericReply
+            (n) => n.kind === NDKKind.Text
           )
           userPubkey &&
             setHasQuoted(
@@ -176,6 +177,17 @@ export const Comment = ({ comment }: CommentProps) => {
           action: appRoutes.feed
         }
       )
+
+      // 3 seconds delay
+      await new Promise((resolve) => setTimeout(resolve, 3000))
+
+      // Send server delete request
+      const serverService = ServerService.getInstance()
+      try {
+        await serverService.delete(comment.event.id)
+      } catch (error) {
+        console.warn('Failed to send server delete request:', error)
+      }
     } catch (error) {
       toast.error('Failed to request comment deletion')
       log(true, LogType.Error, 'Failed to request comment deletion', error)
@@ -252,9 +264,9 @@ export const Comment = ({ comment }: CommentProps) => {
               <div className="IBMSMSMBSSCL_CommentActionsInside">
                 <Reactions {...comment.event.rawEvent()} />
 
-                {comment.event.kind === NDKKind.GenericReply && (
+                {comment.event.kind === NDKKind.Text && (
                   <>
-                    {/* Quote Repost, Kind 1111 */}
+                    {/* Quote Repost, Kind 1 */}
                     <div
                       className={`IBMSMSMBSSCL_CAElement IBMSMSMBSSCL_CAERepost ${
                         hasQuoted ? 'IBMSMSMBSSCL_CAERepostActive' : ''

@@ -1,4 +1,4 @@
-import { useState } from 'react'
+import { useMemo, useState } from 'react'
 import {
   useLoaderData,
   Link as ReactRouterLink,
@@ -25,6 +25,7 @@ import {
   useNDKContext
 } from 'hooks'
 import { useDeleted } from 'hooks/useDeleted'
+import { useDeletedBlogs } from 'hooks/useDeletedBlogs'
 import { ReportPopup } from 'components/ReportPopup'
 import { Viewer } from 'components/Markdown/Viewer'
 import { PostWarnings } from 'components/PostWarning'
@@ -33,6 +34,7 @@ import { NsfwAlertPopup } from 'components/NsfwAlertPopup'
 import { AlertPopup } from 'components/AlertPopup'
 import { NDKEvent, NDKNip07Signer } from '@nostr-dev-kit/ndk'
 import { log, LogType } from 'utils'
+import { ServerService } from 'controllers/server'
 
 const BLOG_REPORT_REASONS = [
   { label: 'Actually CP', key: 'actuallyCP' },
@@ -59,6 +61,11 @@ export const BlogPage = () => {
     blog?.id,
     blog?.author
   )
+  const { deletedBlogIds, loading: checkingDeletedLatestBlogs } =
+    useDeletedBlogs(latest)
+  const filteredLatest = useMemo(() => {
+    return latest.filter((blog) => blog.id && !deletedBlogIds.has(blog.id))
+  }, [latest, deletedBlogIds])
 
   const [showReportPopUp, setShowReportPopUp] = useState<number>()
   useBodyScrollDisable(!!showReportPopUp)
@@ -141,6 +148,17 @@ export const BlogPage = () => {
           action: `?index`
         }
       )
+
+      // 3 seconds delay
+      await new Promise((resolve) => setTimeout(resolve, 3000))
+
+      // Send server delete request
+      const serverService = ServerService.getInstance()
+      try {
+        await serverService.delete(blog.id)
+      } catch (error) {
+        console.warn('Failed to send server delete request:', error)
+      }
     } catch (error) {
       toast.error('Failed to request blog deletion')
       log(true, LogType.Error, 'Failed to request blog deletion', error)
@@ -279,7 +297,7 @@ export const BlogPage = () => {
                                   fill="currentColor"
                                   className="IBMSMSMSSS_Author_Top_Icon"
                                 >
-                                  <path d="M503.7 226.2l-176 151.1c-15.38 13.3-39.69 2.545-39.69-18.16V272.1C132.9 274.3 66.06 312.8 111.4 457.8c5.031 16.09-14.41 28.56-28.06 18.62C39.59 444.6 0 383.8 0 322.3c0-152.2 127.4-184.4 288-186.3V56.02c0-20.67 24.28-31.46 39.69-18.16l176 151.1C514.8 199.4 514.8 216.6 503.7 226.2z"></path>
+                                  <path d="M503.7 226.2l-213.3-364c-16.33-28-57.54-28-73.98 0l-213.2 364C-10.59 444.9 9.849 480 42.74 480h426.6C502.1 480 522.6 445 506.3 417zM232 168c0-13.25 10.75-24 24-24S280 154.8 280 168v128c0 13.25-10.75 24-23.1 24S232 309.3 232 296V168zM256 416c-17.36 0-31.44-14.08-31.44-31.44c0-17.36 14.07-31.44 31.44-31.44s31.44 14.08 31.44 31.44C287.4 401.9 273.4 416 256 416z"></path>
                                 </svg>
                                 Share
                               </a>
@@ -387,14 +405,14 @@ export const BlogPage = () => {
                       edited_at={blog.edited_at || 0}
                       site={blog.rTag || 'N/A'}
                     />
-                    {!!latest.length && (
+                    {!checkingDeletedLatestBlogs && !!filteredLatest.length && (
                       <div className="IBMSMSplitMainBigSideSec">
                         <div className="IBMSMSMBSSPostsWrapper">
                           <h4 className="IBMSMSMBSSPostsTitle">
                             Latest blog posts
                           </h4>
                           <div className="IBMSMList IBMSMListAlt">
-                            {latest.map((b) => (
+                            {filteredLatest.map((b) => (
                               <BlogCard key={b.id} {...b} />
                             ))}
                           </div>

@@ -30,6 +30,7 @@ import { AlertPopup } from 'components/AlertPopup'
 import { toast } from 'react-toastify'
 import { useDeleted } from 'hooks/useDeleted'
 import { LoadingSpinner } from 'components/LoadingSpinner'
+import { ServerService } from 'controllers/server'
 
 interface NoteProps {
   ndkEvent: NDKEvent
@@ -248,6 +249,17 @@ export const Note = ({ ndkEvent }: NoteProps) => {
           action: appRoutes.feed
         }
       )
+
+      // 3 seconds delay
+      await new Promise((resolve) => setTimeout(resolve, 3000))
+
+      // Send server delete request
+      const serverService = ServerService.getInstance()
+      try {
+        await serverService.delete(noteEvent.id)
+      } catch (error) {
+        console.warn('Failed to send server delete request:', error)
+      }
     } catch (error) {
       toast.error('Failed to request note deletion')
       log(true, LogType.Error, 'Failed to request note deletion', error)
