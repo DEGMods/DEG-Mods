@@ -39,8 +39,9 @@ import { ServerService } from 'controllers/server'
 
 interface CommentProps {
   comment: CommentEvent
+  shouldShowMedia?: boolean
 }
-export const Comment = ({ comment }: CommentProps) => {
+export const Comment = ({ comment, shouldShowMedia = false }: CommentProps) => {
   const { naddr } = useParams()
   const location = useLocation()
   const { ndk } = useNDKContext()
@@ -84,7 +85,7 @@ export const Comment = ({ comment }: CommentProps) => {
       '#e': [comment.event.id]
     }
     const quoteFilter: NDKFilter = {
-      kinds: [NDKKind.Text],
+      kinds: [NDKKind.GenericReply],
       '#q': [comment.event.id]
     }
     ndk
@@ -97,7 +98,7 @@ export const Comment = ({ comment }: CommentProps) => {
 
         if (ndkEventSet.size) {
           const quoteRepostEvents = ndkEvents.filter(
-            (n) => n.kind === NDKKind.Text
+            (n) => n.kind === NDKKind.GenericReply
           )
           userPubkey &&
             setHasQuoted(
@@ -257,16 +258,19 @@ export const Comment = ({ comment }: CommentProps) => {
                 {comment.status}
               </p>
             )}
-            <CommentContent content={comment.event.content} />
+            <CommentContent
+              content={comment.event.content}
+              shouldShowMedia={shouldShowMedia}
+            />
           </div>
           {!isDeleted && (
             <div className="IBMSMSMBSSCL_CommentActions">
               <div className="IBMSMSMBSSCL_CommentActionsInside">
                 <Reactions {...comment.event.rawEvent()} />
 
-                {comment.event.kind === NDKKind.Text && (
+                {comment.event.kind === NDKKind.GenericReply && (
                   <>
-                    {/* Quote Repost, Kind 1 */}
+                    {/* Quote Repost, Kind 1111 */}
                     <div
                       className={`IBMSMSMBSSCL_CAElement IBMSMSMBSSCL_CAERepost ${
                         hasQuoted ? 'IBMSMSMBSSCL_CAERepostActive' : ''

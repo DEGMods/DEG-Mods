@@ -23,7 +23,7 @@ export const useReplies = (eTag: string | undefined) => {
     while (eDepth) {
       const previousReply = await ndk.fetchEvent(
         {
-          kinds: [NDKKind.Text, NDKKind.GenericReply],
+          kinds: [NDKKind.GenericReply],
           ids: [eDepth]
         },
         {

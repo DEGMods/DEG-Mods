@@ -231,7 +231,9 @@ export const routerWithNdkContext = (context: NDKContextType) =>
               children: [
                 {
                   path: ':note',
-                  element: <CommentsPopup title="Note and replies" />,
+                  element: (
+                    <CommentsPopup title="Note and replies" shouldShowMedia />
+                  ),
                   loader: commentsLoader(context)
                 }
               ]

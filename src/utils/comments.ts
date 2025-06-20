@@ -1,4 +1,4 @@
-import NDK, { NDKEvent, NDKNip07Signer } from '@nostr-dev-kit/ndk'
+import NDK, { NDKEvent, NDKNip07Signer, NDKKind } from '@nostr-dev-kit/ndk'
 import { toast } from 'react-toastify'
 import { CommentEvent, CommentEventStatus } from 'types'
 import { log, LogType } from './utils'
@@ -35,6 +35,7 @@ export function handleCommentSubmit(
       if (!ndk.signer) {
         ndk.signer = new NDKNip07Signer()
       }
+      reply.kind = NDKKind.GenericReply
       await reply.sign(ndk.signer)
       id = reply.id
       const relaySet = await reply.publish()

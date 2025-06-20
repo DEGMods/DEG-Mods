@@ -50,7 +50,7 @@ export const useComments = (
         })
 
       const filter: NDKFilter = {
-        kinds: [NDKKind.Text, NDKKind.GenericReply],
+        kinds: [NDKKind.GenericReply],
         ...(aTag
           ? {
               '#a': [aTag]
@@ -87,7 +87,7 @@ export const useComments = (
         if (!aTags.length && !eTags.length) return
 
         setCommentEvents((prev) => {
-          if (ndkEvent.kind === NDKKind.Text) {
+          if (ndkEvent.kind === NDKKind.GenericReply) {
             // Resolve comments with markers and positional "e" tags
             // https://github.com/nostr-protocol/nips/blob/master/10.md
             const root = ndkEvent.getMatchingTags('e', 'root')

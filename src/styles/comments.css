@@ -696,3 +696,13 @@ hover {
   border: solid 1px rgb(255 255 255 / 10%);
   padding: 10px;
 }
+
+.IBMSMSMBSSCL_CBText > .text-link {
+  color: #3b82f6;
+  text-decoration: underline;
+  word-break: break-all;
+}
+
+.IBMSMSMBSSCL_CBText > .text-link:hover {
+  color: #2563eb;
+}

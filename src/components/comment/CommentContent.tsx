@@ -6,12 +6,14 @@ interface CommentContentProps {
   content: string
   isNsfw?: boolean
   isDeleted?: boolean
+  shouldShowMedia?: boolean
 }
 
 export const CommentContent = ({
   content,
   isNsfw = false,
-  isDeleted = false
+  isDeleted = false,
+  shouldShowMedia = true
 }: CommentContentProps) => {
   const { text, isTextOverflowing, isExpanded, toggle } = useTextLimit(content)
 
@@ -26,7 +28,11 @@ export const CommentContent = ({
         </div>
       )}
       <div className="IBMSMSMBSSCL_CBText">
-        <NoteRender content={text} isDeleted={isDeleted} />
+        <NoteRender
+          content={text}
+          isDeleted={isDeleted}
+          shouldShowMedia={shouldShowMedia}
+        />
       </div>
       {isTextOverflowing && !isExpanded && (
         <div className="IBMSMSMBSSCL_CBExpand" onClick={toggle}>

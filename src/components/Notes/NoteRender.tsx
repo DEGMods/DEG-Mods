@@ -24,6 +24,7 @@ import { truncate } from 'lodash'
 interface NoteRenderProps {
   content: string
   isDeleted?: boolean
+  shouldShowMedia?: boolean
 }
 const link =
   /(?:https?:\/\/|www\.)(?:[a-zA-Z0-9.-]+\.[a-zA-Z]+(?::\d+)?)(?:[/?#][\p{L}\p{N}\p{M}&.-/?=#\-@%+_,:!~*]*)?/u
@@ -34,7 +35,11 @@ const nostrEntity =
 const nostrNip05Mention = /(?:nostr:|@)[^\s]{1,64}@[^\s]+\.[^\s]{2,}/i
 const nip05Entity = /(?:nostr:|@)([^\s]{1,64}@[^\s]+\.[^\s]{2,})/i
 
-export const NoteRender = ({ content, isDeleted }: NoteRenderProps) => {
+export const NoteRender = ({
+  content,
+  isDeleted,
+  shouldShowMedia = true
+}: NoteRenderProps) => {
   const depth = useContext(CommentDepthContext)
   const [lightBoxController, setLightBoxController] = useState({
     toggler: false,
@@ -97,7 +102,19 @@ export const NoteRender = ({ content, isDeleted }: NoteRenderProps) => {
           const [href] = part.match(link) || []
 
           if (href && isValidUrl(href)) {
-            if (isValidImageUrl(href)) {
+            if (!shouldShowMedia) {
+              return (
+                <a
+                  key={key}
+                  href={href}
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className="text-link"
+                >
+                  {href}
+                </a>
+              )
+            } else if (isValidImageUrl(href)) {
               // Image
               return (
                 <img
@@ -281,7 +298,7 @@ export const NoteRender = ({ content, isDeleted }: NoteRenderProps) => {
     }
 
     return groupedParts
-  }, [content, depth, openLightBoxOnSlide])
+  }, [content, depth, openLightBoxOnSlide, shouldShowMedia])
 
   return (
     <>
