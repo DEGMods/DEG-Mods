@@ -5,7 +5,8 @@ import {
   useDidMount,
   useNDKContext,
   useReplies,
-  useDeleted
+  useDeleted,
+  useLocalStorage
 } from 'hooks'
 import { nip19 } from 'nostr-tools'
 import {
@@ -31,9 +32,19 @@ import {
   getModPageRoute,
   getProfilePageRoute
 } from 'routes'
-import { CommentEvent, UserProfile } from 'types'
+import {
+  UserProfile,
+  CommentsSortBy,
+  AuthorFilterEnum,
+  CommentsFilterOptions
+} from 'types'
 import { CommentsLoaderResult } from 'types/comments'
-import { adjustTextareaHeight, handleCommentSubmit, hexToNpub } from 'utils'
+import {
+  adjustTextareaHeight,
+  DEFAULT_COMMENT_FILTER_OPTIONS,
+  handleCommentSubmit,
+  hexToNpub
+} from 'utils'
 import { Reactions } from './Reactions'
 import { Zap } from './Zap'
 import { Comment } from './Comment'
@@ -50,6 +61,7 @@ import { NoteQuoteRepostPopup } from 'components/Notes/NoteQuoteRepostPopup'
 import { NoteRepostPopup } from 'components/Notes/NoteRepostPopup'
 import _ from 'lodash'
 import { LoadingSpinner } from 'components/LoadingSpinner'
+import { Filter } from './Filter'
 
 interface CommentsPopupProps {
   title: string
@@ -81,8 +93,6 @@ export const CommentsPopup = ({
     event.id,
     event.pubkey
   )
-
-  console.log('MARK: isDeleted', isDeleted, isDeletionLoading)
 
   const eTags = event.getMatchingTags('e')
   const lastETag = _.last(eTags)
@@ -116,6 +126,7 @@ export const CommentsPopup = ({
   const ref = useRef<HTMLTextAreaElement>(null)
   const [isSubmitting, setIsSubmitting] = useState(false)
   const [replyText, setReplyText] = useState('')
+  const [isNSFW, setIsNSFW] = useState(false)
 
   const handleChange = useCallback((e: ChangeEvent<HTMLTextAreaElement>) => {
     const value = e.currentTarget.value
@@ -126,8 +137,6 @@ export const CommentsPopup = ({
     if (ref.current) adjustTextareaHeight(ref.current)
   }, [replyText])
 
-  const [visible, setVisible] = useState<CommentEvent[]>([])
-  const discoveredCount = commentEvents.length - visible.length
   const [isLoading, setIsLoading] = useState(true)
   useEffect(() => {
     // Initial loading to indicate comments fetching (stop after 5 seconds)
@@ -136,24 +145,17 @@ export const CommentsPopup = ({
       window.clearTimeout(t)
     }
   }, [])
-  useEffect(() => {
-    if (isLoading) {
-      setVisible(commentEvents)
-    }
-  }, [commentEvents, isLoading])
-  const handleDiscoveredClick = () => {
-    setVisible(commentEvents)
-  }
+
   const handleSubmit = handleCommentSubmit(
     event,
     setCommentEvents,
-    setVisible,
+    () => {},
     ndk
   )
 
   const handleComment = async () => {
     setIsSubmitting(true)
-    const submitted = await handleSubmit(replyText)
+    const submitted = await handleSubmit(replyText, isNSFW)
     if (submitted) setReplyText('')
     setIsSubmitting(false)
   }
@@ -232,6 +234,45 @@ export const CommentsPopup = ({
       }
     )
   }
+  const [commentFilterOptions] = useLocalStorage<CommentsFilterOptions>(
+    'comment-filter',
+    DEFAULT_COMMENT_FILTER_OPTIONS
+  )
+
+  const comments = useMemo(() => {
+    let filteredComments = commentEvents
+
+    // Apply author filtering
+    if (commentFilterOptions.author === AuthorFilterEnum.Creator_Comments) {
+      filteredComments = filteredComments.filter(
+        (comment) => comment.event.pubkey === event.pubkey
+      )
+    }
+
+    // Apply sorting
+    if (commentFilterOptions.sort === CommentsSortBy.Latest) {
+      filteredComments.sort((a, b) =>
+        a.event.created_at && b.event.created_at
+          ? b.event.created_at - a.event.created_at
+          : 0
+      )
+    } else if (commentFilterOptions.sort === CommentsSortBy.Oldest) {
+      filteredComments.sort((a, b) =>
+        a.event.created_at && b.event.created_at
+          ? a.event.created_at - b.event.created_at
+          : 0
+      )
+    }
+
+    return filteredComments
+  }, [
+    commentEvents,
+    event.pubkey,
+    commentFilterOptions.author,
+    commentFilterOptions.sort
+  ])
+
+  const discoveredCount = commentEvents.length - comments.length
 
   return (
     <div className="popUpMain">
@@ -449,7 +490,7 @@ export const CommentsPopup = ({
                           <path d="M256 32C114.6 32 .0272 125.1 .0272 240c0 49.63 21.35 94.98 56.97 130.7c-12.5 50.37-54.27 95.27-54.77 95.77c-2.25 2.25-2.875 5.734-1.5 8.734C1.979 478.2 4.75 480 8 480c66.25 0 115.1-31.76 140.6-51.39C181.2 440.9 217.6 448 256 448c141.4 0 255.1-93.13 255.1-208S397.4 32 256 32z"></path>
                         </svg>
                         <p className="IBMSMSMBSSCL_CAElementText">
-                          {commentEvents.length}
+                          {comments.length}
                         </p>
                         <p className="IBMSMSMBSSCL_CAElementText">Replies</p>
                       </span>
@@ -470,6 +511,22 @@ export const CommentsPopup = ({
                     ></textarea>
                   </div>
                   <div className="IBMSMSMBSSCC_Bottom">
+                    <div
+                      className="inputLabelWrapperMain inputLabelWrapperMainAlt"
+                      style={{ width: 'unset' }}
+                    >
+                      <input
+                        type="checkbox"
+                        className="CheckboxMain"
+                        checked={isNSFW}
+                        id="nsfw"
+                        name="nsfw"
+                        onChange={() => setIsNSFW((isNSFW) => !isNSFW)}
+                      />
+                      <label htmlFor="nsfw" className="form-label labelMain">
+                        NSFW
+                      </label>
+                    </div>
                     {/* <a className='IBMSMSMBSSCC_BottomButton'>Quote-Repost</a> */}
                     <button
                       onClick={handleComment}
@@ -484,92 +541,116 @@ export const CommentsPopup = ({
                   </div>
                 </div>
               )}
-              {commentEvents.length + quoteRepostEvents.length > 0 && (
-                <>
-                  <h3 className="IBMSMSMBSSCL_CommentNoteRepliesTitle">
-                    {isNote ? (
-                      <div className="dropdown">
-                        <button
-                          className="btn dropdown-toggle btnMain btnMainDropdown"
-                          aria-expanded="false"
-                          data-bs-toggle="dropdown"
-                          type="button"
-                        >
-                          {showQuoteReposts ? 'Quote-Reposts' : 'Replies'}
-                        </button>
+              <div
+                style={{
+                  display: 'flex',
+                  flexDirection: 'column',
+                  gap: '20px'
+                }}
+              >
+                <div
+                  style={{
+                    display: 'flex',
+                    flexDirection: 'row',
+                    gap: '15px',
+                    alignItems: 'flex-start'
+                  }}
+                >
+                  <div
+                    style={{
+                      display: 'flex',
+                      flexDirection: 'column',
+                      gap: '10px'
+                    }}
+                  >
+                    <h3
+                      className="IBMSMSMBSSCL_CommentNoteRepliesTitle"
+                      style={{ flex: 0 }}
+                    >
+                      {isNote ? (
+                        <div className="dropdown">
+                          <button
+                            className="btn dropdown-toggle btnMain btnMainDropdown"
+                            aria-expanded="false"
+                            data-bs-toggle="dropdown"
+                            type="button"
+                          >
+                            {showQuoteReposts ? 'Quote-Reposts' : 'Replies'}
+                          </button>
 
-                        <div className="dropdown-menu dropdownMainMenu">
-                          <div
-                            className="dropdown-item dropdownMainMenuItem"
-                            onClick={() => setShowQuoteReposts(false)}
-                          >
-                            Replies
-                          </div>
-                          <div
-                            className="dropdown-item dropdownMainMenuItem"
-                            onClick={() => setShowQuoteReposts(true)}
-                          >
-                            Quote-Reposts
+                          <div className="dropdown-menu dropdownMainMenu">
+                            <div
+                              className="dropdown-item dropdownMainMenuItem"
+                              onClick={() => setShowQuoteReposts(false)}
+                            >
+                              Replies
+                            </div>
+                            <div
+                              className="dropdown-item dropdownMainMenuItem"
+                              onClick={() => setShowQuoteReposts(true)}
+                            >
+                              Quote-Reposts
+                            </div>
                           </div>
                         </div>
-                      </div>
-                    ) : (
-                      <>Replies</>
-                    )}
-                    <button
-                      type="button"
-                      className="btnMain IBMSMSMBSSCL_CommentNoteRepliesTitleBtn"
-                      onClick={
-                        discoveredCount ? handleDiscoveredClick : undefined
-                      }
-                    >
-                      <span>
-                        {isLoading ? (
-                          <>
-                            Discovering replies
-                            <Dots />
-                          </>
-                        ) : discoveredCount ? (
-                          <>Load {discoveredCount} discovered replies</>
-                        ) : (
-                          <>No new replies</>
-                        )}
-                      </span>
-                    </button>
-                  </h3>
-                  {(showQuoteReposts
-                    ? quoteRepostEvents.length
-                    : commentEvents.length) === 0 && !isLoading ? (
-                    <div className="IBMSMListFeedNoPosts">
-                      <p>
-                        There are no{' '}
-                        {showQuoteReposts ? 'quote-reposts' : 'replies'} to show
-                      </p>
+                      ) : (
+                        <span style={{ whiteSpace: 'nowrap' }}>Replies</span>
+                      )}
+                    </h3>
+                    <div style={{ flex: 1 }}>
+                      <Filter />
                     </div>
-                  ) : (
-                    <div className="pUMCB_RepliesToPrime">
-                      {showQuoteReposts
-                        ? quoteRepostEvents.map((reply) => (
+                  </div>
+                  <button
+                    type="button"
+                    className="btnMain IBMSMSMBSSCL_CommentNoteRepliesTitleBtn"
+                  >
+                    <span>
+                      {isLoading ? (
+                        <>
+                          Discovering replies
+                          <Dots />
+                        </>
+                      ) : discoveredCount ? (
+                        <>Load {discoveredCount} discovered replies</>
+                      ) : (
+                        <>No new replies</>
+                      )}
+                    </span>
+                  </button>
+                </div>
+                {(showQuoteReposts
+                  ? quoteRepostEvents.length
+                  : comments.length) === 0 && !isLoading ? (
+                  <div className="IBMSMListFeedNoPosts">
+                    <p>
+                      There are no{' '}
+                      {showQuoteReposts ? 'quote-reposts' : 'replies'} to show
+                    </p>
+                  </div>
+                ) : (
+                  <div className="pUMCB_RepliesToPrime">
+                    {showQuoteReposts
+                      ? quoteRepostEvents.map((reply) => (
+                          <Comment
+                            key={reply.id}
+                            comment={{ event: reply }}
+                            shouldShowMedia={shouldShowMedia}
+                          />
+                        ))
+                      : comments
+                          // Filter out events with 'q' tag since we are showing them with a dropdown
+                          .filter((r) => r.event.tagValue('q') !== event.id)
+                          .map((reply) => (
                             <Comment
-                              key={reply.id}
-                              comment={{ event: reply }}
+                              key={reply.event.id}
+                              comment={reply}
                               shouldShowMedia={shouldShowMedia}
                             />
-                          ))
-                        : commentEvents
-                            // Filter out events with 'q' tag since we are showing them with a dropdown
-                            .filter((r) => r.event.tagValue('q') !== event.id)
-                            .map((reply) => (
-                              <Comment
-                                key={reply.event.id}
-                                comment={reply}
-                                shouldShowMedia={shouldShowMedia}
-                              />
-                            ))}
-                    </div>
-                  )}
-                </>
-              )}
+                          ))}
+                  </div>
+                )}
+              </div>
             </div>
           </div>
         </div>

@@ -1,5 +1,6 @@
 import { NDKEvent } from '@nostr-dev-kit/ndk'
-import { SortBy, NSFWFilter, ModeratedFilter } from './modsFilter'
+import { SortBy, ModeratedFilter } from './modsFilter'
+import { NSFWFilter } from './common'
 
 export interface BlogForm {
   title: string

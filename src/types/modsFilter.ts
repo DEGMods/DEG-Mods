@@ -1,3 +1,5 @@
+import { NSFWFilter, WOTFilterOptions } from './common'
+
 export enum SortBy {
   Latest = 'Latest',
   Oldest = 'Oldest',
@@ -5,25 +7,11 @@ export enum SortBy {
   Worst_Rated = 'Worst Rated'
 }
 
-export enum NSFWFilter {
-  Hide_NSFW = 'Hide NSFW',
-  Show_NSFW = 'Show NSFW',
-  Only_NSFW = 'Only NSFW'
-}
-
 export enum ModeratedFilter {
   Moderated = 'Moderated',
   Unmoderated = 'Unmoderated',
   Unmoderated_Fully = 'Unmoderated Fully',
   Only_Blocked = 'Only Moderated'
-}
-
-export enum WOTFilterOptions {
-  Site_And_Mine = 'Site & Mine',
-  Site_Only = 'Site Only',
-  Mine_Only = 'Mine Only',
-  None = 'None',
-  Exclude = 'Exclude'
 }
 
 export enum RepostFilter {

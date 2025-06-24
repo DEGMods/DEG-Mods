@@ -21,6 +21,9 @@ export const calculateWot = async (pubkey: Hexpubkey, ndk: NDK) => {
   const follows = Array.from(userRelations.follows)
   const muted = Array.from(userRelations.muted)
 
+  // add a user to their own WoT with score set to Positive_Infinity
+  WoT[pubkey] = Number.POSITIVE_INFINITY
+
   // Add all the following users to WoT with score set to Positive_Infinity
   follows.forEach((f) => {
     WoT[f] = Number.POSITIVE_INFINITY

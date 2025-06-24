@@ -4,7 +4,10 @@ import {
   NSFWFilter,
   ModeratedFilter,
   WOTFilterOptions,
-  RepostFilter
+  RepostFilter,
+  CommentsSortBy,
+  AuthorFilterEnum,
+  CommentsFilterOptions
 } from 'types'
 
 export const DEFAULT_FILTER_OPTIONS: FilterOptions = {
@@ -14,4 +17,12 @@ export const DEFAULT_FILTER_OPTIONS: FilterOptions = {
   moderated: ModeratedFilter.Moderated,
   wot: WOTFilterOptions.Site_Only,
   repost: RepostFilter.Show_Repost
+}
+
+export const DEFAULT_COMMENT_FILTER_OPTIONS: CommentsFilterOptions = {
+  sort: CommentsSortBy.Latest,
+  author: AuthorFilterEnum.All_Comments,
+  wot: WOTFilterOptions.Site_Only,
+  nsfw: NSFWFilter.Hide_NSFW,
+  source: window.location.host
 }

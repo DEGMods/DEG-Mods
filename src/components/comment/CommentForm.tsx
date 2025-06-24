@@ -1,16 +1,17 @@
 import { useState } from 'react'
 
 type CommentFormProps = {
-  handleSubmit: (content: string) => Promise<boolean>
+  handleSubmit: (content: string, isNSFW: boolean) => Promise<boolean>
 }
 
 export const CommentForm = ({ handleSubmit }: CommentFormProps) => {
   const [isSubmitting, setIsSubmitting] = useState(false)
   const [commentText, setCommentText] = useState('')
+  const [isNSFW, setIsNSFW] = useState(false)
 
   const handleComment = async () => {
     setIsSubmitting(true)
-    const submitted = await handleSubmit(commentText)
+    const submitted = await handleSubmit(commentText, isNSFW)
     if (submitted) setCommentText('')
     setIsSubmitting(false)
   }
@@ -24,7 +25,31 @@ export const CommentForm = ({ handleSubmit }: CommentFormProps) => {
           onChange={(e) => setCommentText(e.target.value)}
         />
       </div>
-      <div className="IBMSMSMBSSCC_Bottom">
+      <div
+        className="IBMSMSMBSSCC_Bottom"
+        style={{
+          display: 'flex',
+          flexDirection: 'row',
+          justifyContent: 'space-between',
+          alignItems: 'center'
+        }}
+      >
+        <div
+          className="inputLabelWrapperMain inputLabelWrapperMainAlt"
+          style={{ width: 'unset' }}
+        >
+          <input
+            type="checkbox"
+            className="CheckboxMain"
+            checked={isNSFW}
+            id="nsfw"
+            name="nsfw"
+            onChange={() => setIsNSFW((isNSFW) => !isNSFW)}
+          />
+          <label htmlFor="nsfw" className="form-label labelMain">
+            NSFW
+          </label>
+        </div>
         <button
           className="btnMain"
           onClick={handleComment}

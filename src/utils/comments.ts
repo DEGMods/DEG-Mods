@@ -9,7 +9,10 @@ export function handleCommentSubmit(
   setVisible: React.Dispatch<React.SetStateAction<CommentEvent[]>>,
   ndk: NDK
 ) {
-  return async (content: string): Promise<boolean> => {
+  return async (
+    content: string,
+    isNSFW: boolean | undefined = false
+  ): Promise<boolean> => {
     if (content === '') return false
 
     // NDKEvent required
@@ -19,6 +22,14 @@ export function handleCommentSubmit(
     try {
       const reply = event.reply()
       reply.content = content.trim()
+
+      // Add r tag to track the source of the comment
+      reply.tags.push(['r', window.location.host])
+
+      // Add NSFW tag if the comment is marked as NSFW
+      if (isNSFW) {
+        reply.tags.push(['nsfw', 'true'])
+      }
 
       setCommentEvents((prev) => {
         const newCommentEvents = [

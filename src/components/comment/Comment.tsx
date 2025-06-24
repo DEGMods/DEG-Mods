@@ -6,7 +6,12 @@ import {
   NDKNip07Signer
 } from '@nostr-dev-kit/ndk'
 import { formatDate } from 'date-fns'
-import { useAppSelector, useDidMount, useNDKContext } from 'hooks'
+import {
+  useAppSelector,
+  useDidMount,
+  useLocalStorage,
+  useNDKContext
+} from 'hooks'
 import { useState } from 'react'
 import {
   useParams,
@@ -21,8 +26,18 @@ import {
   getProfilePageRoute,
   appRoutes
 } from 'routes'
-import { CommentEvent, UserProfile } from 'types'
-import { hexToNpub } from 'utils'
+import {
+  CommentEvent,
+  FilterOptions,
+  CommentsFilterOptions,
+  UserProfile
+} from 'types'
+import {
+  DEFAULT_COMMENT_FILTER_OPTIONS,
+  DEFAULT_FILTER_OPTIONS,
+  hexToNpub,
+  getFirstTagValue
+} from 'utils'
 import { Reactions } from './Reactions'
 import { Zap } from './Zap'
 import { nip19 } from 'nostr-tools'
@@ -36,6 +51,7 @@ import { log, LogType } from 'utils'
 import { useDeleted } from 'hooks/useDeleted'
 import { LoadingSpinner } from 'components/LoadingSpinner'
 import { ServerService } from 'controllers/server'
+import { useIsCommentWoT } from './useIsCommentWoT'
 
 interface CommentProps {
   comment: CommentEvent
@@ -48,6 +64,7 @@ export const Comment = ({ comment, shouldShowMedia = false }: CommentProps) => {
   const isMod = location.pathname.includes('/mod/')
   const isBlog = location.pathname.includes('/blog/')
   const isNote = location.pathname.includes('/feed')
+  const isNSFW = getFirstTagValue(comment.event, 'nsfw') === 'true'
   const baseUrl = naddr
     ? isMod
       ? getModPageRoute(naddr)
@@ -60,6 +77,19 @@ export const Comment = ({ comment, shouldShowMedia = false }: CommentProps) => {
   const userState = useAppSelector((state) => state.user)
   const userPubkey = userState.user?.pubkey as string | undefined
   const { commentEvents } = useComments(userPubkey, undefined, comment.event.id)
+  const [filterOptions] = useLocalStorage<FilterOptions>(
+    'filter',
+    DEFAULT_FILTER_OPTIONS
+  )
+  const [commentFilterOptions] = useLocalStorage<CommentsFilterOptions>(
+    'comment-filter',
+    DEFAULT_COMMENT_FILTER_OPTIONS
+  )
+  const isCommentWot = useIsCommentWoT({
+    ...commentFilterOptions,
+    wot: filterOptions.wot
+  })
+  const filteredCommentEvents = commentEvents.filter((c) => isCommentWot(c))
 
   const [profile, setProfile] = useState<UserProfile>()
 
@@ -265,7 +295,15 @@ export const Comment = ({ comment, shouldShowMedia = false }: CommentProps) => {
           </div>
           {!isDeleted && (
             <div className="IBMSMSMBSSCL_CommentActions">
-              <div className="IBMSMSMBSSCL_CommentActionsInside">
+              <div
+                className="IBMSMSMBSSCL_CommentActionsInside"
+                style={{ position: 'relative' }}
+              >
+                {isNSFW && (
+                  <div className="IBMSMSMBSSTagsTag IBMSMSMBSSTagsTagNSFW">
+                    <p>NSFW</p>
+                  </div>
+                )}
                 <Reactions {...comment.event.rawEvent()} />
 
                 {comment.event.kind === NDKKind.GenericReply && (
@@ -360,7 +398,7 @@ export const Comment = ({ comment, shouldShowMedia = false }: CommentProps) => {
                     <path d="M256 32C114.6 32 .0272 125.1 .0272 240c0 49.63 21.35 94.98 56.97 130.7c-12.5 50.37-54.27 95.27-54.77 95.77c-2.25 2.25-2.875 5.734-1.5 8.734C1.979 478.2 4.75 480 8 480c66.25 0 115.1-31.76 140.6-51.39C181.2 440.9 217.6 448 256 448c141.4 0 255.1-93.13 255.1-208S397.4 32 256 32z"></path>
                   </svg>
                   <p className="IBMSMSMBSSCL_CAElementText">
-                    {commentEvents.length}
+                    {filteredCommentEvents.length}
                   </p>
                   <p className="IBMSMSMBSSCL_CAElementText">Replies</p>
                 </Link>

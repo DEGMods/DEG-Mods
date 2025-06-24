@@ -301,7 +301,7 @@
 .IBMSMSMBSSCC_Bottom {
   display: flex;
   flex-direction: row;
-  justify-content: end;
+  justify-content: space-between;
   align-items: start;
   grid-gap: 10px;
 }
@@ -500,10 +500,13 @@ hover {
   display: flex;
   flex-direction: row;
   justify-content: space-between;
+  align-items: center;
+  gap: 10px;
 }
 
 .IBMSMSMBSSCL_CommentNoteRepliesTitleBtn {
   font-size: 16px;
+  min-width: 150px;
 }
 
 .IBMSMSMBSSCL_CAElementLoadWrapper {

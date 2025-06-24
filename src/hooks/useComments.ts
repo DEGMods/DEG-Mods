@@ -6,9 +6,23 @@ import {
   NDKSubscription,
   NDKSubscriptionCacheUsage
 } from '@nostr-dev-kit/ndk'
-import { useEffect, useState } from 'react'
-import { CommentEvent, UserRelaysType } from 'types'
-import { log, LogType, timeout } from 'utils'
+import { useEffect, useState, useMemo } from 'react'
+import {
+  CommentEvent,
+  UserRelaysType,
+  FilterOptions,
+  CommentsFilterOptions,
+  NSFWFilter
+} from 'types'
+import {
+  DEFAULT_COMMENT_FILTER_OPTIONS,
+  DEFAULT_FILTER_OPTIONS,
+  log,
+  LogType,
+  timeout
+} from 'utils'
+import { useLocalStorage } from 'hooks/useLocalStorage'
+import { useIsCommentWoT } from 'components/comment/useIsCommentWoT'
 import { useNDKContext } from './useNDKContext'
 import _ from 'lodash'
 
@@ -18,7 +32,55 @@ export const useComments = (
   eTag?: string | undefined
 ) => {
   const { ndk } = useNDKContext()
+  const [filterOptions] = useLocalStorage<FilterOptions>(
+    'filter',
+    DEFAULT_FILTER_OPTIONS
+  )
+  const [commentFilterOptions] = useLocalStorage<CommentsFilterOptions>(
+    'comment-filter',
+    DEFAULT_COMMENT_FILTER_OPTIONS
+  )
+  const isCommentWot = useIsCommentWoT({
+    ...commentFilterOptions,
+    wot: filterOptions.wot
+  })
   const [commentEvents, setCommentEvents] = useState<CommentEvent[]>([])
+  const commentFlag = commentEvents.reduce((acc, comment) => {
+    return acc + comment.event.content
+  }, '')
+  const filteredCommentEvents = useMemo(() => {
+    if (!commentEvents.length) {
+      return []
+    }
+
+    let filtered = commentEvents
+
+    filtered = filtered.filter(isCommentWot)
+
+    if (filterOptions.nsfw === NSFWFilter.Hide_NSFW) {
+      filtered = filtered.filter((comment) => {
+        const isNSFW = comment.event.tags.some((tag) => tag[0] === 'nsfw')
+        return !isNSFW
+      })
+    } else if (filterOptions.nsfw === NSFWFilter.Only_NSFW) {
+      filtered = filtered.filter((comment) => {
+        const isNSFW = comment.event.tags.some((tag) => tag[0] === 'nsfw')
+        return isNSFW
+      })
+    }
+
+    if (filterOptions.source !== 'Show All') {
+      filtered = filtered.filter((comment) => {
+        const isFromSource = comment.event.tags.some(
+          (tag) => tag[0] === 'r' && tag[1] === filterOptions.source
+        )
+        return isFromSource
+      })
+    }
+
+    return filtered
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [commentFlag, isCommentWot, filterOptions.nsfw, filterOptions.source])
 
   useEffect(() => {
     if (!(author && (aTag || eTag))) {
@@ -148,7 +210,7 @@ export const useComments = (
   }, [aTag, author, eTag, ndk])
 
   return {
-    commentEvents,
+    commentEvents: filteredCommentEvents,
     setCommentEvents
   }
 }

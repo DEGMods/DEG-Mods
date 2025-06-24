@@ -120,9 +120,23 @@ export const NDKContextProvider = ({ children }: { children: ReactNode }) => {
   }
 
   const ndk = useMemo(() => {
-    if (import.meta.env.MODE === 'development') {
-      localStorage.setItem('debug', '*')
+    // Configure debug logging based on environment and user preference
+    const isDevelopment = import.meta.env.MODE === 'development'
+    const disableNDKLogging =
+      import.meta.env.VITE_DISABLE_NDK_LOGGING === 'true'
+
+    if (isDevelopment && !disableNDKLogging) {
+      // Enable selective NDK logging instead of all debug logs
+      // You can customize these namespaces based on what you want to see
+      const debugNamespaces = [
+        'ndk:*' // All NDK logs
+        // 'ndk:relay:*',   // Only relay-related logs
+        // 'ndk:subscription:*', // Only subscription logs
+        // 'ndk:event:*',   // Only event-related logs
+      ]
+      localStorage.setItem('debug', debugNamespaces.join(','))
     } else {
+      // Disable all debug logging
       localStorage.removeItem('debug')
     }
 
