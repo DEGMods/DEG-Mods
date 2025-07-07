@@ -1,4 +1,5 @@
 import { ModFilter } from 'components/Filters/ModsFilter'
+import { useSearchParams } from 'react-router-dom'
 import { useCallback, useEffect, useMemo, useRef, useState } from 'react'
 import { LoadingSpinner } from '../../components/LoadingSpinner'
 import { ModCard } from '../../components/ModCard'
@@ -36,6 +37,17 @@ import { ModCardWot } from 'components/ModCardWoT'
 
 export const ModsPageWithServer = () => {
   const scrollTargetRef = useRef<HTMLDivElement>(null)
+  const [searchParams] = useSearchParams()
+  const tags =
+    searchParams
+      .get('t')
+      ?.split(',')
+      .map((tag) => decodeURIComponent(tag)) || []
+  const excludeTags =
+    searchParams
+      .get('et')
+      ?.split(',')
+      .map((tag) => decodeURIComponent(tag)) || []
   const { muteLists } = useLoaderData() as ModsPageLoaderResult
   const userState = useAppSelector((state) => state.user)
   const [isFetching, setIsFetching] = useState(false)
@@ -51,6 +63,15 @@ export const ModsPageWithServer = () => {
     offset: 0,
     hasMore: false
   })
+
+  useEffect(() => {
+    setPagination((prev) => ({
+      ...prev,
+      offset: 0
+    }))
+     
+  }, [tags.length, excludeTags.length])
+
   const req = useMemo(() => {
     const data: PaginatedRequest = {
       kinds: [NDKKind.Classified],
@@ -64,7 +85,9 @@ export const ModsPageWithServer = () => {
       userMuteList: {
         authors: [...muteLists.user.authors],
         events: [...muteLists.user.replaceableEvents]
-      }
+      },
+      includeTags: tags.map((tag) => tag.toLowerCase()),
+      excludeTags: excludeTags.map((tag) => tag.toLowerCase())
     }
 
     const loggedInUserPubkey =
@@ -85,6 +108,7 @@ export const ModsPageWithServer = () => {
       data['#r'] = [window.location.host]
     }
     return data
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [
     filterOptions.moderated,
     filterOptions.nsfw,
@@ -96,7 +120,9 @@ export const ModsPageWithServer = () => {
     muteLists.user.replaceableEvents,
     pagination.limit,
     pagination.offset,
-    userState?.user?.pubkey
+    userState?.user?.pubkey,
+    tags.length,
+    excludeTags.length
   ])
   const fetchModsWithPagination = useCallback(async (newOffset: number) => {
     setPagination((prev) => ({
@@ -130,7 +156,9 @@ export const ModsPageWithServer = () => {
             ref={scrollTargetRef}
           >
             <PageTitleRow />
-            <ModFilter />
+            <div className="FiltersMain">
+              <ModFilter />
+            </div>
 
             <div className="IBMSecMain IBMSMListWrapper">
               <div className="IBMSMList">

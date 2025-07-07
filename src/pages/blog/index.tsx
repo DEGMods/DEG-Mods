@@ -165,6 +165,10 @@ export const BlogPage = () => {
     }
   }
 
+  const handleTagClick = (tag: string) => {
+    navigate(`${appRoutes.search}?t=${encodeURIComponent(tag)}&kind=Blogs`)
+  }
+
   return (
     <div className="InnerBodyMain">
       <div className="ContainerMain">
@@ -387,7 +391,15 @@ export const BlogPage = () => {
                               )}
                               {blog.tTags &&
                                 blog.tTags.map((t) => (
-                                  <a key={t} className="IBMSMSMBSSTagsTag">
+                                  <a
+                                    key={t}
+                                    className="IBMSMSMBSSTagsTag"
+                                    href="#"
+                                    onClick={(e) => {
+                                      e.preventDefault()
+                                      handleTagClick(t)
+                                    }}
+                                  >
                                     {t}
                                   </a>
                                 ))}

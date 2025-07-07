@@ -34,7 +34,7 @@
     "lodash": "4.17.21",
     "marked": "^14.1.3",
     "marked-directive": "^1.0.7",
-    "nostr-login": "1.7.11",
+    "nostr-login": "1.5.2",
     "nostr-tools": "2.7.1",
     "papaparse": "5.4.1",
     "qrcode.react": "3.1.0",

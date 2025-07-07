@@ -22,6 +22,7 @@ import {
 } from 'utils'
 import { ModsPageLoaderResult } from './loader'
 import { FetchModsOptions } from 'contexts/NDKContext'
+import { useSearchParams } from 'react-router-dom'
 import {
   NDKFilter,
   NDKKind,
@@ -32,6 +33,17 @@ import { PageTitleRow } from './PageTitleRow'
 
 export const ModsPageWithRelays = () => {
   const scrollTargetRef = useRef<HTMLDivElement>(null)
+  const [searchParams] = useSearchParams()
+  const tags =
+    searchParams
+      .get('t')
+      ?.split(',')
+      .map((tag) => decodeURIComponent(tag)) || []
+  const excludeTags =
+    searchParams
+      .get('et')
+      ?.split(',')
+      .map((tag) => decodeURIComponent(tag)) || []
   const { repostList, muteLists, nsfwList } =
     useLoaderData() as ModsPageLoaderResult
   const { ndk, fetchMods } = useNDKContext()
@@ -54,12 +66,43 @@ export const ModsPageWithRelays = () => {
           res.sort((a, b) => a.published_at - b.published_at)
         }
         setIsLoadMoreVisible(res.length >= MOD_FILTER_LIMIT)
-        setMods(res.slice(0, MOD_FILTER_LIMIT))
+        const mods = res.slice(0, MOD_FILTER_LIMIT)
+        const filteredMods = mods.filter((mod) => {
+          if (tags.length > 0) {
+            const hasAllIncludedTags = tags.every((includeTag) =>
+              mod.tags?.some(
+                (tag) =>
+                  tag.toLowerCase().trim() === includeTag.toLowerCase().trim()
+              )
+            )
+            if (!hasAllIncludedTags) return false
+          }
+
+          if (excludeTags.length > 0) {
+            const hasExcludedTag = excludeTags.some((excludeTag) =>
+              mod.tags?.some(
+                (tag) =>
+                  tag.toLowerCase().trim() === excludeTag.toLowerCase().trim()
+              )
+            )
+            if (hasExcludedTag) return false
+          }
+          return true
+        })
+
+        setMods(filteredMods)
       })
       .finally(() => {
         setIsFetching(false)
       })
-  }, [fetchMods, filterOptions.sort, filterOptions.source])
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [
+    fetchMods,
+    filterOptions.sort,
+    filterOptions.source,
+    tags.length,
+    excludeTags.length
+  ])
 
   const lastMod: ModDetails | undefined = useMemo(() => {
     // For the latest sort find oldest mod
@@ -105,6 +148,33 @@ export const ModsPageWithRelays = () => {
             return prevMods
           }
 
+          if (tags.length > 0) {
+            const hasAllIncludedTags = tags.every((includeTag) =>
+              ndkEvent.tags
+                ?.find((tag) => tag[0] === 'tags')
+                ?.some(
+                  (tag) =>
+                    tag.toString().toLowerCase() === includeTag.toLowerCase()
+                )
+            )
+
+            if (!hasAllIncludedTags) return prevMods
+          }
+
+          // Additional client-side filtering for exclude tags
+          if (excludeTags.length > 0) {
+            const hasExcludedTag = excludeTags.some((excludeTag) =>
+              ndkEvent.tags
+                ?.find((tag) => tag[0] === 'tags')
+                ?.some(
+                  (tag) =>
+                    tag.toString().toLowerCase().trim() ===
+                    excludeTag.toLowerCase().trim()
+                )
+            )
+            if (hasExcludedTag) return prevMods
+          }
+
           // Skip existing
           if (
             prevMods.find(
@@ -124,7 +194,19 @@ export const ModsPageWithRelays = () => {
     return () => {
       if (sub) sub.stop()
     }
-  }, [filterOptions.sort, filterOptions.source, lastMod, ndk])
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [
+    filterOptions.sort,
+    filterOptions.source,
+    lastMod,
+    ndk,
+    tags.length,
+    excludeTags.length
+  ])
+
+  useEffect(() => {
+    setMods([])
+  }, [tags.length, excludeTags.length])
 
   const handleLoadMore = useCallback(() => {
     setIsFetching(true)
@@ -145,7 +227,29 @@ export const ModsPageWithRelays = () => {
       .then((res) => {
         setMods((prevMods) => {
           const newMods = res
-          const combinedMods = [...prevMods, ...newMods]
+          const filteredMods = newMods.filter((mod) => {
+            if (tags.length > 0) {
+              const hasAllIncludedTags = tags.every((includeTag) =>
+                mod.tags?.some(
+                  (tag) =>
+                    tag.toLowerCase().trim() === includeTag.toLowerCase().trim()
+                )
+              )
+              if (!hasAllIncludedTags) return false
+            }
+
+            if (excludeTags.length > 0) {
+              const hasExcludedTag = excludeTags.some((excludeTag) =>
+                mod.tags?.some(
+                  (tag) =>
+                    tag.toLowerCase().trim() === excludeTag.toLowerCase().trim()
+                )
+              )
+              if (hasExcludedTag) return false
+            }
+            return true
+          })
+          const combinedMods = [...prevMods, ...filteredMods]
           const uniqueMods = Array.from(
             new Set(combinedMods.map((mod) => mod.id))
           )
@@ -160,7 +264,8 @@ export const ModsPageWithRelays = () => {
       .finally(() => {
         setIsFetching(false)
       })
-  }, [fetchMods, filterOptions, lastMod])
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [fetchMods, filterOptions, lastMod, tags.length, excludeTags.length])
 
   const filteredModList = useFilteredMods(
     mods,
@@ -181,7 +286,9 @@ export const ModsPageWithRelays = () => {
             ref={scrollTargetRef}
           >
             <PageTitleRow />
-            <ModFilter />
+            <div className="FiltersMain">
+              <ModFilter />
+            </div>
 
             <div className="IBMSecMain IBMSMListWrapper">
               <div className="IBMSMList">
@@ -191,7 +298,7 @@ export const ModsPageWithRelays = () => {
               </div>
             </div>
 
-            {!isFetching && isLoadMoreVisible && filteredModList.length > 0 && (
+            {!isFetching && isLoadMoreVisible && (
               <div className="IBMSMListFeedLoadMore">
                 <button
                   className="btn btnMain IBMSMListFeedLoadMoreBtn"

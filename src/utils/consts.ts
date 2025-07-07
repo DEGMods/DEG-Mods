@@ -26,3 +26,5 @@ export const DEFAULT_COMMENT_FILTER_OPTIONS: CommentsFilterOptions = {
   nsfw: NSFWFilter.Hide_NSFW,
   source: window.location.host
 }
+
+export const DEFAULT_EXCLUDED_TAGS: string[] = ['Loli', 'Gore', 'Politics']

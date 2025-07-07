@@ -285,7 +285,9 @@ export const ProfileTabMods = () => {
     <>
       {isLoading && <LoadingSpinner desc={loadingSpinnerDesc} />}
 
-      <ModFilter filterKey={filterKey} author={profilePubkey} />
+      <div className="FiltersMain">
+        <ModFilter filterKey={filterKey} author={profilePubkey} />
+      </div>
 
       <div className="IBMSMList IBMSMListAlt" ref={scrollTargetRef}>
         {isServerActive

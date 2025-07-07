@@ -204,6 +204,14 @@ h6 {
   font-weight: normal;
 }
 
+.IBMSMTag {
+  position: relative;
+  background: rgba(255, 255, 255, 0.5);
+  padding: 2.5px 5px;
+  border-radius: 5px;
+  color: #262626;
+}
+
 .blockquoteMainWrapper {
   padding: 0 0 0 25px;
   margin: 15px 0;

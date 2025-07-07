@@ -83,6 +83,17 @@ export const GamePage = () => {
   const [searchParams, setSearchParams] = useSearchParams()
   const [searchTerm, setSearchTerm] = useState(searchParams.get('q') || '')
 
+  // Tags filter
+  const tags =
+    searchParams
+      .get('t')
+      ?.split(',')
+      .map((tag) => decodeURIComponent(tag)) || []
+  const excludeTags =
+    searchParams
+      .get('et')
+      ?.split(',')
+      .map((tag) => decodeURIComponent(tag)) || []
   // Categories filter
   const [categories, setCategories] = useSessionStorage<string[]>('l', [])
   const [hierarchies, setHierarchies] = useSessionStorage<string[]>('h', [])
@@ -111,7 +122,6 @@ export const GamePage = () => {
       handleSearch()
     }
   }
-
   const filteredMods = useMemo(() => {
     const filterSourceFn = (mod: ModDetails) => {
       if (filterOptions.source === window.location.host) {
@@ -149,9 +159,44 @@ export const GamePage = () => {
       return false
     }
 
-    // If search term is missing, only filter by sources and category
+    const filterTagsFn = (mod: ModDetails) => {
+      // If no tags are selected, return true
+      if (tags.length === 0) {
+        return true
+      }
+
+      // Check if mod has any of the selected tags
+      return tags.every((tag) =>
+        mod.tags.some(
+          (modTag) => modTag.toLowerCase().trim() === tag.toLowerCase().trim()
+        )
+      )
+    }
+
+    const filterExcludeTagsFn = (mod: ModDetails) => {
+      // If no exclude tags are selected, return true
+      if (excludeTags.length === 0) {
+        return true
+      }
+
+      // Check if mod has any of the excluded tags
+      const hasExcludedTag = excludeTags.some((excludeTag) =>
+        mod.tags.some(
+          (tag) => tag.toLowerCase().trim() === excludeTag.toLowerCase().trim()
+        )
+      )
+
+      // Return true if no excluded tags are found
+      return !hasExcludedTag
+    }
+
+    // If search term is missing, only filter by sources, category, and tags
     if (searchTerm === '')
-      return mods.filter(filterSourceFn).filter(filterCategoryFn)
+      return mods
+        .filter(filterSourceFn)
+        .filter(filterCategoryFn)
+        .filter(filterTagsFn)
+        .filter(filterExcludeTagsFn)
 
     const lowerCaseSearchTerm = searchTerm.toLowerCase()
 
@@ -164,14 +209,22 @@ export const GamePage = () => {
         tag.toLowerCase().includes(lowerCaseSearchTerm)
       ) > -1
 
-    return mods.filter(filterFn).filter(filterSourceFn).filter(filterCategoryFn)
+    return mods
+      .filter(filterFn)
+      .filter(filterSourceFn)
+      .filter(filterCategoryFn)
+      .filter(filterTagsFn)
+      .filter(filterExcludeTagsFn)
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [
     categories,
+    excludeTags.length,
     filterOptions.source,
     hierarchies,
     linkedHierarchy,
     mods,
-    searchTerm
+    searchTerm,
+    tags.length
   ])
 
   const filteredModList = useFilteredMods(
@@ -214,6 +267,8 @@ export const GamePage = () => {
         authors: [...muteLists.user.authors],
         events: [...muteLists.user.replaceableEvents]
       },
+      includeTags: tags.map((tag) => tag.toLowerCase()),
+      excludeTags: excludeTags.map((tag) => tag.toLowerCase()),
       '#game': [gameName]
     }
 
@@ -252,6 +307,7 @@ export const GamePage = () => {
       setMods(res.events.filter(isModDataComplete).map(extractModData))
       setPagination(res.pagination)
     })
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [
     filterOptions.moderated,
     filterOptions.nsfw,
@@ -270,7 +326,9 @@ export const GamePage = () => {
     searchTerm,
     userState?.user?.pubkey,
     userWot,
-    userWotLevel
+    userWotLevel,
+    tags.length,
+    excludeTags.length
   ])
 
   useEffect(() => {
@@ -290,12 +348,35 @@ export const GamePage = () => {
     subscription.on('event', (ndkEvent) => {
       if (isModDataComplete(ndkEvent)) {
         const mod = extractModData(ndkEvent)
-        if (mod.game === gameName)
+        if (mod.game === gameName) {
+          // Additional client-side filtering for include tags
+          if (tags.length > 0) {
+            const hasAllIncludedTags = tags.every((includeTag) =>
+              mod.tags?.some(
+                (tag) =>
+                  tag.toLowerCase().trim() === includeTag.toLowerCase().trim()
+              )
+            )
+            if (!hasAllIncludedTags) return
+          }
+
+          // Additional client-side filtering for exclude tags
+          if (excludeTags.length > 0) {
+            const hasExcludedTag = excludeTags.some((excludeTag) =>
+              mod.tags?.some(
+                (tag) =>
+                  tag.toLowerCase().trim() === excludeTag.toLowerCase().trim()
+              )
+            )
+            if (hasExcludedTag) return
+          }
+
           setMods((prev) => {
             if (prev.find((e) => e.aTag === mod.aTag)) return [...prev]
 
             return [...prev, mod]
           })
+        }
       }
     })
 
@@ -305,7 +386,8 @@ export const GamePage = () => {
     return () => {
       subscription.stop()
     }
-  }, [gameName, isRelayFallbackActive, ndk])
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [gameName, isRelayFallbackActive, ndk, excludeTags.length, tags.length])
 
   if (!gameName) return null
 
@@ -342,41 +424,43 @@ export const GamePage = () => {
                 />
               </div>
             </div>
-            <ModFilter>
-              <div className="FiltersMainElement">
-                <button
-                  className="btn btnMain btnMainDropdown"
-                  type="button"
-                  onClick={() => {
-                    setShowCategoryPopup(true)
-                  }}
-                >
-                  Categories
-                  {isCategoryFilterActive ||
-                  (linkedHierarchy && linkedHierarchy !== '') ? (
-                    <svg
-                      xmlns="http://www.w3.org/2000/svg"
-                      viewBox="0 0 576 512"
-                      width="1em"
-                      height="1em"
-                      fill="currentColor"
-                    >
-                      <path d="M 3.9,22.9 C 10.5,8.9 24.5,0 40,0 h 432 c 15.5,0 29.5,8.9 36.1,22.9 6.6,14 4.6,30.5 -5.2,42.5 L 396.4,195.6 C 316.2,212.1 256,283 256,368 c 0,27.4 6.3,53.4 17.5,76.5 -1.6,-0.8 -3.2,-1.8 -4.7,-2.9 l -64,-48 C 196.7,387.6 192,378.1 192,368 V 288.9 L 9,65.3 C -0.7,53.4 -2.8,36.8 3.9,22.9 Z M 432,224 c 79.52906,0 143.99994,64.471 143.99994,144 0,79.529 -64.47088,144 -143.99994,144 -79.52906,0 -143.99994,-64.471 -143.99994,-144 0,-79.529 64.47088,-144 143.99994,-144 z" />
-                    </svg>
-                  ) : (
-                    <svg
-                      xmlns="http://www.w3.org/2000/svg"
-                      viewBox="0 0 512 512"
-                      width="1em"
-                      height="1em"
-                      fill="currentColor"
-                    >
-                      <path d="M3.9 54.9C10.5 40.9 24.5 32 40 32l432 0c15.5 0 29.5 8.9 36.1 22.9s4.6 30.5-5.2 42.5L320 320.9 320 448c0 12.1-6.8 23.2-17.7 28.6s-23.8 4.3-33.5-3l-64-48c-8.1-6-12.8-15.5-12.8-25.6l0-79.1L9 97.3C-.7 85.4-2.8 68.8 3.9 54.9z" />
-                    </svg>
-                  )}
-                </button>
-              </div>
-            </ModFilter>
+            <div className="FiltersMain">
+              <ModFilter>
+                <div className="FiltersMainElement">
+                  <button
+                    className="btn btnMain btnMainDropdown"
+                    type="button"
+                    onClick={() => {
+                      setShowCategoryPopup(true)
+                    }}
+                  >
+                    Categories
+                    {isCategoryFilterActive ||
+                    (linkedHierarchy && linkedHierarchy !== '') ? (
+                      <svg
+                        xmlns="http://www.w3.org/2000/svg"
+                        viewBox="0 0 576 512"
+                        width="1em"
+                        height="1em"
+                        fill="currentColor"
+                      >
+                        <path d="M 3.9,22.9 C 10.5,8.9 24.5,0 40,0 h 432 c 15.5,0 29.5,8.9 36.1,22.9 6.6,14 4.6,30.5 -5.2,42.5 L 396.4,195.6 C 316.2,212.1 256,283 256,368 c 0,27.4 6.3,53.4 17.5,76.5 -1.6,-0.8 -3.2,-1.8 -4.7,-2.9 l -64,-48 C 196.7,387.6 192,378.1 192,368 V 288.9 L 9,65.3 C -0.7,53.4 -2.8,36.8 3.9,22.9 Z M 432,224 c 79.52906,0 143.99994,64.471 143.99994,144 0,79.529 -64.47088,144 -143.99994,144 -79.52906,0 -143.99994,-64.471 -143.99994,-144 0,-79.529 64.47088,-144 143.99994,-144 z" />
+                      </svg>
+                    ) : (
+                      <svg
+                        xmlns="http://www.w3.org/2000/svg"
+                        viewBox="0 0 512 512"
+                        width="1em"
+                        height="1em"
+                        fill="currentColor"
+                      >
+                        <path d="M3.9 54.9C10.5 40.9 24.5 32 40 32l432 0c15.5 0 29.5 8.9 36.1 22.9s4.6 30.5-5.2 42.5L320 320.9 320 448c0 12.1-6.8 23.2-17.7 28.6s-23.8 4.3-33.5-3l-64-48c-8.1-6-12.8-15.5-12.8-25.6l0-79.1L9 97.3C-.7 85.4-2.8 68.8 3.9 54.9z" />
+                      </svg>
+                    )}
+                  </button>
+                </div>
+              </ModFilter>
+            </div>
 
             <div className="IBMSecMain IBMSMListWrapper">
               <div className="IBMSMList">

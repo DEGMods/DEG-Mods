@@ -428,10 +428,10 @@ const RegisterButtonWithDialog = () => {
                     <a
                       className="btn btnMain btnMainPopup"
                       role="button"
-                      href="https://chromewebstore.google.com/detail/nostr-connect/ampjiinddmggbhpebhaegmjkbbeofoaj"
+                      href="https://chromewebstore.google.com/detail/nostrame/phfdiknibomfgpefcicfckkklimoniej"
                       target="_blank"
                     >
-                      Nostr Connect
+                      Nostrome (Chromium)
                     </a>
                     <a
                       className="btn btnMain btnMainPopup"
@@ -447,7 +447,7 @@ const RegisterButtonWithDialog = () => {
                       href="https://keys.band/"
                       target="_blank"
                     >
-                      Keys.Band
+                      Keys.Band (Chromium)
                     </a>
                     <a
                       className="btn btnMain btnMainPopup"
@@ -455,7 +455,15 @@ const RegisterButtonWithDialog = () => {
                       href="https://chromewebstore.google.com/detail/nos2x/kpgefcfmnafjgpblomihpgmejjdanjjp"
                       target="_blank"
                     >
-                      nos2x
+                      nos2x (Chromium)
+                    </a>
+                    <a
+                      className="btn btnMain btnMainPopup"
+                      role="button"
+                      href="https://apps.apple.com/us/app/nostore/id1666553677"
+                      target="_blank"
+                    >
+                      Nostore (iOS)
                     </a>
                   </div>
                   <p
@@ -489,30 +497,6 @@ const RegisterButtonWithDialog = () => {
                     only hide you), and the consequence of that is this kind of
                     registration/login system.
                   </p>
-                  <div className="dividerPopup">
-                    <div className="dividerPopupLine"></div>
-                    <p>or</p>
-                    <div className="dividerPopupLine"></div>
-                  </div>
-                  <div className="pUMCB_ZapsInside">
-                    <div className="inputLabelWrapperMain">
-                      <label className="form-label labelMain">
-                        Browser Extensions (iOS)
-                      </label>
-                      <p className="labelDescriptionMain">
-                        Once you create your "account" on any of these, come
-                        back and click login, then sign-in with extension.
-                      </p>
-                    </div>
-                    <a
-                      className="btn btnMain btnMainPopup"
-                      role="button"
-                      href="https://apps.apple.com/us/app/nostore/id1666553677"
-                      target="_blank"
-                    >
-                      Nostore Browser Extension
-                    </a>
-                  </div>
                 </div>
               </div>
             </div>

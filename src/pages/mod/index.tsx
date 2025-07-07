@@ -582,6 +582,8 @@ const Body = ({
     slide: 1
   })
 
+  const navigate = useNavigate()
+
   const openLightBoxOnSlide = (slide: number) => {
     setLightBoxController((prev) => ({
       toggler: !prev.toggler,
@@ -603,6 +605,14 @@ const Body = ({
       postBodyRef.current.style.padding = 'unset'
       viewFullPostBtnRef.current.style.display = 'none'
     }
+  }
+
+  const handleTagClick = (tag: string) => {
+    const encodedGame = encodeURIComponent(game)
+    const encodedTag = encodeURIComponent(tag)
+    const encodedGameRoute = appRoutes.game.replace(':name', encodedGame)
+
+    navigate(`${encodedGameRoute}?t=${encodedTag}`)
   }
 
   return (
@@ -678,7 +688,15 @@ const Body = ({
             )}
 
             {tags.map((tag, index) => (
-              <a className="IBMSMSMBSSTagsTag" href="#" key={`tag-${index}`}>
+              <a
+                className="IBMSMSMBSSTagsTag"
+                href="#"
+                key={`tag-${index}`}
+                onClick={(e) => {
+                  e.preventDefault()
+                  handleTagClick(tag)
+                }}
+              >
                 {tag}
               </a>
             ))}

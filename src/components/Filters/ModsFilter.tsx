@@ -8,10 +8,10 @@ import {
   RepostFilter
 } from 'types'
 import { DEFAULT_FILTER_OPTIONS } from 'utils'
-import { Filter } from '.'
 import { Dropdown } from './Dropdown'
 import { Option } from './Option'
 import { NsfwFilterOptions } from './NsfwFilterOptions'
+import TagsFilter from './TagsFilter'
 
 type Props = {
   author?: string | undefined
@@ -27,7 +27,7 @@ export const ModFilter = React.memo(
     )
 
     return (
-      <Filter>
+      <>
         {/* sort filter options */}
         <Dropdown label={filterOptions.sort}>
           {Object.values(SortBy).map((item, index) => (
@@ -169,8 +169,10 @@ export const ModFilter = React.memo(
           </Option>
         </Dropdown>
 
+        <TagsFilter />
+
         {children}
-      </Filter>
+      </>
     )
   }
 )

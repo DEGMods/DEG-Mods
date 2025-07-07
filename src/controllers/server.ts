@@ -21,6 +21,11 @@ interface NostrPlusParams {
   [key: `!#${string}`]: string[]
 }
 
+interface TagFilterParams {
+  includeTags?: string[]
+  excludeTags?: string[]
+}
+
 interface ModerationParams {
   pubkey?: string
   moderation?: ModeratedFilter
@@ -39,7 +44,8 @@ type NostrParams = NDKFilter
 export type PaginatedRequest = NostrParams &
   NostrPlusParams &
   PaginatedParams &
-  ModerationParams
+  ModerationParams &
+  TagFilterParams
 
 export interface PaginationResult {
   events: NostrEvent[]

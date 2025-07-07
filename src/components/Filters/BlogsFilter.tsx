@@ -1,11 +1,11 @@
 import { useAppSelector, useLocalStorage } from 'hooks'
 import React from 'react'
-import { FilterOptions, ModeratedFilter, SortBy, WOTFilterOptions } from 'types'
+import { FilterOptions, ModeratedFilter, SortBy } from 'types'
 import { DEFAULT_FILTER_OPTIONS } from 'utils'
 import { Dropdown } from './Dropdown'
 import { Option } from './Option'
-import { Filter } from '.'
 import { NsfwFilterOptions } from './NsfwFilterOptions'
+import TagsFilter from './TagsFilter'
 
 type Props = {
   author?: string | undefined
@@ -21,7 +21,7 @@ export const BlogsFilter = React.memo(
     )
 
     return (
-      <Filter>
+      <>
         {/* sort filter options */}
         <Dropdown label={filterOptions.sort}>
           {Object.values(SortBy).map((item, index) => (
@@ -73,45 +73,6 @@ export const BlogsFilter = React.memo(
           })}
         </Dropdown>
 
-        {/* wot filter options */}
-        <Dropdown label={<>Trust: {filterOptions.wot}</>}>
-          {Object.values(WOTFilterOptions).map((item, index) => {
-            // when user is not logged in
-            if (item === WOTFilterOptions.Site_And_Mine && !userState.auth) {
-              return null
-            }
-
-            // when logged in user not admin
-            if (
-              item === WOTFilterOptions.None ||
-              item === WOTFilterOptions.Mine_Only ||
-              item === WOTFilterOptions.Exclude
-            ) {
-              const isWoTNpub =
-                userState.user?.npub === import.meta.env.VITE_SITE_WOT_NPUB
-
-              const isOwnProfile =
-                author && userState.auth && userState.user?.pubkey === author
-
-              if (!(isWoTNpub || isOwnProfile)) return null
-            }
-
-            return (
-              <Option
-                key={`wotFilterOption-${index}`}
-                onClick={() =>
-                  setFilterOptions((prev) => ({
-                    ...prev,
-                    wot: item
-                  }))
-                }
-              >
-                {item}
-              </Option>
-            )
-          })}
-        </Dropdown>
-
         {/* nsfw filter options */}
         <Dropdown label={filterOptions.nsfw}>
           <NsfwFilterOptions filterKey={filterKey} />
@@ -146,7 +107,9 @@ export const BlogsFilter = React.memo(
             Show All
           </Option>
         </Dropdown>
-      </Filter>
+
+        <TagsFilter />
+      </>
     )
   }
 )
