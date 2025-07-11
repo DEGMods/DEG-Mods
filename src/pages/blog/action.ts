@@ -1,4 +1,5 @@
 import { NDKFilter, NDKKind } from '@nostr-dev-kit/ndk'
+import { HARD_BLOCK_LIST_KIND, HARD_BLOCK_TAG } from 'constants.ts'
 import { NDKContextType } from 'contexts/NDKContext'
 import { nip19, UnsignedEvent } from 'nostr-tools'
 import { ActionFunctionArgs } from 'react-router-dom'
@@ -167,6 +168,7 @@ export const blogRouteAction =
         hexPubkey,
         UserRelaysType.Write
       )
+
       if (!muteListEvent) {
         toast.error(`Couldn't get user's mute list event from relays`)
         return null
@@ -281,15 +283,128 @@ export const blogRouteAction =
         ndkContext.ndk,
         ndkContext.publish
       )
+
       if (!isUpdated) {
         toast.error("Failed to update user's nsfw list")
       }
       return null
     }
 
-    switch (intent) {
+    const handleHardBlock = async () => {
+      const filter: NDKFilter = {
+        kinds: [HARD_BLOCK_LIST_KIND],
+        authors: [hexPubkey],
+        '#d': [HARD_BLOCK_TAG]
+      }
+
+      const hardBlockListEvent = await ndkContext.fetchEventFromUserRelays(
+        filter,
+        hexPubkey,
+        UserRelaysType.Write
+      )
+
+      let unsignedEvent: UnsignedEvent
+      if (hardBlockListEvent) {
+        const tags = hardBlockListEvent.tags
+        const alreadyExists =
+          tags.findIndex((item) => item[0] === 'a' && item[1] === aTag) !== -1
+
+        if (alreadyExists) {
+          toast.warn(`Blog reference is already in hard block list`)
+          return null
+        }
+
+        tags.push(['a', aTag])
+        unsignedEvent = {
+          pubkey: hardBlockListEvent.pubkey,
+          kind: HARD_BLOCK_LIST_KIND,
+          content: hardBlockListEvent.content,
+          created_at: now(),
+          tags: [...tags]
+        }
+      } else {
+        unsignedEvent = {
+          pubkey: hexPubkey,
+          kind: HARD_BLOCK_LIST_KIND,
+          content: '',
+          created_at: now(),
+          tags: [
+            ['d', HARD_BLOCK_TAG],
+            ['a', aTag]
+          ]
+        }
+      }
+
+      const isUpdated = await signAndPublish(
+        unsignedEvent,
+        ndkContext.ndk,
+        ndkContext.publish
+      )
+
+      if (!isUpdated) {
+        toast.error('Failed to update hard block list')
+      }
+      return null
+    }
+
+    const handleHardUnblock = async () => {
+      const filter: NDKFilter = {
+        kinds: [HARD_BLOCK_LIST_KIND],
+        authors: [hexPubkey],
+        '#d': [HARD_BLOCK_TAG]
+      }
+
+      const hardBlockListEvent = await ndkContext.fetchEventFromUserRelays(
+        filter,
+        hexPubkey,
+        UserRelaysType.Write
+      )
+
+      if (!hardBlockListEvent) {
+        toast.error(`Couldn't get hard block list event from relays`)
+        return null
+      }
+
+      const tags = hardBlockListEvent.tags
+      const filteredTags = tags.filter((item) => {
+        if (item[0] === 'd' && item[1] === HARD_BLOCK_TAG) {
+          return true
+        }
+
+        return !(item[0] === 'a' && item[1] === aTag)
+      })
+      const unsignedEvent: UnsignedEvent = {
+        pubkey: hardBlockListEvent.pubkey,
+        kind: HARD_BLOCK_LIST_KIND,
+        content: hardBlockListEvent.content,
+        created_at: now(),
+        tags: filteredTags
+      }
+
+      const isUpdated = await signAndPublish(
+        unsignedEvent,
+        ndkContext.ndk,
+        ndkContext.publish
+      )
+
+      if (!isUpdated) {
+        toast.error('Failed to update hard block list')
+      }
+      return null
+    }
+
+    const requestData = formData as {
+      intent: 'nsfw' | 'block' | 'delete' | 'hardblock' | 'hardunblock'
+      value: boolean
+    }
+
+    switch (requestData.intent) {
       case 'block':
-        await (formData.value ? handleBlock() : handleUnblock())
+        await (requestData.value ? handleBlock() : handleUnblock())
+        break
+
+      case 'hardblock':
+        await (requestData.value ? handleHardBlock() : handleHardUnblock())
         break
 
       case 'nsfw':
@@ -297,7 +412,7 @@ export const blogRouteAction =
           log(true, LogType.Error, 'Unable to update NSFW list. No permission')
           return null
         }
-        await (formData.value ? handleAddNSFW() : handleRemoveNSFW())
+        await (requestData.value ? handleAddNSFW() : handleRemoveNSFW())
         break
 
       default:

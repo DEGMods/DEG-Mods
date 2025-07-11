@@ -31,11 +31,15 @@ export const feedPageLoader =
       muteLists: {
         admin: {
           authors: [],
-          replaceableEvents: []
+          replaceableEvents: [],
+          hardBlockedAuthors: [],
+          hardBlockedEvents: []
         },
         user: {
           authors: [],
-          replaceableEvents: []
+          replaceableEvents: [],
+          hardBlockedAuthors: [],
+          hardBlockedEvents: []
         }
       },
       nsfwList: [],

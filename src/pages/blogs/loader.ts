@@ -111,7 +111,10 @@ export const blogsRouteLoader =
           result.blogs = result.blogs.filter(
             (b) =>
               b.aTag &&
-              !muteListResult.value.admin.replaceableEvents.includes(b.aTag)
+              !muteListResult.value.admin.authors.includes(b.author!) &&
+              !muteListResult.value.admin.replaceableEvents.includes(b.aTag) &&
+              !muteListResult.value.admin.hardBlockedEvents.includes(b.aTag) &&
+              !muteListResult.value.admin.hardBlockedAuthors.includes(b.author!)
           )
         } else if (muteListResult.status === 'rejected') {
           log(

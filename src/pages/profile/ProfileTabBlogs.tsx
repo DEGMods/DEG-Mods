@@ -223,7 +223,9 @@ export const ProfileTabBlogs = () => {
       _blogs = _blogs.filter(
         (b) =>
           muteLists.admin.authors.includes(b.author!) ||
-          muteLists.admin.replaceableEvents.includes(b.aTag!)
+          muteLists.admin.hardBlockedAuthors.includes(b.author!) ||
+          muteLists.admin.replaceableEvents.includes(b.aTag!) ||
+          muteLists.admin.hardBlockedEvents.includes(b.aTag!)
       )
     } else if (isUnmoderatedFully && (isAdmin || isOwner)) {
       // Only apply filtering if the user is not an admin or the admin has not selected "Unmoderated Fully"
@@ -232,7 +234,9 @@ export const ProfileTabBlogs = () => {
       _blogs = _blogs.filter(
         (b) =>
           !muteLists.admin.authors.includes(b.author!) &&
-          !muteLists.admin.replaceableEvents.includes(b.aTag!)
+          !muteLists.admin.hardBlockedAuthors.includes(b.author!) &&
+          !muteLists.admin.replaceableEvents.includes(b.aTag!) &&
+          !muteLists.admin.hardBlockedEvents.includes(b.aTag!)
       )
     }
 
@@ -261,6 +265,8 @@ export const ProfileTabBlogs = () => {
     filterOptions.nsfw,
     filterOptions.sort,
     muteLists.admin.authors,
+    muteLists.admin.hardBlockedAuthors,
+    muteLists.admin.hardBlockedEvents,
     muteLists.admin.replaceableEvents,
     muteLists.user.authors,
     muteLists.user.replaceableEvents,
@@ -278,7 +284,9 @@ export const ProfileTabBlogs = () => {
         <LoadingSpinner desc={'Loading...'} />
       )}
 
-      <BlogsFilter filterKey={'filter-blog'} author={profilePubkey} />
+      <div className="FiltersMain">
+        <BlogsFilter filterKey={'filter-blog'} author={profilePubkey} />
+      </div>
 
       <div className="IBMSMList IBMSMListAlt" ref={scrollTargetRef}>
         {moderatedAndSortedBlogs.map((b) => (

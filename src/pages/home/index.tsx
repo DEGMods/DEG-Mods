@@ -273,9 +273,14 @@ const DisplayLatestMods = () => {
   })
 
   const filteredMods = useMemo(() => {
-    const mutedAuthors = [...muteLists.admin.authors, ...muteLists.user.authors]
+    const mutedAuthors = [
+      ...muteLists.admin.authors,
+      ...muteLists.admin.hardBlockedAuthors,
+      ...muteLists.user.authors
+    ]
     const mutedEvents = [
       ...muteLists.admin.replaceableEvents,
+      ...muteLists.admin.hardBlockedEvents,
       ...muteLists.user.replaceableEvents
     ]
 
@@ -304,7 +309,9 @@ const DisplayLatestMods = () => {
   }, [
     latestMods,
     muteLists.admin.authors,
+    muteLists.admin.hardBlockedAuthors,
     muteLists.admin.replaceableEvents,
+    muteLists.admin.hardBlockedEvents,
     muteLists.user.authors,
     muteLists.user.replaceableEvents,
     nsfwList,

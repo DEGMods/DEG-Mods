@@ -69,7 +69,6 @@ export const ModsPageWithServer = () => {
       ...prev,
       offset: 0
     }))
-     
   }, [tags.length, excludeTags.length])
 
   const req = useMemo(() => {

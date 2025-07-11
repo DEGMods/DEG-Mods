@@ -24,11 +24,15 @@ export const modsRouteLoader = (ndkContext: NDKContextType) => async () => {
     muteLists: {
       admin: {
         authors: [],
-        replaceableEvents: []
+        replaceableEvents: [],
+        hardBlockedAuthors: [],
+        hardBlockedEvents: []
       },
       user: {
         authors: [],
-        replaceableEvents: []
+        replaceableEvents: [],
+        hardBlockedAuthors: [],
+        hardBlockedEvents: []
       }
     },
     nsfwList: [],

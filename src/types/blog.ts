@@ -42,6 +42,8 @@ export interface BlogPageLoaderResult {
   latest: Partial<BlogDetails>[]
   isAddedToNSFW: boolean
   isBlocked: boolean
+  isHardBlocked: boolean
+  hardBlockedType?: 'post' | 'user'
   postWarning?: 'user' | 'admin'
 }
 

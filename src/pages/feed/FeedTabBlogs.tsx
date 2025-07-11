@@ -176,7 +176,9 @@ export const FeedTabBlogs = () => {
     _blogs = _blogs.filter(
       (b) =>
         !muteLists.admin.authors.includes(b.author!) &&
-        !muteLists.admin.replaceableEvents.includes(b.aTag!)
+        !muteLists.admin.replaceableEvents.includes(b.aTag!) &&
+        !muteLists.admin.hardBlockedAuthors.includes(b.author!) &&
+        !muteLists.admin.hardBlockedEvents.includes(b.aTag!)
     )
 
     if (filterOptions.sort === SortBy.Latest) {
@@ -198,6 +200,8 @@ export const FeedTabBlogs = () => {
     isRelayFallbackActive,
     muteLists.admin.authors,
     muteLists.admin.replaceableEvents,
+    muteLists.admin.hardBlockedAuthors,
+    muteLists.admin.hardBlockedEvents,
     nsfwList,
     showing,
     deletedBlogIds,

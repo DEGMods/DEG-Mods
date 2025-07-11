@@ -15,12 +15,14 @@ import { ProfileTabBlogs } from './ProfileTabBlogs'
 import { ProfileTabPosts } from './ProfileTabPosts'
 import { ProfileTabMods } from './ProfileTabMods'
 import { ReportUserPopup } from './ReportUserPopup'
+import { HARD_BLOCK_LIST_KIND, HARD_BLOCK_TAG } from 'constants.ts'
 
 export const ProfilePage = () => {
   const {
     profilePubkey,
     profile,
-    isBlocked: _isBlocked
+    isBlocked: _isBlocked,
+    isHardBlocked: _isHardBlocked
   } = useLoaderData() as ProfilePageLoaderResult
   const scrollTargetRef = useRef<HTMLDivElement>(null)
   const { ndk, publish, fetchEventFromUserRelays } = useNDKContext()
@@ -36,8 +38,11 @@ export const ProfilePage = () => {
     userState.auth &&
     userState.user?.pubkey &&
     userState.user.pubkey === profilePubkey
+  const isAdmin = userState.user?.npub === import.meta.env.VITE_REPORTING_NPUB
 
   const [isBlocked, setIsBlocked] = useState(_isBlocked)
+  const [isUserHardBlocked, setIsUserHardBlocked] = useState(_isHardBlocked)
+
   const handleBlock = async () => {
     if (!profilePubkey) {
       toast.error(`Something went wrong. Unable to find reported user's pubkey`)
@@ -169,6 +174,139 @@ export const ProfilePage = () => {
       setIsBlocked(false)
     }
 
+    setIsLoading(false)
+  }
+
+  const handleHardBlockUser = async () => {
+    if (!profilePubkey) {
+      toast.error(`Something went wrong. Unable to find user's pubkey`)
+      return
+    }
+
+    const userHexKey = userState.user?.pubkey as string
+    if (!userHexKey) {
+      toast.error('Could not get pubkey for updating hard block list')
+      return
+    }
+
+    setIsLoading(true)
+    setLoadingSpinnerDesc('Finding hard block list')
+
+    const filter: NDKFilter = {
+      kinds: [HARD_BLOCK_LIST_KIND],
+      authors: [userHexKey],
+      '#d': [HARD_BLOCK_TAG]
+    }
+
+    const hardBlockListEvent = await fetchEventFromUserRelays(
+      filter,
+      userHexKey,
+      UserRelaysType.Write
+    )
+
+    let unsignedEvent: UnsignedEvent
+    if (hardBlockListEvent) {
+      const tags = hardBlockListEvent.tags
+      const alreadyExists =
+        tags.findIndex(
+          (item) => item[0] === 'p' && item[1] === profilePubkey
+        ) !== -1
+
+      if (alreadyExists) {
+        setIsLoading(false)
+        setIsUserHardBlocked(true)
+        return toast.warn(`User is already in hard block list`)
+      }
+
+      tags.push(['p', profilePubkey])
+      unsignedEvent = {
+        pubkey: hardBlockListEvent.pubkey,
+        kind: HARD_BLOCK_LIST_KIND,
+        content: hardBlockListEvent.content,
+        created_at: now(),
+        tags: [...tags]
+      }
+    } else {
+      unsignedEvent = {
+        pubkey: userHexKey,
+        kind: HARD_BLOCK_LIST_KIND,
+        content: '',
+        created_at: now(),
+        tags: [
+          ['d', HARD_BLOCK_TAG],
+          ['p', profilePubkey]
+        ]
+      }
+    }
+
+    setLoadingSpinnerDesc('Updating hard block list')
+    const isUpdated = await signAndPublish(unsignedEvent, ndk, publish)
+    if (isUpdated) {
+      setIsUserHardBlocked(true)
+      toast.success('User hard blocked successfully')
+    } else {
+      toast.error('Failed to update hard block list')
+    }
+    setIsLoading(false)
+  }
+
+  const handleHardUnblockUser = async () => {
+    if (!profilePubkey) {
+      toast.error(`Something went wrong. Unable to find user's pubkey`)
+      return
+    }
+
+    const userHexKey = userState.user?.pubkey as string
+    if (!userHexKey) {
+      toast.error('Could not get pubkey for updating hard block list')
+      return
+    }
+
+    setIsLoading(true)
+    setLoadingSpinnerDesc('Finding hard block list')
+
+    const filter: NDKFilter = {
+      kinds: [HARD_BLOCK_LIST_KIND],
+      authors: [userHexKey],
+      '#d': [HARD_BLOCK_TAG]
+    }
+
+    const hardBlockListEvent = await fetchEventFromUserRelays(
+      filter,
+      userHexKey,
+      UserRelaysType.Write
+    )
+
+    if (!hardBlockListEvent) {
+      toast.error(`Couldn't get hard block list event from relays`)
+      setIsLoading(false)
+      return
+    }
+
+    const tags = hardBlockListEvent.tags
+    const filteredTags = tags.filter((item) => {
+      if (item[0] === 'd' && item[1] === HARD_BLOCK_TAG) {
+        return true
+      }
+
+      return !(item[0] === 'p' && item[1] === profilePubkey)
+    })
+    const unsignedEvent: UnsignedEvent = {
+      pubkey: hardBlockListEvent.pubkey,
+      kind: HARD_BLOCK_LIST_KIND,
+      content: hardBlockListEvent.content,
+      created_at: now(),
+      tags: filteredTags
+    }
+
+    setLoadingSpinnerDesc('Updating hard block list')
+    const isUpdated = await signAndPublish(unsignedEvent, ndk, publish)
+    if (isUpdated) {
+      setIsUserHardBlocked(false)
+      toast.success('User hard unblocked successfully')
+    } else {
+      toast.error('Failed to update hard block list')
+    }
     setIsLoading(false)
   }
 
@@ -309,6 +447,32 @@ export const ProfilePage = () => {
                               </svg>
                               {isBlocked ? 'Unblock' : 'Block User'}
                             </a>
+                            {isAdmin && (
+                              <a
+                                className="dropdown-item dropdownMainMenuItem"
+                                onClick={
+                                  isUserHardBlocked
+                                    ? handleHardUnblockUser
+                                    : handleHardBlockUser
+                                }
+                                style={{ color: 'rgba(255, 70, 70, 0.8)' }}
+                              >
+                                <svg
+                                  xmlns="http://www.w3.org/2000/svg"
+                                  viewBox="0 0 512 512"
+                                  width="1em"
+                                  height="1em"
+                                  fill="currentColor"
+                                  className="IBMSMSMSSS_Author_Top_Icon"
+                                >
+                                  <path d="M256 0C114.6 0 0 114.6 0 256s114.6 256 256 256s256-114.6 256-256S397.4 0 256 0zM256 464c-114.7 0-208-93.31-208-208S141.3 48 256 48s208 93.31 208 208S370.7 464 256 464zM256 304c13.25 0 24-10.75 24-24v-128C280 138.8 269.3 128 256 128S232 138.8 232 152v128C232 293.3 242.8 304 256 304zM256 337.1c-17.36 0-31.44 14.08-31.44 31.44C224.6 385.9 238.6 400 256 400s31.44-14.08 31.44-31.44C287.4 351.2 273.4 337.1 256 337.1z"></path>
+                                </svg>
+                                {isUserHardBlocked
+                                  ? 'Hard Unblock'
+                                  : 'Hard Block'}{' '}
+                                User
+                              </a>
+                            )}
                           </>
                         )}
                       </div>

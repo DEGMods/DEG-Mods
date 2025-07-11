@@ -18,6 +18,7 @@ export interface ProfilePageLoaderResult {
   profilePubkey: string
   profile: UserProfile
   isBlocked: boolean
+  isHardBlocked: boolean
   muteLists: {
     admin: MuteLists
     user: MuteLists
@@ -80,14 +81,19 @@ export const profileRouteLoader =
       profilePubkey: profilePubkey,
       profile: {},
       isBlocked: false,
+      isHardBlocked: false,
       muteLists: {
         admin: {
           authors: [],
-          replaceableEvents: []
+          replaceableEvents: [],
+          hardBlockedAuthors: [],
+          hardBlockedEvents: []
         },
         user: {
           authors: [],
-          replaceableEvents: []
+          replaceableEvents: [],
+          hardBlockedAuthors: [],
+          hardBlockedEvents: []
         }
       },
       nsfwList: [],
@@ -120,8 +126,6 @@ export const profileRouteLoader =
     const muteListResult = settled[1]
     if (muteListResult.status === 'fulfilled' && muteListResult.value) {
       result.muteLists = muteListResult.value
-
-      // Check if user has blocked this profile
       result.isBlocked = result.muteLists.user.authors.includes(profilePubkey)
     } else if (muteListResult.status === 'rejected') {
       log(

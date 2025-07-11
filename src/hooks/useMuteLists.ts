@@ -11,11 +11,15 @@ export const useMuteLists = () => {
   }>({
     admin: {
       authors: [],
-      replaceableEvents: []
+      replaceableEvents: [],
+      hardBlockedAuthors: [],
+      hardBlockedEvents: []
     },
     user: {
       authors: [],
-      replaceableEvents: []
+      replaceableEvents: [],
+      hardBlockedAuthors: [],
+      hardBlockedEvents: []
     }
   })
 

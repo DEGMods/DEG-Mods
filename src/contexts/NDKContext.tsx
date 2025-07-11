@@ -15,7 +15,9 @@ import {
   CLIENT_NAME_VALUE,
   CLIENT_TAG_VALUE,
   MOD_FILTER_LIMIT,
-  T_TAG_VALUE
+  T_TAG_VALUE,
+  HARD_BLOCK_LIST_KIND,
+  HARD_BLOCK_TAG
 } from 'constants.ts'
 import { Dexie } from 'dexie'
 import { createContext, ReactNode, useEffect, useMemo } from 'react'
@@ -470,12 +472,14 @@ export const NDKContextProvider = ({ children }: { children: ReactNode }) => {
   }> => {
     const adminMutedAuthors = new Set<string>()
     const adminMutedPosts = new Set<string>()
+    const adminHardBlockedAuthors = new Set<string>()
+    const adminHardBlockedPosts = new Set<string>()
 
     const reportingNpub = import.meta.env.VITE_REPORTING_NPUB
-
     const adminHexKey = npubToHex(reportingNpub)
 
     if (adminHexKey) {
+      // Get soft block list (existing mute list)
       const muteListEvent = await fetchEvent({
         kinds: [NDKKind.MuteList],
         authors: [adminHexKey]
@@ -483,12 +487,31 @@ export const NDKContextProvider = ({ children }: { children: ReactNode }) => {
 
       if (muteListEvent) {
         const list = NDKList.from(muteListEvent)
-
         list.items.forEach((item) => {
           if (item[0] === 'p') {
             adminMutedAuthors.add(item[1])
           } else if (item[0] === 'a') {
             adminMutedPosts.add(item[1])
+          }
+        })
+      }
+
+      // Get hard block list
+      const hardBlockListEvent = await fetchEvent({
+        kinds: [HARD_BLOCK_LIST_KIND],
+        authors: [adminHexKey],
+        '#d': [HARD_BLOCK_TAG]
+      })
+
+      console.log('hardBlockListEvent', hardBlockListEvent)
+
+      if (hardBlockListEvent) {
+        const list = NDKList.from(hardBlockListEvent)
+        list.items.forEach((item) => {
+          if (item[0] === 'p') {
+            adminHardBlockedAuthors.add(item[1])
+          } else if (item[0] === 'a') {
+            adminHardBlockedPosts.add(item[1])
           }
         })
       }
@@ -508,7 +531,6 @@ export const NDKContextProvider = ({ children }: { children: ReactNode }) => {
 
         if (muteListEvent) {
           const list = NDKList.from(muteListEvent)
-
           list.items.forEach((item) => {
             if (item[0] === 'p') {
               userMutedAuthors.add(item[1])
@@ -523,11 +545,15 @@ export const NDKContextProvider = ({ children }: { children: ReactNode }) => {
     return {
       admin: {
         authors: Array.from(adminMutedAuthors),
-        replaceableEvents: Array.from(adminMutedPosts)
+        replaceableEvents: Array.from(adminMutedPosts),
+        hardBlockedAuthors: Array.from(adminHardBlockedAuthors),
+        hardBlockedEvents: Array.from(adminHardBlockedPosts)
       },
       user: {
         authors: Array.from(userMutedAuthors),
-        replaceableEvents: Array.from(userMutedPosts)
+        replaceableEvents: Array.from(userMutedPosts),
+        hardBlockedAuthors: [],
+        hardBlockedEvents: []
       }
     }
   }

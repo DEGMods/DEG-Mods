@@ -1,3 +1,5 @@
+import { NDKKind } from '@nostr-dev-kit/ndk'
+
 export const T_TAG_VALUE = 'GameMod'
 export const MOD_FILTER_LIMIT = 20
 export const LANDING_PAGE_DATA = {
@@ -129,3 +131,5 @@ export const CLIENT_TAG_VALUE =
   '31990:f4bf1fb5ba8be839f70c7331733e309f780822b311f63e01f9dc8abbb428f8d5:bf1987d6-b772-43c6-bce7-42b638a9ffed'
 
 export const SERVER_URL_STORAGE_KEY = 'serverUrl'
+export const HARD_BLOCK_TAG = 'hard-blocks'
+export const HARD_BLOCK_LIST_KIND = 31000 as NDKKind

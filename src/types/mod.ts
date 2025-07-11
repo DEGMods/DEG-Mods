@@ -82,6 +82,8 @@ export interface ModDetails extends Omit<ModFormState, 'tags'> {
 export interface MuteLists {
   authors: string[]
   replaceableEvents: string[]
+  hardBlockedAuthors: string[]
+  hardBlockedEvents: string[]
 }
 
 export interface ModPageLoaderResult {
@@ -91,6 +93,8 @@ export interface ModPageLoaderResult {
   isAddedToNSFW: boolean
   isBlocked: boolean
   isRepost: boolean
+  isHardBlocked: boolean
+  hardBlockedType?: 'post' | 'user'
   postWarning?: 'user' | 'admin'
 }
 

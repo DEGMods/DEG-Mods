@@ -147,7 +147,9 @@ export const useFilteredMods = (
       filtered = filtered.filter(
         (mod) =>
           muteLists.admin.authors.includes(mod.author) ||
-          muteLists.admin.replaceableEvents.includes(mod.aTag)
+          muteLists.admin.replaceableEvents.includes(mod.aTag) ||
+          muteLists.admin.hardBlockedAuthors.includes(mod.author) ||
+          muteLists.admin.hardBlockedEvents.includes(mod.aTag)
       )
     } else if (isUnmoderatedFully && (isAdmin || isOwner)) {
       // Only apply filtering if the user is not an admin or the admin has not selected "Unmoderated Fully"
@@ -156,7 +158,9 @@ export const useFilteredMods = (
       filtered = filtered.filter(
         (mod) =>
           !muteLists.admin.authors.includes(mod.author) &&
-          !muteLists.admin.replaceableEvents.includes(mod.aTag)
+          !muteLists.admin.replaceableEvents.includes(mod.aTag) &&
+          !muteLists.admin.hardBlockedAuthors.includes(mod.author) &&
+          !muteLists.admin.hardBlockedEvents.includes(mod.aTag)
       )
     }
 
@@ -193,7 +197,9 @@ export const useFilteredMods = (
     userWot,
     userWotLevel,
     muteLists.admin.authors,
+    muteLists.admin.hardBlockedAuthors,
     muteLists.admin.replaceableEvents,
+    muteLists.admin.hardBlockedEvents,
     muteLists.user.authors,
     muteLists.user.replaceableEvents,
     deletedModIds,

@@ -135,7 +135,7 @@ export const ProfileSettings = () => {
       name: formState.name,
       displayName: formState.displayName,
       bio: formState.bio,
-      picture: formState.picture,
+      image: formState.picture,
       banner: formState.banner,
       nip05: formState.nip05,
       lud16: formState.lud16,

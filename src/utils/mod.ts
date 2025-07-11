@@ -162,7 +162,7 @@ export const initializeFormState = (
   screenshotsUrls: existingModData?.screenshotsUrls || [''],
   tags: existingModData?.tags.join(',') || '',
   lTags: existingModData ? _.clone(existingModData.lTags) : [],
-  LTags: existingModData ? _.clone(existingModData.lTags) : [],
+  LTags: existingModData ? _.clone(existingModData.LTags) : [],
   downloadUrls: existingModData
     ? _.cloneDeep(existingModData.downloadUrls)
     : [

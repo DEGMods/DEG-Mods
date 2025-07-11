@@ -58,8 +58,12 @@ export const ModsPageWithRelays = () => {
 
   useEffect(() => {
     setIsFetching(true)
+    console.log('[ModsPageWithRelays] Starting initial mod fetch...')
     fetchMods({ source: filterOptions.source })
       .then((res) => {
+        console.log(
+          `[ModsPageWithRelays] Initial fetch returned ${res.length} mods`
+        )
         if (filterOptions.sort === SortBy.Latest) {
           res.sort((a, b) => b.published_at - a.published_at)
         } else if (filterOptions.sort === SortBy.Oldest) {
@@ -89,8 +93,17 @@ export const ModsPageWithRelays = () => {
           }
           return true
         })
+        setMods((existingMods) => {
+          const uniqueMods = [
+            ...existingMods,
+            ...filteredMods.filter(
+              (mod) =>
+                !existingMods.some((existingMod) => existingMod.id === mod.id)
+            )
+          ]
 
-        setMods(filteredMods)
+          return uniqueMods
+        })
       })
       .finally(() => {
         setIsFetching(false)
@@ -125,6 +138,9 @@ export const ModsPageWithRelays = () => {
   useEffect(() => {
     let sub: NDKSubscription
     if (lastMod) {
+      console.log(
+        `[ModsPageWithRelays] Setting up real-time subscription for mods after ${lastMod.id}`
+      )
       const filter: NDKFilter = {
         kinds: [NDKKind.Classified],
         '#t': [T_TAG_VALUE]
@@ -142,9 +158,15 @@ export const ModsPageWithRelays = () => {
         cacheUsage: NDKSubscriptionCacheUsage.PARALLEL
       })
       sub.on('event', (ndkEvent) => {
+        console.log(
+          `[ModsPageWithRelays] Received real-time mod event: ${ndkEvent.id}`
+        )
         setMods((prevMods) => {
           // Skip if not valid
           if (!isModDataComplete(ndkEvent)) {
+            console.log(
+              `[ModsPageWithRelays] Skipping incomplete mod: ${ndkEvent.id}`
+            )
             return prevMods
           }
 
@@ -158,7 +180,12 @@ export const ModsPageWithRelays = () => {
                 )
             )
 
-            if (!hasAllIncludedTags) return prevMods
+            if (!hasAllIncludedTags) {
+              console.log(
+                `[ModsPageWithRelays] Skipping mod ${ndkEvent.id} - missing required tags`
+              )
+              return prevMods
+            }
           }
 
           // Additional client-side filtering for exclude tags
@@ -172,7 +199,12 @@ export const ModsPageWithRelays = () => {
                     excludeTag.toLowerCase().trim()
                 )
             )
-            if (hasExcludedTag) return prevMods
+            if (hasExcludedTag) {
+              console.log(
+                `[ModsPageWithRelays] Skipping mod ${ndkEvent.id} - has excluded tag`
+              )
+              return prevMods
+            }
           }
 
           // Skip existing
@@ -183,16 +215,25 @@ export const ModsPageWithRelays = () => {
                 prevMods.findIndex((n) => n.id === ndkEvent.id) !== -1
             )
           ) {
+            console.log(
+              `[ModsPageWithRelays] Skipping duplicate mod: ${ndkEvent.id}`
+            )
             return prevMods
           }
           const newMod = extractModData(ndkEvent)
+          console.log(
+            `[ModsPageWithRelays] Adding new mod to list: ${ndkEvent.id} (${newMod.title})`
+          )
           return [...prevMods, newMod]
         })
       })
       sub.start()
     }
     return () => {
-      if (sub) sub.stop()
+      if (sub) {
+        console.log('[ModsPageWithRelays] Stopping real-time subscription')
+        sub.stop()
+      }
     }
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [
@@ -205,10 +246,14 @@ export const ModsPageWithRelays = () => {
   ])
 
   useEffect(() => {
+    console.log(
+      '[ModsPageWithRelays] Clearing mods list due to tag filter changes'
+    )
     setMods([])
   }, [tags.length, excludeTags.length])
 
   const handleLoadMore = useCallback(() => {
+    console.log('[ModsPageWithRelays] Loading more mods...')
     setIsFetching(true)
 
     const fetchModsOptions: FetchModsOptions = {
@@ -225,6 +270,9 @@ export const ModsPageWithRelays = () => {
 
     fetchMods(fetchModsOptions)
       .then((res) => {
+        console.log(
+          `[ModsPageWithRelays] Load more returned ${res.length} mods`
+        )
         setMods((prevMods) => {
           const newMods = res
           const filteredMods = newMods.filter((mod) => {
@@ -258,6 +306,9 @@ export const ModsPageWithRelays = () => {
 
           setIsLoadMoreVisible(newMods.length >= MOD_FILTER_LIMIT)
 
+          console.log(
+            `[ModsPageWithRelays] After load more: ${uniqueMods.length} total mods (added ${filteredMods.length} new)`
+          )
           return uniqueMods
         })
       })
@@ -274,6 +325,10 @@ export const ModsPageWithRelays = () => {
     nsfwList,
     muteLists,
     repostList
+  )
+
+  console.log(
+    `[ModsPageWithRelays] Rendering ${filteredModList.length} mods (from ${mods.length} total)`
   )
 
   return (

@@ -962,15 +962,19 @@ const UsersResult = ({
     const isOnlyBlocked = moderationFilter === ModeratedFilter.Only_Blocked
 
     if (isOnlyBlocked && isAdmin) {
-      filtered = filtered.filter((profile) =>
-        muteLists.admin.authors.includes(profile.pubkey as string)
+      filtered = filtered.filter(
+        (profile) =>
+          muteLists.admin.authors.includes(profile.pubkey as string) ||
+          muteLists.admin.hardBlockedAuthors.includes(profile.pubkey as string)
       )
     } else if (isUnmoderatedFully && isAdmin) {
       // Only apply filtering if the user is not an admin
       // or the admin has not selected "Unmoderated Fully"
     } else {
       filtered = filtered.filter(
-        (profile) => !muteLists.admin.authors.includes(profile.pubkey as string)
+        (profile) =>
+          !muteLists.admin.authors.includes(profile.pubkey as string) &&
+          !muteLists.admin.hardBlockedAuthors.includes(profile.pubkey as string)
       )
     }
 

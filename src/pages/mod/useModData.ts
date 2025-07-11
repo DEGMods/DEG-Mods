@@ -68,7 +68,9 @@ const useModData = (): ModPageLoaderResult => {
     latest: [],
     isAddedToNSFW: false,
     isBlocked: false,
-    isRepost: false
+    isRepost: false,
+    isHardBlocked: false,
+    hardBlockedType: undefined
   }
 
   // Set up the filters
@@ -210,8 +212,25 @@ const useModData = (): ModPageLoaderResult => {
   // Process mute lists
   if (muteLists) {
     if (result.mod && result.mod.aTag) {
-      // Show user or admin post warning if any mute list includes either post or author
+      // Check for hard blocks first
       if (
+        muteLists.admin.hardBlockedEvents.includes(result.mod.aTag) ||
+        muteLists.admin.hardBlockedAuthors.includes(result.mod.author)
+      ) {
+        result.isHardBlocked = true
+        result.postWarning = 'admin'
+
+        // Determine whether the post or user is blocked
+        if (muteLists.admin.hardBlockedEvents.includes(result.mod.aTag)) {
+          result.hardBlockedType = 'post'
+        } else if (
+          muteLists.admin.hardBlockedAuthors.includes(result.mod.author)
+        ) {
+          result.hardBlockedType = 'user'
+        }
+      }
+      // Show user or admin post warning if any mute list includes either post or author
+      else if (
         muteLists.user.replaceableEvents.includes(result.mod.aTag) ||
         muteLists.user.authors.includes(result.mod.author)
       ) {
@@ -242,7 +261,9 @@ const useModData = (): ModPageLoaderResult => {
       result.latest = result.latest.filter(
         (b) =>
           !muteLists.admin.authors.includes(b.author!) &&
-          !muteLists.admin.replaceableEvents.includes(b.aTag!)
+          !muteLists.admin.hardBlockedAuthors.includes(b.author!) &&
+          !muteLists.admin.replaceableEvents.includes(b.aTag!) &&
+          !muteLists.admin.hardBlockedEvents.includes(b.aTag!)
       )
     }
 

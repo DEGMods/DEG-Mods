@@ -68,6 +68,7 @@ import { LoadingSpinner } from 'components/LoadingSpinner'
 import { NDKEvent, NDKNip07Signer } from '@nostr-dev-kit/ndk'
 import { useDeletedBlogs } from 'hooks/useDeletedBlogs'
 import { ServerService } from 'controllers/server'
+import { HardBlockedContent } from 'components/HardBlockedContent'
 
 const MOD_REPORT_REASONS = [
   { label: 'Actually CP', key: 'actuallyCP' },
@@ -112,6 +113,12 @@ export const ModPage = () => {
     }
   }
 
+  // Check if the post is hard blocked
+  const { isHardBlocked, hardBlockedType } =
+    useLoaderData() as ModPageLoaderResult
+  const userState = useAppSelector((state) => state.user)
+  const isAdmin = userState.user?.npub === import.meta.env.VITE_REPORTING_NPUB
+
   return (
     <>
       <RouterLoadingSpinner />
@@ -136,11 +143,19 @@ export const ModPage = () => {
                       >
                         This mod post has been deleted by its author
                       </p>
+                    ) : isHardBlocked && !isAdmin ? (
+                      <HardBlockedContent hardBlockedType={hardBlockedType} />
                     ) : (
                       <>
                         <div className="IBMSMSplitMainBigSideSec">
                           <Game />
-                          {postWarning && <PostWarnings type={postWarning} />}
+                          {postWarning && (
+                            <PostWarnings
+                              type={postWarning}
+                              isHardBlocked={isHardBlocked}
+                              hardBlockedType={hardBlockedType}
+                            />
+                          )}
                           <Body {...mod} />
                           <Interactions
                             addressable={mod}
@@ -157,7 +172,13 @@ export const ModPage = () => {
                             <h4 className="IBMSMSMBSSDownloadsTitle">
                               Mod Download
                             </h4>
-                            {postWarning && <PostWarnings type={postWarning} />}
+                            {postWarning && (
+                              <PostWarnings
+                                type={postWarning}
+                                isHardBlocked={isHardBlocked}
+                                hardBlockedType={hardBlockedType}
+                              />
+                            )}
                             {mod.downloadUrls.length > 0 && (
                               <div className="IBMSMSMBSSDownloadsPrime">
                                 <Download {...mod.downloadUrls[0]} />
@@ -191,7 +212,7 @@ export const ModPage = () => {
                   <Spinner />
                 )}
               </div>
-              {typeof author !== 'undefined' && (
+              {typeof author !== 'undefined' && (!isHardBlocked || isAdmin) && (
                 <ProfileSection pubkey={author} />
               )}
               <Outlet key={nevent} />
@@ -212,8 +233,14 @@ export const ModPage = () => {
 const Game = () => {
   const { naddr } = useParams()
   const navigation = useNavigation()
-  const { mod, isAddedToNSFW, isBlocked, isRepost } =
-    useLoaderData() as ModPageLoaderResult
+  const {
+    mod,
+    isAddedToNSFW,
+    isBlocked,
+    isRepost,
+    isHardBlocked,
+    hardBlockedType
+  } = useLoaderData() as ModPageLoaderResult
   const userState = useAppSelector((state) => state.user)
   const { ndk } = useNDKContext()
   const isLoggedIn = userState.auth && userState.user?.pubkey !== 'undefined'
@@ -259,6 +286,21 @@ const Game = () => {
         {
           intent: 'repost',
           value: !isRepost
+        },
+        {
+          method: 'post',
+          encType: 'application/json'
+        }
+      )
+    }
+  }
+
+  const handleHardBlock = () => {
+    if (navigation.state === 'idle') {
+      submit(
+        {
+          intent: 'hardblock',
+          value: !(isHardBlocked && hardBlockedType === 'post')
         },
         {
           method: 'post',
@@ -414,30 +456,15 @@ const Game = () => {
                 fill="currentColor"
                 className="IBMSMSMSSS_Author_Top_Icon"
               >
-                <path d="M384 96L384 0h-112c-26.51 0-48 21.49-48 48v288c0 26.51 21.49 48 48 48H464c26.51 0 48-21.49 48-48V128h-95.1C398.4 128 384 113.6 384 96zM416 0v96h96L416 0zM192 352V128h-144c-26.51 0-48 21.49-48 48v288c0 26.51 21.49 48 48 48h192c26.51 0 48-21.49 48-48L288 416h-32C220.7 416 192 387.3 192 352z"></path>
+                <path d="M272.1 204.2v71.1c0 1.8-1.4 3.2-3.2 3.2h-11.4c-1.1 0-2.1-.6-2.6-1.3l-32.6-44v42.2c0 1.8-1.4 3.2-3.2 3.2h-11.4c-1.8 0-3.2-1.4-3.2-3.2v-71.1c0-1.8 1.4-3.2 3.2-3.2h11.4c1.1 0 2.1.6 2.6 1.3l32.6 44v-42.2c0-1.8 1.4-3.2 3.2-3.2h11.4c1.8-.1 3.2 1.3 3.2 3.2zm-82-3.2h-11.4c-1.8 0-3.2 1.4-3.2 3.2v71.1c0 1.8 1.4 3.2 3.2 3.2h11.4c1.8 0 3.2-1.4 3.2-3.2v-71.1c0-1.7-1.4-3.2-3.2-3.2zm-27.5 59.6h-31.1v-56.4c0-1.8-1.4-3.2-3.2-3.2h-11.4c-1.8 0-3.2 1.4-3.2 3.2v71.1c0 .9.3 1.6.9 2.2.6.5 1.3.9 2.2.9h45.7c1.8 0 3.2-1.4 3.2-3.2v-11.4c0-1.7-1.4-3.2-3.1-3.2zM332.1 201.6c0-11.3-9.1-20.4-20.4-20.4s-20.4 9.1-20.4 20.4v13.6c0 11.3 9.1 20.4 20.4 20.4s20.4-9.1 20.4-20.4v-13.6zm-20.4 7.2c-3.6 0-6.4 2.8-6.4 6.4v7.2c0 3.6 2.8 6.4 6.4 6.4s6.4-2.8 6.4-6.4v-7.2c0-3.6-2.8-6.4-6.4-6.4z"></path>
+                <path d="M256 32C132.3 32 32 132.3 32 256s100.3 224 224 224 224-100.3 224-224S379.7 32 256 32zm0 400c-97.2 0-176-78.8-176-176s78.8-176 176-176 176 78.8 176 176-78.8 176-176 176z"></path>
               </svg>
-              Copy URL
-            </a>
-            <a className="dropdown-item dropdownMainMenuItem" href="#">
-              <svg
-                xmlns="http://www.w3.org/2000/svg"
-                viewBox="0 0 512 512"
-                width="1em"
-                height="1em"
-                fill="currentColor"
-                className="IBMSMSMSSS_Author_Top_Icon"
-              >
-                <path d="M503.7 226.2l-176 151.1c-15.38 13.3-39.69 2.545-39.69-18.16V272.1C132.9 274.3 66.06 312.8 111.4 457.8c5.031 16.09-14.41 28.56-28.06 18.62C39.59 444.6 0 383.8 0 322.3c0-152.2 127.4-184.4 288-186.3V56.02c0-20.67 24.28-31.46 39.69-18.16l176 151.1C514.8 199.4 514.8 216.6 503.7 226.2z"></path>
-              </svg>
-              Share
+              Copy Link
             </a>
             {isLoggedIn && (
               <a
                 className="dropdown-item dropdownMainMenuItem"
-                id="reportPost"
-                onClick={() => {
-                  setShowReportPopUp(Date.now())
-                }}
+                onClick={() => setShowReportPopUp(Date.now())}
               >
                 <svg
                   xmlns="http://www.w3.org/2000/svg"
@@ -501,6 +528,26 @@ const Game = () => {
                     <path d="M323.5 51.25C302.8 70.5 284 90.75 267.4 111.1C240.1 73.62 206.2 35.5 168 0C69.75 91.12 0 210 0 281.6C0 408.9 100.2 512 224 512s224-103.1 224-230.4C448 228.4 396 118.5 323.5 51.25zM304.1 391.9C282.4 407 255.8 416 226.9 416c-72.13 0-130.9-47.73-130.9-125.2c0-38.63 24.24-72.64 65.13-83.3c10.14-2.656 19.94 4.78 19.94 15.27c0 6.941-4.469 13.16-11.16 15.19c-17.5 4.578-34.41 23.94-34.41 52.84c0 50.81 39.31 94.81 91.41 94.81c24.66 0 45.22-6.5 63.19-18.75c11.75-8 27.91 3.469 23.91 16.69C314.6 384.7 309.8 388.4 304.1 391.9z"></path>
                   </svg>
                   {isRepost ? 'Un-mark' : 'Mark'} as Repost
+                </a>
+                <a
+                  className="dropdown-item dropdownMainMenuItem"
+                  onClick={handleHardBlock}
+                  style={{ color: 'rgba(255, 70, 70, 0.8)' }}
+                >
+                  <svg
+                    xmlns="http://www.w3.org/2000/svg"
+                    viewBox="0 0 512 512"
+                    width="1em"
+                    height="1em"
+                    fill="currentColor"
+                    className="IBMSMSMSSS_Author_Top_Icon"
+                  >
+                    <path d="M256 0C114.6 0 0 114.6 0 256s114.6 256 256 256s256-114.6 256-256S397.4 0 256 0zM256 464c-114.7 0-208-93.31-208-208S141.3 48 256 48s208 93.31 208 208S370.7 464 256 464zM256 304c13.25 0 24-10.75 24-24v-128C280 138.8 269.3 128 256 128S232 138.8 232 152v128C232 293.3 242.8 304 256 304zM256 337.1c-17.36 0-31.44 14.08-31.44 31.44C224.6 385.9 238.6 400 256 400s31.44-14.08 31.44-31.44C287.4 351.2 273.4 337.1 256 337.1z"></path>
+                  </svg>
+                  {isHardBlocked && hardBlockedType === 'post'
+                    ? 'Hard Unblock'
+                    : 'Hard Block'}{' '}
+                  Post
                 </a>
               </>
             )}

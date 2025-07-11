@@ -97,7 +97,9 @@ export const blogRouteLoader =
         event: undefined,
         latest: [],
         isAddedToNSFW: false,
-        isBlocked: false
+        isBlocked: false,
+        isHardBlocked: false,
+        hardBlockedType: undefined
       }
 
       // Check the blog event result
@@ -143,8 +145,37 @@ export const blogRouteLoader =
       if (muteLists.status === 'fulfilled' && muteLists.value) {
         if (muteLists && muteLists.value) {
           if (result.blog && result.blog.aTag) {
-            // Show user or admin post warning if any mute list includes either post or author
+            // Check for hard blocks first
             if (
+              muteLists.value.admin.hardBlockedEvents.includes(
+                result.blog.aTag
+              ) ||
+              (result.blog.author &&
+                muteLists.value.admin.hardBlockedAuthors.includes(
+                  result.blog.author
+                ))
+            ) {
+              result.isHardBlocked = true
+              result.postWarning = 'admin'
+
+              // Determine whether the post or user is blocked
+              if (
+                muteLists.value.admin.hardBlockedEvents.includes(
+                  result.blog.aTag
+                )
+              ) {
+                result.hardBlockedType = 'post'
+              } else if (
+                result.blog.author &&
+                muteLists.value.admin.hardBlockedAuthors.includes(
+                  result.blog.author
+                )
+              ) {
+                result.hardBlockedType = 'user'
+              }
+            }
+            // Show user or admin post warning if any mute list includes either post or author
+            else if (
               muteLists.value.user.replaceableEvents.includes(
                 result.blog.aTag
               ) ||
@@ -165,7 +196,12 @@ export const blogRouteLoader =
             }
 
             if (
-              muteLists.value.user.replaceableEvents.includes(result.blog.aTag)
+              muteLists.value.user.replaceableEvents.includes(
+                result.blog.aTag
+              ) &&
+              !muteLists.value.admin.hardBlockedEvents.includes(
+                result.blog.aTag
+              )
             ) {
               result.isBlocked = true
             }

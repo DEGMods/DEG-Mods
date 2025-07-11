@@ -75,7 +75,9 @@ export const useFilteredBlogs = (
       filtered = filtered.filter(
         (blog) =>
           muteLists.admin.authors.includes(blog.author) ||
-          muteLists.admin.replaceableEvents.includes(blog.naddr)
+          muteLists.admin.replaceableEvents.includes(blog.naddr) ||
+          muteLists.admin.hardBlockedAuthors.includes(blog.author) ||
+          muteLists.admin.hardBlockedEvents.includes(blog.naddr)
       )
     } else if (isUnmoderatedFully && (isAdmin || isOwner)) {
       // Only apply filtering if the user is not an admin or the admin has not selected "Unmoderated Fully"
@@ -84,7 +86,9 @@ export const useFilteredBlogs = (
       filtered = filtered.filter(
         (blog) =>
           !muteLists.admin.authors.includes(blog.author) &&
-          !muteLists.admin.replaceableEvents.includes(blog.naddr)
+          !muteLists.admin.replaceableEvents.includes(blog.naddr) &&
+          !muteLists.admin.hardBlockedAuthors.includes(blog.author) &&
+          !muteLists.admin.hardBlockedEvents.includes(blog.naddr)
       )
     }
 
@@ -114,6 +118,8 @@ export const useFilteredBlogs = (
     nsfwList,
     muteLists.admin.authors,
     muteLists.admin.replaceableEvents,
+    muteLists.admin.hardBlockedAuthors,
+    muteLists.admin.hardBlockedEvents,
     muteLists.user.authors,
     muteLists.user.replaceableEvents,
     deletedBlogIds,

@@ -134,7 +134,9 @@ export const modRouteLoader =
         latest: [],
         isAddedToNSFW: false,
         isBlocked: false,
-        isRepost: false
+        isRepost: false,
+        isHardBlocked: false,
+        hardBlockedType: undefined
       }
 
       // Check the mod event result
@@ -178,8 +180,35 @@ export const modRouteLoader =
       if (muteLists.status === 'fulfilled' && muteLists.value) {
         if (muteLists && muteLists.value) {
           if (result.mod && result.mod.aTag) {
-            // Show user or admin post warning if any mute list includes either post or author
+            // Check for hard blocks first
             if (
+              muteLists.value.admin.hardBlockedEvents.includes(
+                result.mod.aTag
+              ) ||
+              muteLists.value.admin.hardBlockedAuthors.includes(
+                result.mod.author
+              )
+            ) {
+              result.isHardBlocked = true
+              result.postWarning = 'admin'
+
+              // Determine whether the post or user is blocked
+              if (
+                muteLists.value.admin.hardBlockedEvents.includes(
+                  result.mod.aTag
+                )
+              ) {
+                result.hardBlockedType = 'post'
+              } else if (
+                muteLists.value.admin.hardBlockedAuthors.includes(
+                  result.mod.author
+                )
+              ) {
+                result.hardBlockedType = 'user'
+              }
+            }
+            // Show user or admin post warning if any mute list includes either post or author
+            else if (
               muteLists.value.user.replaceableEvents.includes(
                 result.mod.aTag
               ) ||
@@ -199,7 +228,10 @@ export const modRouteLoader =
 
             // Check if user has blocked this profile
             if (
-              muteLists.value.user.replaceableEvents.includes(result.mod.aTag)
+              muteLists.value.user.replaceableEvents.includes(
+                result.mod.aTag
+              ) &&
+              !muteLists.value.admin.hardBlockedEvents.includes(result.mod.aTag)
             ) {
               result.isBlocked = true
             }
