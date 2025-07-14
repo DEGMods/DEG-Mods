@@ -28,6 +28,7 @@ import {
 } from '../utils'
 import { LoadingSpinner } from './LoadingSpinner'
 import { ZapPopUp } from './Zap'
+import { BioWithPopUp } from './BioPopop'
 import {
   NDKEvent,
   NDKFilter,
@@ -270,7 +271,7 @@ export const Profile = ({ pubkey }: ProfileProps) => {
           </div>
         </div>
         <div className="IBMSMSMSSS_Author_Top_Details">
-          <p className="IBMSMSMSSS_Author_Top_Bio">{about}</p>
+          <BioWithPopUp bio={about} displayName={displayName} />
           <div
             id="OwnerFollowLogin"
             className="IBMSMSMSSS_Author_Top_NostrLinks"
