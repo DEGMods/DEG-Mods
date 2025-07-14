@@ -1,5 +1,5 @@
-import { useAppSelector, useLocalStorage } from 'hooks'
-import React from 'react'
+import { useAppSelector, useLocalStorage, useModerationSettings } from 'hooks'
+import React, { useEffect } from 'react'
 import {
   AuthorFilterEnum,
   CommentsSortBy,
@@ -12,10 +12,40 @@ import { DEFAULT_COMMENT_FILTER_OPTIONS, DEFAULT_FILTER_OPTIONS } from 'utils'
 
 export const Filter = React.memo(() => {
   const userState = useAppSelector((state) => state.user)
+  const { enhancedTrust } = useModerationSettings()
   const [filterOptions, setFilterOptions] = useLocalStorage<FilterOptions>(
     'filter',
     DEFAULT_FILTER_OPTIONS
   )
+
+  useEffect(() => {
+    if (
+      !enhancedTrust &&
+      (filterOptions.wot === WOTFilterOptions.None ||
+        filterOptions.wot === WOTFilterOptions.Mine_Only ||
+        filterOptions.wot === WOTFilterOptions.Exclude)
+    ) {
+      setFilterOptions((prev) => ({
+        ...prev,
+        wot: WOTFilterOptions.Site_And_Mine
+      }))
+    }
+  }, [enhancedTrust, filterOptions.wot, setFilterOptions])
+
+  useEffect(() => {
+    if (
+      !userState.auth &&
+      (filterOptions.wot === WOTFilterOptions.Mine_Only ||
+        filterOptions.wot === WOTFilterOptions.None ||
+        filterOptions.wot === WOTFilterOptions.Exclude)
+    ) {
+      setFilterOptions((prev) => ({
+        ...prev,
+        wot: WOTFilterOptions.Site_And_Mine
+      }))
+    }
+  }, [userState.auth, filterOptions.wot, setFilterOptions])
+
   const [commentFilterOptions, setCommentFilterOptions] =
     useLocalStorage<CommentsFilterOptions>(
       'comment-filter',
@@ -109,15 +139,23 @@ export const Filter = React.memo(() => {
                 return null
               }
 
-              // when logged in user not admin
               if (
                 item === WOTFilterOptions.None ||
-                item === WOTFilterOptions.Mine_Only ||
-                item === WOTFilterOptions.Exclude
+                item === WOTFilterOptions.Mine_Only
               ) {
                 const isWoTNpub =
                   userState.user?.npub === import.meta.env.VITE_SITE_WOT_NPUB
 
+                // Show enhanced trust options if user is logged in and has enhanced trust enabled
+                if (!userState.auth || !isWoTNpub || !enhancedTrust) return null
+              }
+
+              // when logged in user not admin
+              if (item === WOTFilterOptions.Exclude) {
+                const isWoTNpub =
+                  userState.user?.npub === import.meta.env.VITE_SITE_WOT_NPUB
+
+                // Show enhanced trust options if user has enhanced trust enabled or is admin
                 if (!isWoTNpub) return null
               }
 
@@ -151,22 +189,20 @@ export const Filter = React.memo(() => {
           </button>
 
           <div className="dropdown-menu dropdownMainMenu">
-            {Object.values(NSFWFilter).map((item) => {
-              return (
-                <div
-                  key={`nsfw-${item}`}
-                  className="dropdown-item dropdownMainMenuItem"
-                  onClick={() =>
-                    handleSetFilterOptions({
-                      ...commentFilterOptions,
-                      nsfw: item
-                    })
-                  }
-                >
-                  {item}
-                </div>
-              )
-            })}
+            {Object.values(NSFWFilter).map((item) => (
+              <div
+                key={`nsfw-${item}`}
+                className="dropdown-item dropdownMainMenuItem"
+                onClick={() =>
+                  handleSetFilterOptions({
+                    ...commentFilterOptions,
+                    nsfw: item
+                  })
+                }
+              >
+                {item}
+              </div>
+            ))}
           </div>
         </div>
       </div>

@@ -1,5 +1,5 @@
-import { useAppSelector, useLocalStorage } from 'hooks'
-import React from 'react'
+import { useAppSelector, useLocalStorage, useModerationSettings } from 'hooks'
+import React, { useEffect } from 'react'
 import { FilterOptions, ModeratedFilter, SortBy } from 'types'
 import { DEFAULT_FILTER_OPTIONS } from 'utils'
 import { Dropdown } from './Dropdown'
@@ -15,10 +15,35 @@ type Props = {
 export const BlogsFilter = React.memo(
   ({ author, filterKey = 'filter-blog' }: Props) => {
     const userState = useAppSelector((state) => state.user)
+    const { enhancedModeration } = useModerationSettings()
     const [filterOptions, setFilterOptions] = useLocalStorage<FilterOptions>(
       filterKey,
       DEFAULT_FILTER_OPTIONS
     )
+
+    useEffect(() => {
+      if (
+        !enhancedModeration &&
+        filterOptions.moderated === ModeratedFilter.Unmoderated_Fully
+      ) {
+        setFilterOptions((prev) => ({
+          ...prev,
+          moderated: ModeratedFilter.Moderated
+        }))
+      }
+    }, [enhancedModeration, filterOptions.moderated, setFilterOptions])
+
+    useEffect(() => {
+      if (
+        !userState.auth &&
+        filterOptions.moderated === ModeratedFilter.Unmoderated_Fully
+      ) {
+        setFilterOptions((prev) => ({
+          ...prev,
+          moderated: ModeratedFilter.Moderated
+        }))
+      }
+    }, [userState.auth, filterOptions.moderated, setFilterOptions])
 
     return (
       <>
@@ -50,7 +75,12 @@ export const BlogsFilter = React.memo(
               const isOwnProfile =
                 author && userState.auth && userState.user?.pubkey === author
 
-              if (!(isAdmin || isOwnProfile)) return null
+              // Show Unmoderated_Fully if user is logged in and has enhanced moderation enabled or is admin/own profile
+              if (
+                !userState.auth ||
+                !(isAdmin || isOwnProfile || enhancedModeration)
+              )
+                return null
             }
 
             if (item === ModeratedFilter.Only_Blocked && !isAdmin) {

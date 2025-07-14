@@ -40,6 +40,7 @@ import { RelaySettings } from 'pages/settings/relay'
 import { PreferencesSetting } from 'pages/settings/preference'
 import { AdminSetting } from 'pages/settings/admin'
 import { ServerSetting } from 'pages/settings/server'
+import { ModerationSetting } from 'pages/settings/moderation'
 
 export const appRoutes = {
   home: '/',
@@ -63,6 +64,7 @@ export const appRoutes = {
   settingsPreferences: '/settings/preferences',
   settingsServer: '/settings/server',
   settingsAdmin: '/settings/admin',
+  settingsModeration: '/settings/moderation',
   profile: '/profile/:nprofile?',
   feed: '/feed',
   note: '/feed/:note',
@@ -211,6 +213,10 @@ export const routerWithNdkContext = (context: NDKContextType) =>
             {
               path: appRoutes.settingsAdmin,
               element: <AdminSetting />
+            },
+            {
+              path: appRoutes.settingsModeration,
+              element: <ModerationSetting />
             }
           ]
         },

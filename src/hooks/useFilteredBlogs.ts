@@ -1,8 +1,8 @@
 import { useMemo } from 'react'
 import { IUserState } from 'store/reducers/user'
 import {
-  FilterOptions,
   BlogCardDetails,
+  FilterOptions,
   ModeratedFilter,
   MuteLists,
   NSFWFilter,
@@ -10,6 +10,7 @@ import {
 } from 'types'
 import { useDeletedBlogs } from './useDeletedBlogs'
 import { useLoadingTimeout } from './useLoadingTimeout'
+import { useModerationSettings } from './useModerationSettings'
 
 export const useFilteredBlogs = (
   blogs: BlogCardDetails[],
@@ -25,44 +26,43 @@ export const useFilteredBlogs = (
   const { deletedBlogIds, loading: checkingDeletedBlogs } =
     useDeletedBlogs(blogs)
   const shouldBlockBlogs = useLoadingTimeout(checkingDeletedBlogs)
+  const { enhancedModeration } = useModerationSettings()
 
   return useMemo(() => {
     if (shouldBlockBlogs) {
       return []
     }
 
-    // Filter out deleted mods
-    const nonDeletedBlogs = blogs.filter((blog) => !deletedBlogIds.has(blog.id))
+    // Filter out deleted blog posts
+    let filtered = blogs.filter((blog) => !deletedBlogIds.has(blog.id))
 
-    const nsfwFilter = (blogs: BlogCardDetails[]) => {
-      // Add nsfw tag to blogs included in nsfwList
-      if (filterOptions.nsfw !== NSFWFilter.Hide_NSFW) {
-        blogs = blogs.map((blog) => {
-          return !blog.nsfw && nsfwList.includes(blog.naddr)
-            ? { ...blog, nsfw: true }
-            : blog
-        })
-      }
-
-      // Determine the filtering logic based on the NSFW filter option
-      switch (filterOptions.nsfw) {
-        case NSFWFilter.Hide_NSFW:
-          // If 'Hide_NSFW' is selected, filter out NSFW mods
-          return blogs.filter(
-            (blog) => !blog.nsfw && !nsfwList.includes(blog.naddr)
-          )
-        case NSFWFilter.Show_NSFW:
-          // If 'Show_NSFW' is selected, return all blogs (no filtering)
-          return blogs
-        case NSFWFilter.Only_NSFW:
-          // If 'Only_NSFW' is selected, filter to show only NSFW mods
-          return blogs.filter(
-            (blog) => blog.nsfw || nsfwList.includes(blog.naddr)
-          )
-      }
+    // Add nsfw tag to blogs included in nsfwList
+    if (filterOptions.nsfw !== NSFWFilter.Hide_NSFW) {
+      filtered = filtered.map((blog) => {
+        return !blog.nsfw && nsfwList.includes(blog.naddr)
+          ? { ...blog, nsfw: true }
+          : blog
+      })
     }
 
-    let filtered = nsfwFilter(nonDeletedBlogs)
+    // Determine the filtering logic based on the NSFW filter option
+    switch (filterOptions.nsfw) {
+      case NSFWFilter.Hide_NSFW:
+        // If 'Hide_NSFW' is selected, filter out NSFW blogs
+        filtered = filtered.filter(
+          (blog) => !blog.nsfw && !nsfwList.includes(blog.naddr)
+        )
+        break
+      case NSFWFilter.Show_NSFW:
+        // If 'Show_NSFW' is selected, return all blogs (no filtering)
+        break
+      case NSFWFilter.Only_NSFW:
+        // If 'Only_NSFW' is selected, filter to show only NSFW blogs
+        filtered = filtered.filter(
+          (blog) => blog.nsfw || nsfwList.includes(blog.naddr)
+        )
+        break
+    }
 
     const isAdmin = userState.user?.npub === import.meta.env.VITE_REPORTING_NPUB
     const isOwner = userState.user?.pubkey === author
@@ -79,9 +79,12 @@ export const useFilteredBlogs = (
           muteLists.admin.hardBlockedAuthors.includes(blog.author) ||
           muteLists.admin.hardBlockedEvents.includes(blog.naddr)
       )
-    } else if (isUnmoderatedFully && (isAdmin || isOwner)) {
+    } else if (
+      isUnmoderatedFully &&
+      (isAdmin || isOwner || enhancedModeration)
+    ) {
+      // Allow "Unmoderated Fully" when author visits own profile or has enhanced moderation enabled
       // Only apply filtering if the user is not an admin or the admin has not selected "Unmoderated Fully"
-      // Allow "Unmoderated Fully" when author visits own profile
     } else {
       filtered = filtered.filter(
         (blog) =>
@@ -123,6 +126,7 @@ export const useFilteredBlogs = (
     muteLists.user.authors,
     muteLists.user.replaceableEvents,
     deletedBlogIds,
-    shouldBlockBlogs
+    shouldBlockBlogs,
+    enhancedModeration
   ])
 }

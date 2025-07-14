@@ -10,7 +10,8 @@ import {
   useAppSelector,
   useServer,
   useDeletedBlogs,
-  useLoadingTimeout
+  useLoadingTimeout,
+  useModerationSettings
 } from 'hooks'
 import { useState, useMemo, useEffect, useCallback, useRef } from 'react'
 import { useLoaderData, useNavigation } from 'react-router-dom'
@@ -32,6 +33,7 @@ export const ProfileTabBlogs = () => {
   const [filterOptions] = useLocalStorage('filter-blog', DEFAULT_FILTER_OPTIONS)
   const [isLoading, setIsLoading] = useState(true)
   const userState = useAppSelector((state) => state.user)
+  const { enhancedModeration } = useModerationSettings()
   const blogfilter: NDKFilter = useMemo(() => {
     const filter: NDKFilter = {
       authors: [profilePubkey],
@@ -119,6 +121,7 @@ export const ProfileTabBlogs = () => {
   const [page, setPage] = useState(1)
   const [hasMore, setHasMore] = useState(false)
   const [blogs, setBlogs] = useState<Partial<BlogCardDetails>[]>([])
+
   useEffect(() => {
     if (!profilePubkey || !isRelayFallbackActive) return
 
@@ -227,9 +230,12 @@ export const ProfileTabBlogs = () => {
           muteLists.admin.replaceableEvents.includes(b.aTag!) ||
           muteLists.admin.hardBlockedEvents.includes(b.aTag!)
       )
-    } else if (isUnmoderatedFully && (isAdmin || isOwner)) {
+    } else if (
+      isUnmoderatedFully &&
+      (isAdmin || isOwner || enhancedModeration)
+    ) {
+      // Allow "Unmoderated Fully" when author visits own profile or has enhanced moderation enabled
       // Only apply filtering if the user is not an admin or the admin has not selected "Unmoderated Fully"
-      // Allow "Unmoderated Fully" when author visits own profile
     } else {
       _blogs = _blogs.filter(
         (b) =>
@@ -275,7 +281,8 @@ export const ProfileTabBlogs = () => {
     userState.user?.npub,
     userState.user?.pubkey,
     deletedBlogIds,
-    shouldBlock
+    shouldBlock,
+    enhancedModeration
   ])
 
   return (

@@ -503,8 +503,6 @@ export const NDKContextProvider = ({ children }: { children: ReactNode }) => {
         '#d': [HARD_BLOCK_TAG]
       })
 
-      console.log('hardBlockListEvent', hardBlockListEvent)
-
       if (hardBlockListEvent) {
         const list = NDKList.from(hardBlockListEvent)
         list.items.forEach((item) => {

@@ -1,5 +1,5 @@
-import { useAppSelector, useLocalStorage } from 'hooks'
-import React, { PropsWithChildren } from 'react'
+import { useAppSelector, useLocalStorage, useModerationSettings } from 'hooks'
+import React, { PropsWithChildren, useEffect } from 'react'
 import {
   FilterOptions,
   SortBy,
@@ -21,10 +21,63 @@ type Props = {
 export const ModFilter = React.memo(
   ({ author, filterKey = 'filter', children }: PropsWithChildren<Props>) => {
     const userState = useAppSelector((state) => state.user)
+    const { enhancedModeration, enhancedTrust } = useModerationSettings()
     const [filterOptions, setFilterOptions] = useLocalStorage<FilterOptions>(
       filterKey,
       DEFAULT_FILTER_OPTIONS
     )
+
+    useEffect(() => {
+      if (
+        !enhancedModeration &&
+        filterOptions.moderated === ModeratedFilter.Unmoderated_Fully
+      ) {
+        setFilterOptions((prev) => ({
+          ...prev,
+          moderated: ModeratedFilter.Moderated
+        }))
+      }
+    }, [enhancedModeration, filterOptions.moderated, setFilterOptions])
+
+    useEffect(() => {
+      if (
+        !userState.auth &&
+        filterOptions.moderated === ModeratedFilter.Unmoderated_Fully
+      ) {
+        setFilterOptions((prev) => ({
+          ...prev,
+          moderated: ModeratedFilter.Moderated
+        }))
+      }
+    }, [userState.auth, filterOptions.moderated, setFilterOptions])
+
+    useEffect(() => {
+      if (
+        !enhancedTrust &&
+        (filterOptions.wot === WOTFilterOptions.None ||
+          filterOptions.wot === WOTFilterOptions.Mine_Only ||
+          filterOptions.wot === WOTFilterOptions.Exclude)
+      ) {
+        setFilterOptions((prev) => ({
+          ...prev,
+          wot: WOTFilterOptions.Site_And_Mine
+        }))
+      }
+    }, [enhancedTrust, filterOptions.wot, setFilterOptions])
+
+    useEffect(() => {
+      if (
+        !userState.auth &&
+        (filterOptions.wot === WOTFilterOptions.Mine_Only ||
+          filterOptions.wot === WOTFilterOptions.None ||
+          filterOptions.wot === WOTFilterOptions.Exclude)
+      ) {
+        setFilterOptions((prev) => ({
+          ...prev,
+          wot: WOTFilterOptions.Site_And_Mine
+        }))
+      }
+    }, [userState.auth, filterOptions.wot, setFilterOptions])
 
     return (
       <>
@@ -59,7 +112,12 @@ export const ModFilter = React.memo(
               const isOwnProfile =
                 author && userState.auth && userState.user?.pubkey === author
 
-              if (!(isAdmin || isOwnProfile)) return null
+              // Show Unmoderated_Fully if user is logged in and has enhanced moderation enabled or is admin/own profile
+              if (
+                !userState.auth ||
+                !(isAdmin || isOwnProfile || enhancedModeration)
+              )
+                return null
             }
 
             return (
@@ -86,11 +144,9 @@ export const ModFilter = React.memo(
               return null
             }
 
-            // when logged in user not admin
             if (
               item === WOTFilterOptions.None ||
-              item === WOTFilterOptions.Mine_Only ||
-              item === WOTFilterOptions.Exclude
+              item === WOTFilterOptions.Mine_Only
             ) {
               const isWoTNpub =
                 userState.user?.npub === import.meta.env.VITE_SITE_WOT_NPUB
@@ -98,6 +154,23 @@ export const ModFilter = React.memo(
               const isOwnProfile =
                 author && userState.auth && userState.user?.pubkey === author
 
+              // Show enhanced trust options if user is logged in and has enhanced trust enabled or is admin/own profile
+              if (
+                !userState.auth ||
+                !(isWoTNpub || isOwnProfile || enhancedTrust)
+              )
+                return null
+            }
+
+            // when logged in user not admin
+            if (item === WOTFilterOptions.Exclude) {
+              const isWoTNpub =
+                userState.user?.npub === import.meta.env.VITE_SITE_WOT_NPUB
+
+              const isOwnProfile =
+                author && userState.auth && userState.user?.pubkey === author
+
+              // Show enhanced trust options if user has enhanced trust enabled or is admin/own profile
               if (!(isWoTNpub || isOwnProfile)) return null
             }
 

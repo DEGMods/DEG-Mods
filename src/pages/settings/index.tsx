@@ -1,5 +1,6 @@
 import {
   AdminSVG,
+  ModerationSVG,
   PreferenceSVG,
   ProfileSVG,
   RelaySVG,
@@ -76,6 +77,11 @@ const SettingTabs = () => {
       path: appRoutes.settingsServer,
       label: 'Server',
       icon: <ServerSVG />
+    },
+    {
+      path: appRoutes.settingsModeration,
+      label: 'Moderation',
+      icon: <ModerationSVG />
     }
   ]
 

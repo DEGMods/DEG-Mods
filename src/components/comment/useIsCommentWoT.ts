@@ -2,6 +2,7 @@ import { useCallback } from 'react'
 import { useAppSelector } from 'hooks'
 import { CommentEvent, CommentsFilterOptions, WOTFilterOptions } from 'types'
 import { isInWoT } from 'utils/wot'
+import { useModerationSettings } from 'hooks'
 
 /**
  * Utility hook to determine if a comment is within the user's Web of Trust (WoT)
@@ -17,6 +18,7 @@ export const useIsCommentWoT = (
     (state) => state.wot
   )
   const userState = useAppSelector((state) => state.user)
+  const { enhancedTrust } = useModerationSettings()
 
   const isCommentWot = useCallback(
     (comment: CommentEvent) => {
@@ -35,21 +37,20 @@ export const useIsCommentWoT = (
 
       switch (filterOptions.wot) {
         case WOTFilterOptions.None:
-          // Only admins (and own profile) can choose None, use siteWoT for others
-          return isWoTNpub || isOwnProfile
+          // Only admins (and own profile) or users with enhanced trust can choose None
+          return isWoTNpub || isOwnProfile || enhancedTrust
             ? true
             : isInWoT(siteWot, siteWotLevel, comment.event.pubkey)
         case WOTFilterOptions.Exclude:
-          // Only admins (and own profile) can choose Exlude, use siteWoT for others
-          // Exlude returns the mods not in the site's WoT
+          // Only admins (and own profile) or users with enhanced trust can choose Exclude
           return isWoTNpub || isOwnProfile
             ? !isInWoT(siteWot, siteWotLevel, comment.event.pubkey)
             : isInWoT(siteWot, siteWotLevel, comment.event.pubkey)
         case WOTFilterOptions.Site_Only:
           return isInWoT(siteWot, siteWotLevel, comment.event.pubkey)
         case WOTFilterOptions.Mine_Only:
-          // Only admins (and own profile) can choose Mine_Only, use siteWoT for others
-          return isWoTNpub || isOwnProfile
+          // Only admins (and own profile) or users with enhanced trust can choose Mine_Only
+          return isWoTNpub || isOwnProfile || enhancedTrust
             ? isInWoT(userWot, userWotLevel, comment.event.pubkey)
             : isInWoT(siteWot, siteWotLevel, comment.event.pubkey)
         case WOTFilterOptions.Site_And_Mine:
@@ -67,7 +68,8 @@ export const useIsCommentWoT = (
       siteWot,
       siteWotLevel,
       userWot,
-      userWotLevel
+      userWotLevel,
+      enhancedTrust
     ]
   )
 

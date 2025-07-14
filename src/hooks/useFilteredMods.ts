@@ -14,6 +14,7 @@ import { useAppSelector } from './redux'
 import { isInWoT } from 'utils/wot'
 import { useDeletedMods } from './useDeletedMods'
 import { useLoadingTimeout } from './useLoadingTimeout'
+import { useModerationSettings } from './useModerationSettings'
 
 export const useFilteredMods = (
   mods: ModDetails[],
@@ -30,6 +31,7 @@ export const useFilteredMods = (
   const { siteWot, siteWotLevel, userWot, userWotLevel } = useAppSelector(
     (state) => state.wot
   )
+  const { enhancedModeration, enhancedTrust } = useModerationSettings()
   const { deletedModIds, loading: checkingDeletedMods } = useDeletedMods(mods)
   const shouldBlock = useLoadingTimeout(checkingDeletedMods)
 
@@ -104,13 +106,12 @@ export const useFilteredMods = (
 
       switch (filterOptions.wot) {
         case WOTFilterOptions.None:
-          // Only admins (and own profile) can choose None, use siteWoT for others
-          return isWoTNpub || isOwnProfile
+          // Only admins (and own profile) or users with enhanced trust can choose None
+          return isWoTNpub || isOwnProfile || enhancedTrust
             ? mods
             : mods.filter((mod) => isInWoT(siteWot, siteWotLevel, mod.author))
         case WOTFilterOptions.Exclude:
-          // Only admins (and own profile) can choose Exlude, use siteWoT for others
-          // Exlude returns the mods not in the site's WoT
+          // Only admins (and own profile) or users with enhanced trust can choose Exclude
           return isWoTNpub || isOwnProfile
             ? mods.filter((mod) => !isInWoT(siteWot, siteWotLevel, mod.author))
             : mods.filter((mod) => isInWoT(siteWot, siteWotLevel, mod.author))
@@ -119,8 +120,8 @@ export const useFilteredMods = (
             isInWoT(siteWot, siteWotLevel, mod.author)
           )
         case WOTFilterOptions.Mine_Only:
-          // Only admins (and own profile) can choose Mine_Only, use siteWoT for others
-          return isWoTNpub || isOwnProfile
+          // Only admins (and own profile) or users with enhanced trust can choose Mine_Only
+          return isWoTNpub || isOwnProfile || enhancedTrust
             ? mods.filter((mod) => isInWoT(userWot, userWotLevel, mod.author))
             : mods.filter((mod) => isInWoT(siteWot, siteWotLevel, mod.author))
         case WOTFilterOptions.Site_And_Mine:
@@ -151,9 +152,12 @@ export const useFilteredMods = (
           muteLists.admin.hardBlockedAuthors.includes(mod.author) ||
           muteLists.admin.hardBlockedEvents.includes(mod.aTag)
       )
-    } else if (isUnmoderatedFully && (isAdmin || isOwner)) {
+    } else if (
+      isUnmoderatedFully &&
+      (isAdmin || isOwner || enhancedModeration)
+    ) {
+      // Allow "Unmoderated Fully" when author visits own profile or has enhanced moderation enabled
       // Only apply filtering if the user is not an admin or the admin has not selected "Unmoderated Fully"
-      // Allow "Unmoderated Fully" when author visits own profile
     } else {
       filtered = filtered.filter(
         (mod) =>
@@ -203,6 +207,8 @@ export const useFilteredMods = (
     muteLists.user.authors,
     muteLists.user.replaceableEvents,
     deletedModIds,
-    shouldBlock
+    shouldBlock,
+    enhancedModeration,
+    enhancedTrust
   ])
 }

@@ -32,7 +32,8 @@ import {
   useNDKContext,
   useNSFWList,
   useServer,
-  useUserWoTOverride
+  useUserWoTOverride,
+  useModerationSettings
 } from 'hooks'
 import React, { useCallback, useEffect, useMemo, useRef, useState } from 'react'
 import { useSearchParams } from 'react-router-dom'
@@ -193,6 +194,7 @@ const Filters = React.memo(() => {
   )
 
   const userState = useAppSelector((state) => state.user)
+  const { enhancedModeration } = useModerationSettings()
   const [searchParams, setSearchParams] = useSearchParams()
   const searchKind =
     (searchParams.get('kind') as SearchKindEnum) || SearchKindEnum.Mods
@@ -202,6 +204,30 @@ const Filters = React.memo(() => {
       replace: true
     })
   }
+
+  useEffect(() => {
+    if (
+      !enhancedModeration &&
+      filterOptions.moderated === ModeratedFilter.Unmoderated_Fully
+    ) {
+      setFilterOptions((prev) => ({
+        ...prev,
+        moderated: ModeratedFilter.Moderated
+      }))
+    }
+  }, [enhancedModeration, filterOptions.moderated, setFilterOptions])
+
+  useEffect(() => {
+    if (
+      !userState.auth &&
+      filterOptions.moderated === ModeratedFilter.Unmoderated_Fully
+    ) {
+      setFilterOptions((prev) => ({
+        ...prev,
+        moderated: ModeratedFilter.Moderated
+      }))
+    }
+  }, [userState.auth, filterOptions.moderated, setFilterOptions])
 
   return (
     <div className="IBMSecMain">
@@ -230,8 +256,10 @@ const Filters = React.memo(() => {
                     return null
                   }
 
-                  if (item === ModeratedFilter.Unmoderated_Fully && !isAdmin) {
-                    return null
+                  if (item === ModeratedFilter.Unmoderated_Fully) {
+                    // Show Unmoderated_Fully if user is logged in and has enhanced moderation enabled or is admin
+                    if (!userState.auth || !(isAdmin || enhancedModeration))
+                      return null
                   }
 
                   return (
@@ -883,8 +911,9 @@ const UsersResult = ({
   muteLists
 }: UsersResultProps) => {
   const { ndk } = useNDKContext()
-  const [profiles, setProfiles] = useState<NDKUserProfile[]>([])
   const userState = useAppSelector((state) => state.user)
+  const { enhancedModeration } = useModerationSettings()
+  const [profiles, setProfiles] = useState<NDKUserProfile[]>([])
 
   useEffect(() => {
     const normalizedSearchTerm = normalizeUserSearchString(searchTerm)
@@ -967,9 +996,9 @@ const UsersResult = ({
           muteLists.admin.authors.includes(profile.pubkey as string) ||
           muteLists.admin.hardBlockedAuthors.includes(profile.pubkey as string)
       )
-    } else if (isUnmoderatedFully && isAdmin) {
-      // Only apply filtering if the user is not an admin
-      // or the admin has not selected "Unmoderated Fully"
+    } else if (isUnmoderatedFully && (isAdmin || enhancedModeration)) {
+      // Allow "Unmoderated Fully" when user has enhanced moderation enabled or is admin
+      // Only apply filtering if the user is not an admin or the admin has not selected "Unmoderated Fully"
     } else {
       filtered = filtered.filter(
         (profile) =>
@@ -985,7 +1014,13 @@ const UsersResult = ({
     }
 
     return filtered
-  }, [userState.user?.npub, moderationFilter, profiles, muteLists])
+  }, [
+    userState.user?.npub,
+    moderationFilter,
+    profiles,
+    muteLists,
+    enhancedModeration
+  ])
   return (
     <>
       <div className="IBMSecMain IBMSMListWrapper">
