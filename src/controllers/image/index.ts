@@ -1,6 +1,7 @@
 import { DropzoneOptions } from 'react-dropzone'
 import { NostrCheckServer } from './nostrcheck-server'
 import { BaseError } from 'types'
+import { BlossomBandServer } from './blossomband-server'
 
 export interface MediaOperations {
   post: (file: File) => Promise<string>
@@ -10,7 +11,7 @@ export type MediaStrategy = Omit<MediaOperations, 'auth'>
 export interface MediaOption {
   name: string
   host: string
-  type: 'nostrcheck-server' | 'route96'
+  type: 'nostrcheck-server' | 'blossomband-server' | 'route96'
 }
 
 // nostr.build based dropzone options
@@ -22,11 +23,11 @@ export const MEDIA_DROPZONE_OPTIONS: DropzoneOptions = {
 }
 
 export const MEDIA_OPTIONS: MediaOption[] = [
-  // {
-  //   name: 'nostr.build',
-  //   host: 'https://nostr.build/',
-  //   type: 'nostrcheck-server'
-  // },
+  {
+    name: 'blossom.band',
+    host: 'https://blossom.band/',
+    type: 'blossomband-server'
+  },
   {
     name: 'nostrcheck.me',
     host: 'https://nostrcheck.me/',
@@ -61,6 +62,11 @@ export class ImageController implements MediaStrategy {
     switch (mediaOption.type) {
       case 'nostrcheck-server':
         strategy = new NostrCheckServer(mediaOption.host)
+        this.post = strategy.post
+        break
+
+      case 'blossomband-server':
+        strategy = new BlossomBandServer(mediaOption.host)
         this.post = strategy.post
         break
 

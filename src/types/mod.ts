@@ -65,7 +65,6 @@ export interface DownloadUrl {
   url: string
   title?: string
   hash: string
-  signatureKey: string
   malwareScanLink: string
   modVersion: string
   customNote: string

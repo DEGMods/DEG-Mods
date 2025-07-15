@@ -5,7 +5,6 @@ export const DownloadDetailsPopup = ({
   title,
   url,
   hash,
-  signatureKey,
   malwareScanLink,
   modVersion,
   customNote,
@@ -53,14 +52,6 @@ export const DownloadDetailsPopup = ({
                     </div>
                     <div className="IBMSMSMBSSDownloadsElementInsideAltTableRowCol">
                       <p>{hash}</p>
-                    </div>
-                  </div>
-                  <div className="IBMSMSMBSSDownloadsElementInsideAltTableRow">
-                    <div className="IBMSMSMBSSDownloadsElementInsideAltTableRowCol IBMSMSMBSSDownloadsElementInsideAltTableRowColFirst">
-                      <p>Signature from</p>
-                    </div>
-                    <div className="IBMSMSMBSSDownloadsElementInsideAltTableRowCol">
-                      <p>{signatureKey}</p>
                     </div>
                   </div>
                   <div className="IBMSMSMBSSDownloadsElementInsideAltTableRow">

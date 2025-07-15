@@ -170,7 +170,6 @@ export const initializeFormState = (
           title: '',
           url: '',
           hash: '',
-          signatureKey: '',
           malwareScanLink: '',
           modVersion: '',
           customNote: '',

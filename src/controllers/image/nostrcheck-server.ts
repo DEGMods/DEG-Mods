@@ -19,7 +19,7 @@ import { BaseError, handleError } from 'types'
 //     }
 // }
 
-interface Response {
+export interface Response {
   status: 'success' | string
   nip94_event?: {
     tags?: string[][]
@@ -44,24 +44,34 @@ export class NostrCheckServer implements MediaOperations {
     this.#url = url[url.length - 1] === '/' ? url : `${url}/`
   }
 
-  post = async (file: File) => {
-    const url = `${this.#url}${this.#media}`
-    const auth = await this.auth()
-    try {
-      const response = await axios.postForm<Response>(
-        url,
-        {
-          uploadType: 'media',
-          file: file
+  getMediaUrl = () => {
+    return `${this.#url}${this.#media}`
+  }
+
+  getResponse = async (url: string, auth: string, file: File) => {
+    const response = await axios.postForm<Response>(
+      url,
+      {
+        uploadType: 'media',
+        file: file
+      },
+      {
+        headers: {
+          Authorization: 'Nostr ' + auth,
+          'Content-Type': 'multipart/form-data'
         },
-        {
-          headers: {
-            Authorization: 'Nostr ' + auth,
-            'Content-Type': 'multipart/form-data'
-          },
-          responseType: 'json'
-        }
-      )
+        responseType: 'json'
+      }
+    )
+
+    return response
+  }
+
+  post = async (file: File) => {
+    const url = this.getMediaUrl()
+    const auth = await this.auth(file)
+    try {
+      const response = await this.getResponse(url, auth, file)
 
       if (response.data.status !== 'success') {
         throw new BaseError(HandledErrorType.NOSTR_CHECK_NO_SUCCESS, {
@@ -120,37 +130,43 @@ export class NostrCheckServer implements MediaOperations {
     }
   }
 
-  auth = async () => {
+  // eslint-disable-next-line @typescript-eslint/no-unused-vars
+  getUnsignedEvent = async (url: string, hexPubkey: string, _file: File) => {
+    const unsignedEvent: NostrEvent = {
+      content: '',
+      created_at: now(),
+      kind: NDKKind.HttpAuth,
+      pubkey: hexPubkey,
+      tags: [
+        ['u', url],
+        ['method', 'POST']
+      ]
+    }
+
+    return unsignedEvent
+  }
+
+  auth = async (file: File) => {
+    const url = this.getMediaUrl()
+
+    let hexPubkey: string | undefined
+    const userState = store.getState().user
+    if (userState.auth && userState.user?.pubkey) {
+      hexPubkey = userState.user.pubkey as string
+    } else {
+      try {
+        hexPubkey = (await window.nostr?.getPublicKey()) as string
+      } catch (error) {
+        log(true, LogType.Error, `Could not get pubkey`, error)
+      }
+    }
+
+    if (!hexPubkey) {
+      throw new BaseError(HandledErrorType.PUBKEY)
+    }
+
+    const unsignedEvent = await this.getUnsignedEvent(url, hexPubkey, file)
     try {
-      const url = `${this.#url}${this.#media}`
-
-      let hexPubkey: string | undefined
-      const userState = store.getState().user
-      if (userState.auth && userState.user?.pubkey) {
-        hexPubkey = userState.user.pubkey as string
-      } else {
-        try {
-          hexPubkey = (await window.nostr?.getPublicKey()) as string
-        } catch (error) {
-          log(true, LogType.Error, `Could not get pubkey`, error)
-        }
-      }
-
-      if (!hexPubkey) {
-        throw new BaseError(HandledErrorType.PUBKEY)
-      }
-
-      const unsignedEvent: NostrEvent = {
-        content: '',
-        created_at: now(),
-        kind: NDKKind.HttpAuth,
-        pubkey: hexPubkey,
-        tags: [
-          ['u', url],
-          ['method', 'POST']
-        ]
-      }
-
       const signedEvent = await window.nostr?.signEvent(unsignedEvent)
       return btoa(JSON.stringify(signedEvent))
     } catch (error) {

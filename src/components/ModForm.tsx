@@ -148,7 +148,6 @@ export const ModForm = () => {
         {
           url: '',
           hash: '',
-          signatureKey: '',
           malwareScanLink: '',
           modVersion: '',
           customNote: ''
@@ -464,10 +463,8 @@ export const ModForm = () => {
           <Fragment key={`download-${index}`}>
             <DownloadUrlFields
               index={index}
-              title={download.title}
               url={download.url}
               hash={download.hash}
-              signatureKey={download.signatureKey}
               malwareScanLink={download.malwareScanLink}
               modVersion={download.modVersion}
               customNote={download.customNote}
@@ -660,7 +657,6 @@ type DownloadUrlFieldsProps = {
   url: string
   title?: string
   hash: string
-  signatureKey: string
   malwareScanLink: string
   modVersion: string
   customNote: string
@@ -675,7 +671,6 @@ const DownloadUrlFields = React.memo(
     url,
     title,
     hash,
-    signatureKey,
     malwareScanLink,
     modVersion,
     customNote,
@@ -757,28 +752,6 @@ const DownloadUrlFields = React.memo(
             name="hash"
             placeholder="SHA-256 Hash"
             value={hash}
-            onChange={handleChange}
-          />
-          <div className="inputWrapperMainBox"></div>
-        </div>
-        <div className="inputWrapperMain">
-          <div className="inputWrapperMainBox">
-            <svg
-              xmlns="http://www.w3.org/2000/svg"
-              viewBox="-96 0 512 512"
-              width="1em"
-              height="1em"
-              fill="currentColor"
-            >
-              <path d="M320 448c0 17.67-14.31 32-32 32H64c-17.69 0-32-14.33-32-32v-384C32 46.34 46.31 32.01 64 32.01S96 46.34 96 64.01v352h192C305.7 416 320 430.3 320 448z"></path>
-            </svg>
-          </div>
-          <input
-            type="text"
-            className="inputMain"
-            placeholder="Signature public key"
-            name="signatureKey"
-            value={signatureKey}
             onChange={handleChange}
           />
           <div className="inputWrapperMainBox"></div>
