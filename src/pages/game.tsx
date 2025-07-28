@@ -81,7 +81,9 @@ export const GamePage = () => {
   // Search
   const searchTermRef = useRef<HTMLInputElement>(null)
   const [searchParams, setSearchParams] = useSearchParams()
-  const [searchTerm, setSearchTerm] = useState(searchParams.get('q') || '')
+  const [searchTerm, setSearchTerm] = useState(
+    decodeURIComponent(searchParams.get('q') || '')
+  )
 
   // Tags filter
   const tags =
@@ -106,7 +108,7 @@ export const GamePage = () => {
     setSearchTerm(value)
 
     if (value) {
-      searchParams.set('q', value)
+      searchParams.set('q', encodeURIComponent(value))
     } else {
       searchParams.delete('q')
     }

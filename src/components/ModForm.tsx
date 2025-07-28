@@ -464,6 +464,7 @@ export const ModForm = () => {
             <DownloadUrlFields
               index={index}
               url={download.url}
+              title={download.title}
               hash={download.hash}
               malwareScanLink={download.malwareScanLink}
               modVersion={download.modVersion}

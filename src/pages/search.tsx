@@ -99,14 +99,16 @@ export const SearchPage = () => {
     DEFAULT_FILTER_OPTIONS
   )
 
-  const [searchTerm, setSearchTerm] = useState(searchParams.get('q') || '')
+  const [searchTerm, setSearchTerm] = useState(
+    decodeURIComponent(searchParams.get('q') || '')
+  )
 
   const handleSearch = () => {
     const value = searchTermRef.current?.value || '' // Access the input value from the ref
     setSearchTerm(value)
 
     if (value) {
-      searchParams.set('q', value)
+      searchParams.set('q', encodeURIComponent(value))
     } else {
       searchParams.delete('q')
     }
@@ -123,6 +125,14 @@ export const SearchPage = () => {
     }
   }
 
+  const decodedSearchTerm = useMemo(() => {
+    try {
+      return decodeURIComponent(searchTerm)
+    } catch (error) {
+      return searchTerm
+    }
+  }, [searchTerm])
+
   return (
     <div className="InnerBodyMain">
       <div className="ContainerMain">
@@ -136,7 +146,7 @@ export const SearchPage = () => {
                 <h2 className="IBMSMTitleMainHeading">
                   Search:&nbsp;
                   <span className="IBMSMTitleMainHeadingSpan">
-                    {searchTerm}
+                    {decodedSearchTerm}
                   </span>
                 </h2>
               </div>

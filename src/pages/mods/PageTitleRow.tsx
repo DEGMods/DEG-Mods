@@ -11,7 +11,7 @@ export const PageTitleRow = React.memo(() => {
     const value = searchTermRef.current?.value || '' // Access the input value from the ref
     if (value !== '') {
       const searchParams = createSearchParams({
-        q: value,
+        q: encodeURIComponent(value),
         kind: 'Mods'
       })
       navigate({ pathname: appRoutes.search, search: `?${searchParams}` })

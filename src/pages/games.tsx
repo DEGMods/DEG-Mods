@@ -109,7 +109,7 @@ export const GamesPage = () => {
     const value = searchTermRef.current?.value || '' // Access the input value from the ref
     if (value !== '') {
       const searchParams = createSearchParams({
-        q: value,
+        q: encodeURIComponent(value),
         kind: 'Games'
       })
       navigate({ pathname: appRoutes.search, search: `?${searchParams}` })

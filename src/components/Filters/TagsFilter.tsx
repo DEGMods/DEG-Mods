@@ -32,7 +32,7 @@ const TagsFilter: React.FunctionComponent = () => {
       setTags(tags)
 
       if (tags.length > 0) {
-        searchParams.set('t', tags.join(','))
+        searchParams.set('t', encodeURIComponent(tags.join(',')))
       } else {
         searchParams.delete('t')
       }

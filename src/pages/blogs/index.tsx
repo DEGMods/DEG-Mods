@@ -50,7 +50,8 @@ export const BlogsPage = () => {
   useEffect(() => {
     // Keep the states synced with the URL
     const q = searchParams.get('q')
-    if (searchTermRef.current) searchTermRef.current.value = q ?? ''
+    if (searchTermRef.current)
+      searchTermRef.current.value = decodeURIComponent(q ?? '')
     setSearchTerm(q ?? '')
   }, [searchParams])
   const [searchTerm, setSearchTerm] = useState('')
@@ -59,7 +60,7 @@ export const BlogsPage = () => {
     setSearchTerm(value)
 
     if (value) {
-      searchParams.set('q', value)
+      searchParams.set('q', encodeURIComponent(value))
     } else {
       searchParams.delete('q')
     }

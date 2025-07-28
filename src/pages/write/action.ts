@@ -55,7 +55,7 @@ export const writeRouteAction =
     if (Object.keys(formErrors).length) return formErrors
 
     // Get the markdown from formData
-    const content = decodeURIComponent(formSubmit.content!)
+    const content = formSubmit.content
 
     // Check if we are editing or this is a new blog
     const { naddr } = params
