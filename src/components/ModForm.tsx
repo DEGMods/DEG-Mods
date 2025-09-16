@@ -37,9 +37,9 @@ import { OriginalAuthor } from './OriginalAuthor'
 import { CategoryAutocomplete } from './CategoryAutocomplete'
 import { AlertPopup } from './AlertPopup'
 import { Editor, EditorRef } from './Markdown/Editor'
-import { MEDIA_OPTIONS } from 'controllers'
+import { MEDIA_OPTIONS, FILE_SIZE_LIMITS } from 'controllers'
 import { InputError } from './Inputs/Error'
-import { ImageUpload } from './Inputs/ImageUpload'
+import { FileUpload } from './Inputs/FileUpload'
 import { useLocalCache } from 'hooks/useLocalCache'
 import { toast } from 'react-toastify'
 import { useGames } from 'hooks'
@@ -150,7 +150,9 @@ export const ModForm = () => {
           hash: '',
           malwareScanLink: '',
           modVersion: '',
-          customNote: ''
+          customNote: '',
+          automaticHash: '',
+          automaticScanLink: ''
         }
       ]
     }))
@@ -369,8 +371,8 @@ export const ModForm = () => {
           We recommend to upload images to {MEDIA_OPTIONS[0].host}
         </p>
 
-        <ImageUpload
-          multiple={true}
+        <FileUpload
+          multiple
           onChange={(values) => {
             setFormState((prevState) => ({
               ...prevState,
@@ -470,6 +472,8 @@ export const ModForm = () => {
               modVersion={download.modVersion}
               customNote={download.customNote}
               mediaUrl={download.mediaUrl}
+              automaticHash={download.automaticHash}
+              automaticScanLink={download.automaticScanLink}
               onUrlChange={handleDownloadUrlChange}
               onRemove={removeDownloadUrl}
             />
@@ -662,6 +666,8 @@ type DownloadUrlFieldsProps = {
   modVersion: string
   customNote: string
   mediaUrl?: string
+  automaticHash?: string
+  automaticScanLink?: string
   onUrlChange: (index: number, field: keyof DownloadUrl, value: string) => void
   onRemove: (index: number) => void
 }
@@ -676,6 +682,8 @@ const DownloadUrlFields = React.memo(
     modVersion,
     customNote,
     mediaUrl,
+    automaticHash,
+    automaticScanLink,
     onUrlChange,
     onRemove
   }: DownloadUrlFieldsProps) => {
@@ -713,6 +721,32 @@ const DownloadUrlFields = React.memo(
             </svg>
           </button>
         </div>
+        <FileUpload
+          onChange={(values) => {
+            onUrlChange(index, 'url', values[0])
+          }}
+          onUploadComplete={(data) => {
+            console.log(data)
+            if (data.urls.length > 0 && data.hashes.length > 0) {
+              onUrlChange(index, 'automaticHash', data.hashes[0])
+
+              // Derive the server from data.urls[0] and insert scan/ in the middle
+              const baseUrl = new URL(data.urls[0])
+              const scanUrl = `${baseUrl.origin}/scan/${data.hashes[0]}`
+
+              onUrlChange(index, 'automaticScanLink', scanUrl)
+
+              // Also fill the manual hash and scan link fields
+              onUrlChange(index, 'hash', data.hashes[0])
+              onUrlChange(index, 'malwareScanLink', scanUrl)
+            }
+          }}
+          accept={{
+            'zip/*': ['.zip']
+          }}
+          maxSize={FILE_SIZE_LIMITS.ZIP_500MB}
+          defaultDropzoneLabel="Click or drag zip file here (max 500MB)"
+        />
         <div className="inputWrapperMain">
           <div className="inputWrapperMainBox">
             <svg
@@ -772,12 +806,92 @@ const DownloadUrlFields = React.memo(
           <input
             type="text"
             className="inputMain"
+            name="automaticHash"
+            placeholder="Automatic SHA-256 Hash"
+            value={automaticHash || ''}
+            readOnly
+            style={{
+              backgroundColor: 'rgb(45, 45, 45)',
+              cursor: 'not-allowed',
+              pointerEvents: 'none'
+            }}
+          />
+          <div className="inputWrapperMainBox"></div>
+        </div>
+        <div className="inputWrapperMain">
+          <div className="inputWrapperMainBox">
+            <svg
+              xmlns="http://www.w3.org/2000/svg"
+              viewBox="-96 0 512 512"
+              width="1em"
+              height="1em"
+              fill="currentColor"
+            >
+              <path d="M320 448c0 17.67-14.31 32-32 32H64c-17.69 0-32-14.33-32-32v-384C32 46.34 46.31 32.01 64 32.01S96 46.34 96 64.01v352h192C305.7 416 320 430.3 320 448z"></path>
+            </svg>
+          </div>
+          <input
+            type="text"
+            className="inputMain"
             name="malwareScanLink"
             placeholder="Malware Scan Link"
             value={malwareScanLink}
             onChange={handleChange}
           />
           <div className="inputWrapperMainBox"></div>
+        </div>
+        <div className="inputWrapperMain">
+          <div className="inputWrapperMainBox">
+            <svg
+              xmlns="http://www.w3.org/2000/svg"
+              viewBox="-96 0 512 512"
+              width="1em"
+              height="1em"
+              fill="currentColor"
+            >
+              <path d="M320 448c0 17.67-14.31 32-32 32H64c-17.69 0-32-14.33-32-32v-384C32 46.34 46.31 32.01 64 32.01S96 46.34 96 64.01v352h192C305.7 416 320 430.3 320 448z"></path>
+            </svg>
+          </div>
+          <input
+            type="text"
+            className="inputMain"
+            name="automaticScanLink"
+            placeholder="Automatic Malware Scan Link"
+            value={automaticScanLink || ''}
+            readOnly
+            style={{
+              backgroundColor: 'rgb(45, 45, 45)',
+              cursor: 'not-allowed',
+              pointerEvents: 'none'
+            }}
+          />
+          <div className="inputWrapperMainBox">
+            {automaticScanLink && (
+              <div
+                style={{ cursor: 'pointer' }}
+                onClick={() => {
+                  if (automaticScanLink) {
+                    window.open(
+                      automaticScanLink,
+                      '_blank',
+                      'noopener,noreferrer'
+                    )
+                  }
+                }}
+                title="Open scan link in new tab"
+              >
+                <svg
+                  xmlns="http://www.w3.org/2000/svg"
+                  viewBox="0 0 512 512"
+                  width="1em"
+                  height="1em"
+                  fill="currentColor"
+                >
+                  <path d="M352 0c-12.9 0-24.6 7.8-29.6 19.8s-2.2 25.7 6.9 34.9L370.7 96 201.4 265.4c-12.5 12.5-12.5 32.8 0 45.3s32.8 12.5 45.3 0L416 141.3l41.4 41.4c9.2 9.2 22.9 11.9 34.9 6.9s19.8-16.6 19.8-29.6V32c0-17.7-14.3-32-32-32H352zM80 32C35.8 32 0 67.8 0 112V432c0 44.2 35.8 80 80 80H400c44.2 0 80-35.8 80-80V320c0-17.7-14.3-32-32-32s-32 14.3-32 32V432c0 8.8-7.2 16-16 16H80c-8.8 0-16-7.2-16-16V112c0-8.8 7.2-16 16-16H192c17.7 0 32-14.3 32-32s-14.3-32-32-32H80z" />
+                </svg>
+              </div>
+            )}
+          </div>
         </div>
         <div className="inputWrapperMain">
           <div className="inputWrapperMainBox">
@@ -835,29 +949,14 @@ const DownloadUrlFields = React.memo(
               <path d="M320 448c0 17.67-14.31 32-32 32H64c-17.69 0-32-14.33-32-32v-384C32 46.34 46.31 32.01 64 32.01S96 46.34 96 64.01v352h192C305.7 416 320 430.3 320 448z"></path>
             </svg>
           </div>
-          <div
-            style={{
-              width: '100%',
-              display: 'flex',
-              flexDirection: 'column',
-              gap: '10px'
-            }}
-          >
-            <ImageUpload
-              onChange={(values) => {
-                onUrlChange(index, 'mediaUrl', values[0])
-              }}
-            />
-
-            <input
-              type="text"
-              className="inputMain"
-              placeholder="Media URL"
-              name="mediaUrl"
-              value={mediaUrl || ''}
-              onChange={handleChange}
-            />
-          </div>
+          <input
+            type="text"
+            className="inputMain"
+            placeholder="Media URL"
+            name="mediaUrl"
+            value={mediaUrl || ''}
+            onChange={handleChange}
+          />
           <div className="inputWrapperMainBox"></div>
         </div>
       </div>

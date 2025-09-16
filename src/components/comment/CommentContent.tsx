@@ -34,6 +34,7 @@ export const CommentContent = ({
           shouldShowMedia={shouldShowMedia}
         />
       </div>
+
       {isTextOverflowing && !isExpanded && (
         <div className="IBMSMSMBSSCL_CBExpand" onClick={toggle}>
           <p>View full post</p>

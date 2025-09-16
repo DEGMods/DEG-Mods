@@ -7,7 +7,7 @@ import {
   deleteFromUserCategories,
   flattenCategories
 } from 'utils'
-import { useLocalStorage } from 'hooks'
+import { useLocalStorage, useBodyScrollDisable } from 'hooks'
 import { useSearchParams } from 'react-router-dom'
 import styles from './CategoryFilterPopup.module.scss'
 import categoriesData from './../../assets/categories/categories.json'
@@ -27,6 +27,8 @@ export const CategoryFilterPopup = ({
   setHierarchies,
   handleClose
 }: CategoryFilterPopupProps) => {
+  useBodyScrollDisable(true)
+
   const [searchParams, setSearchParams] = useSearchParams()
   const linkedHierarchy = searchParams.get('h')
 

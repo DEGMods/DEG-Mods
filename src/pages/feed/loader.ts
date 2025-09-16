@@ -33,13 +33,15 @@ export const feedPageLoader =
           authors: [],
           replaceableEvents: [],
           hardBlockedAuthors: [],
-          hardBlockedEvents: []
+          hardBlockedEvents: [],
+          blockedFileHashes: []
         },
         user: {
           authors: [],
           replaceableEvents: [],
           hardBlockedAuthors: [],
-          hardBlockedEvents: []
+          hardBlockedEvents: [],
+          blockedFileHashes: []
         }
       },
       nsfwList: [],

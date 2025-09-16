@@ -8,5 +8,5 @@ export const useDidMount = (callback: () => void) => {
       didMount.current = true
       callback()
     }
-  })
+  }, [callback])
 }

@@ -1,7 +1,7 @@
 import axios from 'axios'
 import { NostrCheckServer, Response } from './nostrcheck-server'
 import { NostrEvent, NDKKind } from '@nostr-dev-kit/ndk'
-import { getFileSha256, now } from 'utils'
+import { now } from 'utils'
 
 export type BlossomBandResponse = {
   status: number
@@ -12,6 +12,7 @@ export type BlossomBandResponse = {
 
 export class BlossomBandServer extends NostrCheckServer {
   #media = 'upload'
+  #mirror = 'mirror'
   #url: string
 
   constructor(url: string) {
@@ -21,6 +22,14 @@ export class BlossomBandServer extends NostrCheckServer {
 
   getMediaUrl = () => {
     return `${this.#url}${this.#media}`
+  }
+
+  getMirrorUrl = () => {
+    return `${this.#url}${this.#mirror}`
+  }
+
+  getHeadUrl = (hash: string) => {
+    return `${this.#url}${hash}`
   }
 
   getResponse = async (url: string, auth: string, file: File) => {
@@ -40,8 +49,7 @@ export class BlossomBandServer extends NostrCheckServer {
     return response
   }
 
-  getUnsignedEvent = async (_url: string, hexPubkey: string, file: File) => {
-    const sha256 = await getFileSha256(file)
+  getUnsignedEvent = async (_url: string, hexPubkey: string, hash: string) => {
     const unsignedEvent: NostrEvent = {
       content: '',
       created_at: now(),
@@ -49,7 +57,7 @@ export class BlossomBandServer extends NostrCheckServer {
       pubkey: hexPubkey,
       tags: [
         ['t', 'upload'],
-        ['x', sha256],
+        ['x', hash],
         ['expiration', (now() + 365 * 60 * 60 * 24 * 30).toString()]
       ]
     }

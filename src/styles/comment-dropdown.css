@@ -1,0 +1,151 @@
+/* Comment Dropdown Styles */
+.IBMSMSMBSSCL_CommentDropdownContainer {
+  position: relative;
+  display: inline-block;
+}
+
+.IBMSMSMBSSCL_CommentDropdownButton {
+  box-shadow: unset;
+  border: unset;
+  padding: 5px;
+  color: rgba(255, 255, 255, 0.5);
+  background:
+    linear-gradient(rgba(255, 255, 255, 0.03), rgba(255, 255, 255, 0.03)),
+    linear-gradient(to top right, #262626, #292929, #262626);
+  border-radius: 5px;
+  cursor: pointer;
+  transition: all 0.4s ease;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: auto;
+  height: auto;
+  min-width: 20px;
+  min-height: 20px;
+}
+
+.IBMSMSMBSSCL_CommentDropdownButton:hover {
+  background: rgba(255, 255, 255, 0.05);
+  color: rgba(255, 255, 255, 0.8);
+}
+
+.IBMSMSMBSSCL_CommentDropdownButton:focus {
+  outline: unset;
+  box-shadow: unset;
+  background: rgba(255, 255, 255, 0.05);
+}
+
+.IBMSMSMBSSCL_CommentDropdownIcon {
+  width: 1em;
+  height: 1em;
+}
+
+.IBMSMSMBSSCL_CommentDropdownMenu {
+  position: absolute;
+  top: 100%;
+  right: 0;
+  width: 100%;
+  padding: 5px 5px 0 5px;
+  background: #232323;
+  border-radius: 10px;
+  border: solid 1px rgba(255, 255, 255, 0.1);
+  flex-direction: column;
+  gap: 10px;
+  max-height: 200px;
+  overflow: auto;
+  font-size: 16px;
+  z-index: 1000;
+  min-width: 230px;
+  margin-top: 4px;
+}
+
+.IBMSMSMBSSCL_CommentDropdownSection {
+  padding: 4px 0;
+}
+
+.IBMSMSMBSSCL_CommentDropdownSection:not(:last-child) {
+  border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+}
+
+.IBMSMSMBSSCL_CommentDropdownItem {
+  width: 100%;
+  transition:
+    background ease 0.4s,
+    color ease 0.4s;
+  background:
+    linear-gradient(rgba(255, 255, 255, 0.03), rgba(255, 255, 255, 0.03)),
+    linear-gradient(to top right, #262626, #292929, #262626);
+  color: rgba(255, 255, 255, 0.75);
+  border-radius: 5px;
+  color: rgba(255, 255, 255, 0.5);
+  padding: 5px 10px;
+  margin: 0 0 5px 0;
+  white-space: normal;
+  display: flex;
+  flex-direction: row;
+  justify-content: start;
+  align-items: center;
+  gap: 10px;
+  cursor: pointer;
+  border: none;
+  text-align: left;
+  font-size: 16px;
+}
+
+.IBMSMSMBSSCL_CommentDropdownItem:hover {
+  transition:
+    background ease 0.4s,
+    color ease 0.4s;
+  background:
+    linear-gradient(rgba(255, 255, 255, 0.05), rgba(255, 255, 255, 0.05)),
+    linear-gradient(to top right, #262626, #292929, #262626);
+  color: rgba(255, 255, 255, 0.75);
+  text-decoration: unset;
+}
+
+.IBMSMSMBSSCL_CommentDropdownItemDanger {
+  color: rgba(255, 70, 70, 0.8);
+}
+
+.IBMSMSMBSSCL_CommentDropdownItemDanger:hover {
+  transition:
+    background ease 0.4s,
+    color ease 0.4s;
+  background:
+    linear-gradient(rgba(255, 70, 70, 0.05), rgba(255, 70, 70, 0.05)),
+    linear-gradient(to top right, #262626, #292929, #262626);
+  color: rgba(255, 70, 70, 1);
+  text-decoration: unset;
+}
+
+.IBMSMSMBSSCL_CommentDropdownItemIcon {
+  width: 14px;
+  height: 14px;
+  flex-shrink: 0;
+}
+
+/* Comment top right section layout */
+.IBMSMSMBSSCL_CommentTopRightSection {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-end;
+  gap: 4px;
+}
+
+.IBMSMSMBSSCL_CommentActionsDetails {
+  display: flex;
+  gap: 4px;
+  align-items: center;
+}
+
+/* Responsive adjustments */
+@media (max-width: 768px) {
+  .IBMSMSMBSSCL_CommentDropdownMenu {
+    right: -8px;
+    min-width: 210px;
+  }
+
+  .IBMSMSMBSSCL_CommentTopRightSection {
+    gap: 6px;
+  }
+}

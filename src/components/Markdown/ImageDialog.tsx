@@ -9,6 +9,7 @@ import {
   saveImage$
 } from '@mdxeditor/editor'
 import { createPortal } from 'react-dom'
+import { useBodyScrollDisable } from '../../hooks'
 import styles from './Dialog.module.scss'
 
 interface ImageFormFields {
@@ -31,6 +32,8 @@ export const ImageDialog: React.FC = () => {
     values: state.type === 'editing' ? (state.initialValues as any) : {}
   })
   const [open, setOpen] = useState(state.type !== 'inactive')
+
+  useBodyScrollDisable(open)
 
   useEffect(() => {
     setOpen(state.type !== 'inactive')

@@ -1,12 +1,55 @@
 import _ from 'lodash'
 import { NDKEvent } from '@nostr-dev-kit/ndk'
 import { Event } from 'nostr-tools'
-import { ModDetails, ModFormState } from '../types'
+import { ModDetails, ModFormState, DownloadUrl } from '../types'
 import {
   getTagValue,
   getTagValues,
   getFirstTagValue as _getFirstTagValue
 } from './nostr'
+
+/**
+ * Parses a download URL to extract hash and generate scan link if the URL follows the pattern $host/$hash
+ *
+ * @param downloadUrl - The DownloadUrl object to process
+ * @returns The DownloadUrl object with automatic fields populated if applicable
+ */
+const parseDownloadUrlForAutomaticFields = (
+  downloadUrl: DownloadUrl
+): DownloadUrl => {
+  try {
+    const url = new URL(downloadUrl.url)
+    const pathSegments = url.pathname
+      .split('/')
+      .filter((segment) => segment.length > 0)
+
+    // Check if the URL follows the pattern $host/$hash (single path segment that looks like a hash)
+    if (pathSegments.length === 1) {
+      const potentialHash = pathSegments[0]
+
+      // Validate that the path segment looks like a SHA-256 hash (64 hex characters)
+      const hashRegex = /^([a-fA-F0-9]{64})\.[a-zA-Z0-9]+$/
+      if (hashRegex.test(potentialHash)) {
+        const hash = potentialHash.split('.')[0]
+
+        return {
+          ...downloadUrl,
+          automaticHash: hash,
+          automaticScanLink: `${url.origin}/scan/${hash}`
+        }
+      }
+    }
+  } catch (error) {
+    // If URL parsing fails, return the original downloadUrl unchanged
+    console.warn(
+      'Failed to parse download URL for automatic fields:',
+      downloadUrl.url,
+      error
+    )
+  }
+
+  return downloadUrl
+}
 
 /**
  * Extracts and normalizes mod data from an event.
@@ -65,9 +108,10 @@ export const extractModData = (event: Event | NDKEvent): ModDetails => {
     lTags: (getTagValues(event, 'l') || []).map((t) =>
       t.replace('com.degmods:', '')
     ),
-    downloadUrls: (getTagValue(event, 'downloadUrls') || []).map((item) =>
-      JSON.parse(item)
-    ),
+    downloadUrls: (getTagValue(event, 'downloadUrls') || []).map((item) => {
+      const parsedDownloadUrl = JSON.parse(item) as DownloadUrl
+      return parseDownloadUrlForAutomaticFields(parsedDownloadUrl)
+    }),
     otherAssets: otherAssets ? otherAssets === 'true' : undefined,
     uploadPermission: uploadPermission
       ? uploadPermission === 'true'
@@ -173,7 +217,9 @@ export const initializeFormState = (
           malwareScanLink: '',
           modVersion: '',
           customNote: '',
-          mediaUrl: ''
+          mediaUrl: '',
+          automaticHash: '',
+          automaticScanLink: ''
         }
       ],
   otherAssets: existingModData?.otherAssets ?? true,

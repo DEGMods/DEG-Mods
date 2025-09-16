@@ -4,7 +4,9 @@ import {
   PreferenceSVG,
   ProfileSVG,
   RelaySVG,
-  ServerSVG
+  ServerSVG,
+  UserServerListSVG,
+  FileManagementSVG
 } from 'components/SVGs'
 import { useAppSelector } from 'hooks'
 import { logout } from 'nostr-login'
@@ -46,14 +48,19 @@ export const SettingsPage = () => {
 const SettingTabs = () => {
   const location = useLocation()
   const [isAdmin, setIsAdmin] = useState(false)
+  const [isReportingAdmin, setIsReportingAdmin] = useState(false)
   const userState = useAppSelector((state) => state.user)
 
   useEffect(() => {
     const adminNpubs = import.meta.env.VITE_ADMIN_NPUBS.split(',')
+    const reportingNpub = import.meta.env.VITE_REPORTING_NPUB
+
     if (userState.auth && userState.user?.npub) {
       setIsAdmin(adminNpubs.includes(userState.user.npub as string))
+      setIsReportingAdmin(userState.user.npub === reportingNpub)
     } else {
       setIsAdmin(false)
+      setIsReportingAdmin(false)
     }
   }, [userState])
 
@@ -79,6 +86,11 @@ const SettingTabs = () => {
       icon: <ServerSVG />
     },
     {
+      path: appRoutes.settingsUserServerList,
+      label: 'User Server List',
+      icon: <UserServerListSVG />
+    },
+    {
       path: appRoutes.settingsModeration,
       label: 'Moderation',
       icon: <ModerationSVG />
@@ -90,6 +102,14 @@ const SettingTabs = () => {
       path: appRoutes.settingsAdmin,
       label: 'Admin (WIP)',
       icon: <AdminSVG />
+    })
+  }
+
+  if (isReportingAdmin) {
+    navLinks.push({
+      path: appRoutes.settingsFileManagement,
+      label: 'File management',
+      icon: <FileManagementSVG />
     })
   }
 

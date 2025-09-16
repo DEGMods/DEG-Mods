@@ -133,3 +133,5 @@ export const CLIENT_TAG_VALUE =
 export const SERVER_URL_STORAGE_KEY = 'serverUrl'
 export const HARD_BLOCK_TAG = 'hard-blocks'
 export const HARD_BLOCK_LIST_KIND = 31000 as NDKKind
+export const HASH_BLOCK_TAG = 'hash-blocks'
+export const HASH_BLOCK_LIST_KIND = 31001 as NDKKind

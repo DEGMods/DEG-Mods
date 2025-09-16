@@ -14,9 +14,10 @@ import styles from './ImageUpload.module.scss'
 export interface ImageUploadProps {
   multiple?: boolean | undefined
   onChange: (values: string[]) => void
+  maxSize?: number | undefined
 }
 export const ImageUpload = React.memo(
-  ({ multiple = false, onChange }: ImageUploadProps) => {
+  ({ multiple = false, onChange, maxSize }: ImageUploadProps) => {
     const [isLoading, setIsLoading] = useState(false)
     const [mediaOption, setMediaOption] = useState<MediaOption>(
       MEDIA_OPTIONS[0]
@@ -59,6 +60,7 @@ export const ImageUpload = React.memo(
       fileRejections
     } = useDropzone({
       ...MEDIA_DROPZONE_OPTIONS,
+      maxSize: maxSize || MEDIA_DROPZONE_OPTIONS.maxSize,
       onDrop: handleUpload,
       multiple: multiple
     })

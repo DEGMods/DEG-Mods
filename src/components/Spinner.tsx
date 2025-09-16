@@ -1,8 +1,12 @@
 import styles from '../styles/dotsSpinner.module.scss'
 
-export const Spinner = () => (
+interface SpinnerProps {
+  height?: number
+}
+
+export const Spinner = ({ height = 40 }: SpinnerProps) => (
   <div className="spinner">
-    <div className="spinnerCircle"></div>
+    <div className="spinnerCircle" style={{ height, width: height }}></div>
   </div>
 )
 

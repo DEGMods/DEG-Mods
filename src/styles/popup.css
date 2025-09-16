@@ -5,13 +5,13 @@
   bottom: 0;
   left: 0;
   z-index: 1000;
-  background: rgba(0, 0, 0, 0.5);
+  background: rgba(0, 0, 0, 0.8);
   backdrop-filter: blur(5px);
   display: flex;
   flex-direction: column;
-  justify-content: start;
+  justify-content: center;
   align-items: center;
-  /* padding: 5% 0%; */
+  padding: 20px;
   overflow: auto;
 }
 
@@ -139,8 +139,8 @@
 }
 
 .pUMCB_RepliesToPrime > *:last-child {
-    border-bottom: unset;
-    padding: 0;
+  border-bottom: unset;
+  padding: 0;
 }
 
 .pUMCB_CommentToPrime {
@@ -429,24 +429,24 @@
 }
 
 .BTCAddressPopZap {
-    display: flex;
-    flex-direction: column;
-    grid-gap: 0px;
-    color: #ffffff50;
-    font-size: 12px;
-    font-weight: bold;
-    border-top: solid 1px #ffffff10;
-    padding: 10px 0 0 0;
-    margin: 10px 0 0 0;
-    white-space: break-spaces;
+  display: flex;
+  flex-direction: column;
+  grid-gap: 0px;
+  color: #ffffff50;
+  font-size: 12px;
+  font-weight: bold;
+  border-top: solid 1px #ffffff10;
+  padding: 10px 0 0 0;
+  margin: 10px 0 0 0;
+  white-space: break-spaces;
 }
 
 .BTCAddressPopZapTextSpan {
-    font-weight: normal;
-    color: #ffffff25;
+  font-weight: normal;
+  color: #ffffff25;
 }
 
 .IBMSMSMBSSCommentsList > * {
-    border: unset;
-    padding: unset;
+  border: unset;
+  padding: unset;
 }

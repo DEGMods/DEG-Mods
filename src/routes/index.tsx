@@ -40,7 +40,10 @@ import { RelaySettings } from 'pages/settings/relay'
 import { PreferencesSetting } from 'pages/settings/preference'
 import { AdminSetting } from 'pages/settings/admin'
 import { ServerSetting } from 'pages/settings/server'
+import { UserServerListSettings } from 'pages/settings/userServerList'
 import { ModerationSetting } from 'pages/settings/moderation'
+import { FileManagementSetting } from 'pages/settings/fileManagement'
+import { HashCheckerPage } from 'pages/hashChecker'
 
 export const appRoutes = {
   home: '/',
@@ -63,14 +66,17 @@ export const appRoutes = {
   settingsRelays: '/settings/relays',
   settingsPreferences: '/settings/preferences',
   settingsServer: '/settings/server',
+  settingsUserServerList: '/settings/user-server-list',
   settingsAdmin: '/settings/admin',
   settingsModeration: '/settings/moderation',
+  settingsFileManagement: '/settings/file-management',
   profile: '/profile/:nprofile?',
   feed: '/feed',
   note: '/feed/:note',
   notifications: '/notifications',
   backup: '/backup',
-  supporters: '/supporters'
+  supporters: '/supporters',
+  hashChecker: '/hash-checker'
 }
 
 export const getGamePageRoute = (name: string) =>
@@ -211,12 +217,20 @@ export const routerWithNdkContext = (context: NDKContextType) =>
               element: <ServerSetting />
             },
             {
+              path: appRoutes.settingsUserServerList,
+              element: <UserServerListSettings />
+            },
+            {
               path: appRoutes.settingsAdmin,
               element: <AdminSetting />
             },
             {
               path: appRoutes.settingsModeration,
               element: <ModerationSetting />
+            },
+            {
+              path: appRoutes.settingsFileManagement,
+              element: <FileManagementSetting />
             }
           ]
         },
@@ -257,6 +271,10 @@ export const routerWithNdkContext = (context: NDKContextType) =>
         {
           path: appRoutes.supporters,
           element: <SupportersPage />
+        },
+        {
+          path: appRoutes.hashChecker,
+          element: <HashCheckerPage />
         },
         {
           path: '*',

@@ -18,8 +18,12 @@ import {
   useBodyScrollDisable,
   useDidMount,
   useLocalStorage,
-  useNDKContext
+  useNDKContext,
+  useBlossomList,
+  useCommentUsersBlossomList,
+  useImageFallback
 } from '../../hooks'
+import { useComments } from '../../hooks/useComments'
 import { appRoutes, getGamePageRoute, getModsEditPageRoute } from '../../routes'
 import '../../styles/comments.css'
 import '../../styles/downloads.css'
@@ -40,15 +44,18 @@ import {
   MODPERMISSIONS_CONF,
   MODPERMISSIONS_DESC
 } from '../../types'
+import { UserBlossom } from '../../hooks/useUserBlossomList'
 import {
   capitalizeEachWord,
   checkUrlForFile,
   copyTextToClipboard,
-  downloadFile,
   getFilenameFromUrl,
   isValidUrl,
   log,
-  LogType
+  findAllDownloadUrls,
+  downloadFileWithFallback,
+  LogType,
+  getUniqueCommenterBlossomServers
 } from '../../utils'
 import { Comments } from '../../components/comment'
 import { PublishDetails } from 'components/Internal/PublishDetails'
@@ -60,7 +67,9 @@ import { OriginalAuthor } from 'components/OriginalAuthor'
 import { Viewer } from 'components/Markdown/Viewer'
 import { PostWarnings } from 'components/PostWarning'
 import { DownloadDetailsPopup } from 'components/DownloadDetailsPopup'
+import { HashVerificationPopup } from 'components/HashVerificationPopup'
 import { NsfwAlertPopup } from 'components/NsfwAlertPopup'
+import { ImageWithFallback } from 'components/ImageWithFallback'
 import useModData from './useModData'
 import { AlertPopup } from 'components/AlertPopup'
 import { useDeleted } from 'hooks/useDeleted'
@@ -97,6 +106,9 @@ export const ModPage = () => {
   }
 
   const [commentCount, setCommentCount] = useState(0)
+  const { commentEvents } = useComments(mod?.author, mod?.aTag)
+  const { allServers: commenterBlossomServers } =
+    useCommentUsersBlossomList(commentEvents)
   const { isDeleted, loading: isDeletionLoading } = useDeleted(
     mod?.id,
     mod?.author
@@ -181,7 +193,12 @@ export const ModPage = () => {
                             )}
                             {mod.downloadUrls.length > 0 && (
                               <div className="IBMSMSMBSSDownloadsPrime">
-                                <Download {...mod.downloadUrls[0]} />
+                                <Download
+                                  {...mod.downloadUrls[0]}
+                                  commenterBlossomServers={
+                                    commenterBlossomServers
+                                  }
+                                />
                               </div>
                             )}
                             {mod.downloadUrls.length > 1 && (
@@ -192,6 +209,9 @@ export const ModPage = () => {
                                     <Download
                                       key={`downloadUrl-${index}`}
                                       {...download}
+                                      commenterBlossomServers={
+                                        commenterBlossomServers
+                                      }
                                     />
                                   ))}
                               </div>
@@ -631,6 +651,17 @@ const Body = ({
 
   const navigate = useNavigate()
 
+  // Get blossom server lists for image fallback
+  const { hostMirrors, defaultHostMirrors } = useBlossomList()
+
+  // Use image fallback for featured image background
+  const { currentUrl: featuredImageCurrentUrl } = useImageFallback({
+    originalUrl: featuredImageUrl,
+    personalBlossomList: hostMirrors.mirrors,
+    defaultBlossomList: defaultHostMirrors,
+    prioritizeOriginal: true
+  })
+
   const openLightBoxOnSlide = (slide: number) => {
     setLightBoxController((prev) => ({
       toggler: !prev.toggler,
@@ -668,7 +699,7 @@ const Body = ({
         <div
           className="IBMSMSMBSSPostPicture"
           style={{
-            background: `url(${featuredImageUrl}) center / cover no-repeat`
+            background: `url(${featuredImageCurrentUrl}) center / cover no-repeat`
           }}
         ></div>
         <div className="IBMSMSMBSSPostInside">
@@ -693,12 +724,15 @@ const Body = ({
           <div className="IBMSMSMBSSShotsWrapper">
             <div className="IBMSMSMBSSShots">
               {screenshotsUrls.map((url, index) => (
-                <img
+                <ImageWithFallback
                   className="IBMSMSMBSSShotsImg"
                   src={url}
                   alt=""
                   key={`ScreenShot-${index}`}
                   onClick={() => openLightBoxOnSlide(index + 1)}
+                  personalBlossomList={hostMirrors.mirrors}
+                  defaultBlossomList={defaultHostMirrors}
+                  prioritizeOriginal={true}
                 />
               ))}
             </div>
@@ -803,11 +837,27 @@ const Body = ({
   )
 }
 
-const Download = (props: DownloadUrl) => {
-  const { url, title, malwareScanLink } = props
+const Download = (
+  props: DownloadUrl & { commenterBlossomServers?: UserBlossom[] }
+) => {
+  const {
+    url,
+    title,
+    malwareScanLink,
+    hash,
+    commenterBlossomServers = []
+  } = props
   const [showAuthDetails, setShowAuthDetails] = useState(false)
+  const [showHashVerification, setShowHashVerification] = useState(false)
   const [showNotice, setShowNotice] = useState(false)
   const [showScanNotice, setShowCanNotice] = useState(false)
+  const [isSearching, setIsSearching] = useState(false)
+  const [searchError, setSearchError] = useState<string | null>(null)
+  const [bestUrl, setBestUrl] = useState(url)
+  const [allUrls, setAllUrls] = useState<string[]>([url])
+
+  // Get blossom server lists
+  const { hostMirrors, defaultHostMirrors } = useBlossomList()
 
   useDidMount(async () => {
     const isFile = await checkUrlForFile(url)
@@ -825,13 +875,51 @@ const Download = (props: DownloadUrl) => {
         malwareScanLink !== url
       )
     )
+
+    // Search for better download URL using hash if available
+    if (hash) {
+      try {
+        setIsSearching(true)
+        setSearchError(null)
+
+        // Convert commenter blossom servers to the expected format
+        const commenterBlossomList = getUniqueCommenterBlossomServers(
+          commenterBlossomServers
+        )
+
+        const resolvedUrls = await findAllDownloadUrls(
+          hash,
+          url,
+          hostMirrors.mirrors,
+          defaultHostMirrors,
+          commenterBlossomList
+        )
+
+        setAllUrls(resolvedUrls)
+        setBestUrl(resolvedUrls[0])
+      } catch (error) {
+        setSearchError(error instanceof Error ? error.message : 'Search failed')
+        setAllUrls([url]) // Fallback to original URL only
+        setBestUrl(url) // Fallback to original URL
+      } finally {
+        setIsSearching(false)
+      }
+    }
   })
 
-  const handleDownload = () => {
-    // Get the filename from the URL
-    const filename = getFilenameFromUrl(url)
-
-    downloadFile(url, filename)
+  const handleDownload = async () => {
+    // If hash is available, open verification popup
+    if (hash || props.automaticHash) {
+      setShowHashVerification(true)
+    } else {
+      // No hash available, proceed with direct download
+      const filename = getFilenameFromUrl(bestUrl)
+      try {
+        await downloadFileWithFallback(allUrls, filename)
+      } catch (error) {
+        toast.error('Download failed. Please try again later.')
+      }
+    }
   }
 
   return (
@@ -844,10 +932,28 @@ const Download = (props: DownloadUrl) => {
           className="btn btnMain IBMSMSMBSSDownloadsElementBtn"
           type="button"
           onClick={handleDownload}
+          disabled={isSearching}
         >
-          Download
+          {isSearching ? 'Searching servers...' : 'Download'}
         </button>
       </div>
+      {isSearching && (
+        <div className="IBMSMSMBSSNote">
+          <p>Searching for file across blossom servers...</p>
+        </div>
+      )}
+      {searchError && (
+        <div className="IBMSMSMBSSWarning">
+          <p>
+            Server search failed: {searchError}. Using original download link.
+          </p>
+        </div>
+      )}
+      {!isSearching && bestUrl !== url && (
+        <div className="IBMSMSMBSSNote">
+          <p>✓ Found file on alternative server for faster download.</p>
+        </div>
+      )}
       {showNotice && (
         <div className="IBMSMSMBSSNote">
           <p>
@@ -877,7 +983,17 @@ const Download = (props: DownloadUrl) => {
         {showAuthDetails && (
           <DownloadDetailsPopup
             {...props}
+            allUrls={allUrls}
+            hostMirrors={hostMirrors.mirrors}
+            defaultHostMirrors={defaultHostMirrors}
             handleClose={() => setShowAuthDetails(false)}
+          />
+        )}
+        {showHashVerification && (
+          <HashVerificationPopup
+            {...props}
+            allUrls={allUrls}
+            handleClose={() => setShowHashVerification(false)}
           />
         )}
       </div>

@@ -43,6 +43,11 @@
   box-shadow: 0 0 8px 0 rgb(0, 0, 0, 0.1);
 }
 
+.IBMSMSMBSSDownloadsElementHashChecker {
+  margin-top: 10px;
+  padding: 0;
+}
+
 @media (max-width: 768px) {
   .IBMSMSMBSSDownloadsElement {
     grid-template-columns: 1fr;
@@ -239,6 +244,7 @@
   display: flex;
   justify-content: center;
   align-items: center;
+  color: white;
 }
 
 @media (max-width: 576px) {
@@ -262,5 +268,5 @@
 }
 
 .IBMSMSMBSSDownloadsElementDtitle {
-  color: rgb(255,255,255,0.5);
+  color: rgb(255, 255, 255, 0.5);
 }

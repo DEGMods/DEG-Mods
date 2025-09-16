@@ -9,7 +9,7 @@ import { InputField } from 'components/Inputs'
 import { LoadingSpinner } from 'components/LoadingSpinner'
 import { useAppSelector, useDidMount, useNDKContext } from 'hooks'
 import { Event, UnsignedEvent } from 'nostr-tools'
-import { useEffect, useState } from 'react'
+import { useEffect, useState, useRef } from 'react'
 import { toast } from 'react-toastify'
 import { UserRelaysType } from 'types'
 import { log, LogType, normalizeWebSocketURL, now, timeout } from 'utils'
@@ -23,37 +23,123 @@ export const RelaySettings = () => {
   const [ndkRelayList, setNDKRelayList] = useState<NDKRelayList | null>(null)
   const [isPublishing, setIsPublishing] = useState(false)
   const [isLoading, setIsLoading] = useState(true)
+  const [isAuthLoading, setIsAuthLoading] = useState(true)
   const [inputValue, setInputValue] = useState('')
+  const hasFetchedRef = useRef(false)
 
+  // Handle authentication loading state
+  useEffect(() => {
+    // Give a brief moment for authentication to initialize
+    // This handles the case where the user is already logged in
+    const authTimeout = setTimeout(() => {
+      setIsAuthLoading(false)
+    }, 500) // Wait 500ms for auth to initialize
+
+    return () => clearTimeout(authTimeout)
+  }, [])
+
+  // Also stop auth loading if user state changes to authenticated
   useEffect(() => {
     if (userState.auth && userState.user?.pubkey) {
-      setIsLoading(true)
-      Promise.race([
-        getRelayListForUser(userState.user?.pubkey as string, ndk),
-        timeout(10000)
-      ])
-        .then((res) => {
-          setNDKRelayList(res)
-        })
-        .catch((err) => {
-          toast.error(
-            `An error occurred in fetching user relay list: ${
-              err.message || err
-            }`
-          )
-          setNDKRelayList(new NDKRelayList(ndk))
-        })
-        .finally(() => {
-          setIsLoading(false)
-        })
+      setIsAuthLoading(false)
+    }
+  }, [userState.auth, userState.user?.pubkey])
+
+  useEffect(() => {
+    // Only proceed if auth loading is complete
+    if (isAuthLoading) return
+
+    if (userState.auth && userState.user?.pubkey) {
+      // Only fetch if we haven't fetched before for this user
+      if (!hasFetchedRef.current) {
+        setIsLoading(true)
+        hasFetchedRef.current = true
+        Promise.race([
+          getRelayListForUser(userState.user?.pubkey as string, ndk),
+          timeout(10000)
+        ])
+          .then((res) => {
+            console.debug(
+              '[RelaySettings] Fetched relay list for user',
+              userState.user?.pubkey,
+              res
+            )
+            setNDKRelayList(res)
+          })
+          .catch((err) => {
+            toast.error(
+              `An error occurred in fetching user relay list: ${
+                err.message || err
+              }`
+            )
+            setNDKRelayList(new NDKRelayList(ndk))
+          })
+          .finally(() => {
+            setIsLoading(false)
+          })
+      } else {
+        setIsLoading(false)
+      }
     } else {
       setIsLoading(false)
       setNDKRelayList(null)
+      hasFetchedRef.current = false // Reset when user logs out
     }
-  }, [userState, ndk])
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [userState.auth, userState.user?.pubkey, isAuthLoading])
 
   const handleAdd = async (relayUrl: string) => {
-    if (!ndkRelayList) return
+    if (!ndkRelayList) {
+      // Create a new relay list if none exists
+      const newNDKRelayList = new NDKRelayList(ndk)
+      setNDKRelayList(newNDKRelayList)
+
+      // Create the initial relay list event with the new relay
+      const normalizedUrl = normalizeWebSocketURL(relayUrl)
+      const unsignedEvent: UnsignedEvent = {
+        pubkey: userState.user?.pubkey as string,
+        kind: NDKKind.RelayList,
+        tags: [['r', normalizedUrl]],
+        content: '',
+        created_at: now()
+      }
+
+      setIsPublishing(true)
+
+      const signedEvent = await window.nostr
+        ?.signEvent(unsignedEvent)
+        .then((event) => event as Event)
+        .catch((err) => {
+          toast.error('Failed to sign the event!')
+          log(true, LogType.Error, 'Failed to sign the event!', err)
+          return null
+        })
+
+      if (!signedEvent) {
+        setIsPublishing(false)
+        return
+      }
+
+      const ndkEvent = new NDKEvent(ndk, signedEvent)
+      const publishedOnRelays = await publish(ndkEvent)
+
+      // Handle cases where publishing failed or succeeded
+      if (publishedOnRelays.length === 0) {
+        toast.error('Failed to publish relay list event on any relay')
+      } else {
+        toast.success(
+          `Event published successfully to the following relays\n\n${publishedOnRelays.join(
+            '\n'
+          )}`
+        )
+
+        const finalNDKRelayList = new NDKRelayList(ndk, signedEvent)
+        setNDKRelayList(finalNDKRelayList)
+      }
+
+      setIsPublishing(false)
+      return
+    }
 
     const normalizedUrl = normalizeWebSocketURL(relayUrl)
 
@@ -233,36 +319,42 @@ export const RelaySettings = () => {
     setIsPublishing(false)
   }
 
-  if (isLoading)
+  if (isLoading || isAuthLoading) {
     return (
       <>
         <div></div>
-        <LoadingSpinner desc="Loading" />
+        <LoadingSpinner desc={isAuthLoading ? 'Initializing...' : 'Loading'} />
       </>
     )
+  }
 
-  if (!ndkRelayList)
-    return <div>Could not fetch user relay list or user is not logged in </div>
+  // Check if user is not logged in
+  if (!userState.auth || !userState.user?.pubkey) {
+    return <div>User is not logged in</div>
+  }
 
   const relayMap = new Map<string, UserRelaysType>()
 
-  ndkRelayList.readRelayUrls.forEach((relayUrl) => {
-    const normalizedUrl = normalizeWebSocketURL(relayUrl)
+  // Only process relay URLs if ndkRelayList exists
+  if (ndkRelayList) {
+    ndkRelayList.readRelayUrls.forEach((relayUrl) => {
+      const normalizedUrl = normalizeWebSocketURL(relayUrl)
 
-    if (!relayMap.has(normalizedUrl)) {
-      relayMap.set(normalizedUrl, UserRelaysType.Read)
-    }
-  })
+      if (!relayMap.has(normalizedUrl)) {
+        relayMap.set(normalizedUrl, UserRelaysType.Read)
+      }
+    })
 
-  ndkRelayList.writeRelayUrls.forEach((relayUrl) => {
-    const normalizedUrl = normalizeWebSocketURL(relayUrl)
+    ndkRelayList.writeRelayUrls.forEach((relayUrl) => {
+      const normalizedUrl = normalizeWebSocketURL(relayUrl)
 
-    if (relayMap.has(normalizedUrl)) {
-      relayMap.set(normalizedUrl, UserRelaysType.Both)
-    } else {
-      relayMap.set(normalizedUrl, UserRelaysType.Write)
-    }
-  })
+      if (relayMap.has(normalizedUrl)) {
+        relayMap.set(normalizedUrl, UserRelaysType.Both)
+      } else {
+        relayMap.set(normalizedUrl, UserRelaysType.Write)
+      }
+    })
+  }
 
   const relayEntries = Array.from(relayMap.entries())
 
@@ -277,8 +369,19 @@ export const RelaySettings = () => {
             </div>
             {relayEntries.length === 0 && (
               <>
-                We recommend adding one of our relays if you're planning to
-                frequently use DEG Mods, for a better experience.
+                {!ndkRelayList ? (
+                  <>
+                    No relay list found. You can add relays below to get
+                    started. We recommend adding one of our relays if you're
+                    planning to frequently use DEG Mods, for a better
+                    experience.
+                  </>
+                ) : (
+                  <>
+                    We recommend adding one of our relays if you're planning to
+                    frequently use DEG Mods, for a better experience.
+                  </>
+                )}
               </>
             )}
             {relayEntries.map(([relayUrl, relayType]) => (

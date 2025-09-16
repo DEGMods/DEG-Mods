@@ -31,23 +31,25 @@ const useModData = (): ModPageLoaderResult => {
   const params = useParams()
   const location = useLocation()
   const { naddr } = params
-  if (!naddr) {
-    log(true, LogType.Error, 'Required naddr.')
-    redirect(appRoutes.mods)
-  }
 
-  // Decode from naddr
+  // Decode from naddr - do this early but don't redirect yet
   let pubkey: string | undefined
   let identifier: string | undefined
   let kind: number | undefined
-  try {
-    const decoded = nip19.decode<'naddr'>(naddr as `naddr1${string}`)
-    identifier = decoded.data.identifier
-    kind = decoded.data.kind
-    pubkey = decoded.data.pubkey
-  } catch (error) {
-    log(true, LogType.Error, `Failed to decode naddr: ${naddr}`, error)
-    throw new Error('Failed to fetch the mod. The address might be wrong')
+  let decodeError: Error | null = null
+
+  if (naddr) {
+    try {
+      const decoded = nip19.decode<'naddr'>(naddr as `naddr1${string}`)
+      identifier = decoded.data.identifier
+      kind = decoded.data.kind
+      pubkey = decoded.data.pubkey
+    } catch (error) {
+      log(true, LogType.Error, `Failed to decode naddr: ${naddr}`, error)
+      decodeError = new Error(
+        'Failed to fetch the mod. The address might be wrong'
+      )
+    }
   }
 
   const userState = store.getState().user
@@ -56,11 +58,8 @@ const useModData = (): ModPageLoaderResult => {
   const isAdmin = userState.user?.npub === import.meta.env.VITE_REPORTING_NPUB
 
   // Check if editing and the user is the original author
-  // Redirect if NOT
   const isEditMode = location.pathname.includes('edit-mod')
-  if (isEditMode && loggedInUserPubkey !== pubkey) {
-    redirect(appRoutes.mods)
-  }
+  const shouldRedirectEdit = isEditMode && loggedInUserPubkey !== pubkey
 
   const result: ModPageLoaderResult = {
     mod: undefined,
@@ -74,12 +73,12 @@ const useModData = (): ModPageLoaderResult => {
   }
 
   // Set up the filters
-  // Main mod content
+  // Main mod content - use safe defaults if data is missing
   const modFilter: NDKFilter = useMemo(
     () => ({
-      '#a': [identifier],
-      authors: [pubkey],
-      kinds: [kind]
+      '#a': [identifier || ''],
+      authors: [pubkey || ''],
+      kinds: [kind || 0]
     }),
     [identifier, pubkey, kind]
   )
@@ -92,7 +91,7 @@ const useModData = (): ModPageLoaderResult => {
   // Fetch more in case the current blog is included in the latest and filters remove some
   const latestFilter: NDKFilter = useMemo(() => {
     const filter: NDKFilter = {
-      authors: [pubkey],
+      authors: [pubkey || ''],
       kinds: [NDKKind.Article],
       limit: PROFILE_BLOG_FILTER_LIMIT
     }
@@ -113,13 +112,11 @@ const useModData = (): ModPageLoaderResult => {
   }, [pubkey, filterOptions.source, filterOptions.nsfw])
 
   // Parallel fetch mod event, latest events, mute, nsfw, repost lists
+  // All hooks must be called unconditionally
   const { data: modEvent, error: modEventError } = useAsyncLoader(
     useCallback(async () => {
-      if (!ndkContext) {
-        throw new Error('NDK context is not available')
-      }
-      if (!naddr) {
-        throw new Error('Required naddr.')
+      if (!ndkContext || !naddr || decodeError) {
+        throw new Error('NDK context is not available or invalid naddr')
       }
 
       const result = await Promise.race([
@@ -127,13 +124,13 @@ const useModData = (): ModPageLoaderResult => {
         timeout(2000)
       ])
       return result
-    }, [naddr, ndkContext, modFilter])
+    }, [naddr, ndkContext, modFilter, decodeError])
   )
 
   const { data: latestEvents, error: latestEventsError } = useAsyncLoader(
     useCallback(async () => {
-      if (!ndkContext) {
-        throw new Error('NDK context is not available')
+      if (!ndkContext || decodeError) {
+        throw new Error('NDK context is not available or decode error occurred')
       }
 
       const result = await Promise.race([
@@ -142,24 +139,24 @@ const useModData = (): ModPageLoaderResult => {
       ])
 
       return result
-    }, [ndkContext, latestFilter])
+    }, [ndkContext, latestFilter, decodeError])
   )
 
   const { data: muteLists, error: muteListsError } = useAsyncLoader(
     useCallback(async () => {
-      if (!ndkContext) {
-        throw new Error('NDK context is not available')
+      if (!ndkContext || decodeError) {
+        throw new Error('NDK context is not available or decode error occurred')
       }
 
       const result = await ndkContext.getMuteLists(loggedInUserPubkey)
       return result
-    }, [ndkContext, loggedInUserPubkey])
+    }, [ndkContext, loggedInUserPubkey, decodeError])
   )
 
   const { data: nsfwList, error: nsfwListError } = useAsyncLoader(
     useCallback(async () => {
-      if (!ndkContext) {
-        throw new Error('NDK context is not available')
+      if (!ndkContext || decodeError) {
+        throw new Error('NDK context is not available or decode error occurred')
       }
 
       const result = await getReportingSet(
@@ -167,13 +164,13 @@ const useModData = (): ModPageLoaderResult => {
         ndkContext
       )
       return result
-    }, [ndkContext])
+    }, [ndkContext, decodeError])
   )
 
   const { data: repostList, error: repostListError } = useAsyncLoader(
     useCallback(async () => {
-      if (!ndkContext) {
-        throw new Error('NDK context is not available')
+      if (!ndkContext || decodeError) {
+        throw new Error('NDK context is not available or decode error occurred')
       }
 
       const result = await getReportingSet(
@@ -181,7 +178,7 @@ const useModData = (): ModPageLoaderResult => {
         ndkContext
       )
       return result
-    }, [ndkContext])
+    }, [ndkContext, decodeError])
   )
 
   // Process the results
@@ -294,6 +291,20 @@ const useModData = (): ModPageLoaderResult => {
     }
   } else if (repostListError) {
     log(true, LogType.Error, 'Issue fetching repost list', repostListError)
+  }
+
+  // Handle validation and redirects after all hooks are called
+  if (!naddr) {
+    log(true, LogType.Error, 'Required naddr.')
+    redirect(appRoutes.mods)
+  }
+
+  if (decodeError) {
+    throw decodeError
+  }
+
+  if (shouldRedirectEdit) {
+    redirect(appRoutes.mods)
   }
 
   return result

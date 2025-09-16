@@ -155,7 +155,7 @@ export const CommentsPopup = ({
 
   const handleComment = async () => {
     setIsSubmitting(true)
-    const submitted = await handleSubmit(replyText, isNSFW)
+    const submitted = await handleSubmit(replyText, isNSFW, []) // No download links in popup for now
     if (submitted) setReplyText('')
     setIsSubmitting(false)
   }

@@ -23,7 +23,7 @@
     "@nostr-dev-kit/ndk-cache-dexie": "2.6.6",
     "@reduxjs/toolkit": "2.2.6",
     "@types/react-helmet": "^6.1.11",
-    "axios": "^1.8.2",
+    "axios": "^1.12.0",
     "bech32": "2.0.0",
     "buffer": "6.0.3",
     "date-fns": "3.6.0",

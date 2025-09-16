@@ -69,6 +69,8 @@ export interface DownloadUrl {
   modVersion: string
   customNote: string
   mediaUrl?: string
+  automaticHash?: string
+  automaticScanLink?: string
 }
 
 export interface ModDetails extends Omit<ModFormState, 'tags'> {
@@ -83,6 +85,7 @@ export interface MuteLists {
   replaceableEvents: string[]
   hardBlockedAuthors: string[]
   hardBlockedEvents: string[]
+  blockedFileHashes: string[]
 }
 
 export interface ModPageLoaderResult {

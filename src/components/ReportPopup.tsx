@@ -4,6 +4,7 @@ import { useEffect } from 'react'
 import { ReportReason } from 'types/report'
 import { LoadingSpinner } from './LoadingSpinner'
 import { PopupProps } from 'types'
+import { useBodyScrollDisable } from 'hooks'
 
 type ReportPopupProps = {
   openedAt: number
@@ -15,6 +16,8 @@ export const ReportPopup = ({
   reasons,
   handleClose
 }: ReportPopupProps) => {
+  useBodyScrollDisable(true)
+
   // Use openedAt to allow for multiple reports
   // by default, fetcher will remember the data
   const fetcher = useFetcher({ key: openedAt.toString() })

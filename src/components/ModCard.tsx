@@ -9,6 +9,7 @@ import { useDidMount, useNDKContext, useReactions } from 'hooks'
 import { toast } from 'react-toastify'
 import { useComments } from 'hooks/useComments'
 import { NDKKind } from '@nostr-dev-kit/ndk'
+import { ImageWithFallback } from './ImageWithFallback'
 
 export const ModCard = React.memo((props: ModDetails) => {
   const [totalZappedAmount, setTotalZappedAmount] = useState(0)
@@ -47,11 +48,12 @@ export const ModCard = React.memo((props: ModDetails) => {
     <Link className="cardModMainWrapperLink" to={route}>
       <div className="cardModMain">
         <div className="cMMPictureWrapper">
-          <img
+          <ImageWithFallback
             src={props.featuredImageUrl}
             onError={handleModImageError}
             className="cMMPicture"
             alt={`featured image for mod ${props.title}`}
+            prioritizeOriginal={true}
           />
           {props.nsfw && (
             <div className="IBMSMSMBSSTagsTag IBMSMSMBSSTagsTagNSFW IBMSMSMBSSTagsTagNSFWCard">

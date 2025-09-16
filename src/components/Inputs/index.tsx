@@ -1,6 +1,7 @@
 import React, { useCallback } from 'react'
 import { InputError } from './Error'
-import { ImageUpload } from './ImageUpload'
+import { FileUpload } from './FileUpload'
+import { FILE_SIZE_LIMITS } from '../../controllers'
 import '../../styles/styles.css'
 
 interface InputFieldProps {
@@ -188,7 +189,10 @@ export const InputFieldWithImageUpload = React.memo(
           <p className="labelDescriptionMain">{description}</p>
         )}
 
-        <ImageUpload onChange={handleFileChange} />
+        <FileUpload
+          onChange={handleFileChange}
+          maxSize={FILE_SIZE_LIMITS.IMAGE_10MB}
+        />
 
         <input
           type="text"

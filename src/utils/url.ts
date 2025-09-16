@@ -1,3 +1,5 @@
+import { quickValidateUrl } from './fileValidation'
+
 /**
  * Normalizes a given URL by performing the following operations:
  *
@@ -123,48 +125,229 @@ export const isReachable = async (url: string) => {
  * @returns The filename extracted from the URL. If no filename can be extracted, a default name is provided.
  */
 export const getFilenameFromUrl = (url: string): string => {
-  // Create a URL object to parse the provided URL string
-  const urlObj = new URL(url)
+  try {
+    // Create a URL object to parse the provided URL string
+    const urlObj = new URL(url)
 
-  // Extract the pathname from the URL object
-  const pathname = urlObj.pathname
+    // Extract the pathname from the URL object
+    const pathname = urlObj.pathname
 
-  // Extract the filename from the pathname. The filename is the last segment after the last '/'
-  // If pathname is empty or does not end with a filename, use 'downloaded_file' as the default
-  const filename =
-    pathname.substring(pathname.lastIndexOf('/') + 1) || 'downloaded_file'
+    // Extract the filename from the pathname. The filename is the last segment after the last '/'
+    const filename = pathname.substring(pathname.lastIndexOf('/') + 1)
 
-  // Return the extracted filename
-  return filename
+    // If no filename found, use default
+    if (!filename) {
+      return 'downloaded_file.zip'
+    }
+
+    // Check if the filename has an extension
+    const hasExtension = filename.includes('.') && filename.lastIndexOf('.') > 0
+
+    // If no extension, try to determine from common patterns or default to .zip for mod files
+    if (!hasExtension) {
+      // Check if it looks like a hash (common in blossom servers)
+      const hashRegex = /^[a-fA-F0-9]{64}$/
+      if (hashRegex.test(filename)) {
+        return `${filename}.zip`
+      }
+
+      // Default to .zip extension for mod files
+      return `${filename}.zip`
+    }
+
+    // Return the extracted filename with its extension
+    return filename
+  } catch (error) {
+    console.warn('Failed to parse URL for filename extraction:', error)
+    return 'downloaded_file.zip'
+  }
 }
 
 /**
- * Downloads a file from the given URL.
+ * Gets the appropriate MIME type for a file extension
+ * @param extension - File extension (with or without dot)
+ * @returns MIME type string
+ */
+const getMimeTypeFromExtension = (extension: string): string => {
+  const ext = extension.toLowerCase().replace('.', '')
+
+  const mimeTypes: Record<string, string> = {
+    zip: 'application/zip',
+    rar: 'application/vnd.rar',
+    '7z': 'application/x-7z-compressed',
+    tar: 'application/x-tar',
+    gz: 'application/gzip',
+    bz2: 'application/x-bzip2',
+    xz: 'application/x-xz',
+    cab: 'application/vnd.ms-cab-compressed',
+    iso: 'application/x-iso9660-image',
+    tgz: 'application/gzip',
+    exe: 'application/x-msdownload',
+    apk: 'application/vnd.android.package-archive',
+    ipa: 'application/octet-stream',
+    bin: 'application/octet-stream',
+    mod: 'application/octet-stream',
+    pak: 'application/octet-stream',
+    unity: 'application/octet-stream',
+    game: 'application/octet-stream',
+    dmg: 'application/x-apple-diskimage',
+    sav: 'application/octet-stream',
+    cfg: 'text/plain'
+  }
+
+  return mimeTypes[ext] || 'application/octet-stream'
+}
+
+/**
+ * Downloads a file from multiple URLs, trying each one in order until successful.
+ * This handles the case where HEAD requests succeed but GET requests fail with 404.
+ *
+ * @param urls - Array of URLs to try in order.
+ * @param filename - The name of the file to save as.
+ */
+export const downloadFileWithFallback = async (
+  urls: string[],
+  filename: string
+) => {
+  if (!urls || urls.length === 0) {
+    throw new Error('No URLs provided for download')
+  }
+
+  let lastError: Error | null = null
+
+  for (let i = 0; i < urls.length; i++) {
+    const url = urls[i]
+
+    try {
+      // Extract file extension from filename
+      const extension = filename.substring(filename.lastIndexOf('.'))
+      const mimeType = getMimeTypeFromExtension(extension)
+
+      // Fetch the file with proper handling of blossom server responses
+      const response = await fetch(url, { redirect: 'follow' })
+
+      // Handle blossom server responses: 200, 206 (Partial Content)
+      const validStatuses = [200, 206]
+      if (!validStatuses.includes(response.status)) {
+        if (response.status === 404) {
+          lastError = new Error(`HTTP 404: File not found at ${url}`)
+          continue
+        } else if (response.status === 302 || response.status === 301) {
+          lastError = new Error(
+            `HTTP ${response.status}: Redirect not handled at ${url}`
+          )
+          continue
+        } else {
+          lastError = new Error(`HTTP error! status: ${response.status}`)
+          continue
+        }
+      }
+
+      // Quick validation to detect fake 404 responses
+      try {
+        // Extract hash from URL if available for validation
+        const hashMatch = url.match(
+          /\/([a-fA-F0-9]{64})(?:\.[a-zA-Z0-9]+)?(?:\/|$)/
+        )
+        const extractedHash = hashMatch ? hashMatch[1] : ''
+
+        if (extractedHash) {
+          const isValidContent = await quickValidateUrl(url)
+          if (!isValidContent) {
+            console.warn(
+              `[Download] URL ${i + 1} failed content validation (likely fake 404), trying next URL if available`
+            )
+            lastError = new Error(
+              `Content validation failed: likely fake 404 response from ${url}`
+            )
+            continue
+          }
+        }
+      } catch (validationError) {
+        console.warn(
+          `[Download] Content validation error for URL ${i + 1}:`,
+          validationError
+        )
+        // Continue anyway - validation error doesn't necessarily mean the file is invalid
+      }
+
+      // Get the blob with the correct MIME type
+      const blob = await response.blob()
+
+      // Create a new blob with the correct MIME type to ensure proper file extension
+      const correctedBlob = new Blob([blob], { type: mimeType })
+
+      // Create object URL
+      const blobUrl = URL.createObjectURL(correctedBlob)
+
+      // Create a temporary anchor element
+      const a = document.createElement('a')
+
+      // Set the href attribute to the blob URL
+      a.href = blobUrl
+
+      // Set the download attribute with the desired file name
+      a.download = filename
+
+      // Append the anchor to the body (not displayed)
+      document.body.appendChild(a)
+
+      // Programmatically trigger a click event on the anchor to start the download
+      a.click()
+
+      // Clean up: remove the anchor and revoke the object URL
+      document.body.removeChild(a)
+      URL.revokeObjectURL(blobUrl)
+
+      return // Success, exit the function
+    } catch (error) {
+      lastError =
+        error instanceof Error ? error : new Error('Unknown error occurred')
+
+      // If this is the last URL, try the fallback method
+      if (i === urls.length - 1) {
+        console.log(
+          '[Download] All blob downloads failed, trying fallback method with last URL'
+        )
+
+        try {
+          // Fallback to the original anchor-based method with the last URL
+          const a = document.createElement('a')
+          a.href = url
+          a.download = filename
+          a.setAttribute('target', '_blank')
+          document.body.appendChild(a)
+          a.click()
+          document.body.removeChild(a)
+
+          return // Success with fallback method
+        } catch (fallbackError) {
+          console.error(
+            '[Download] ✗ Fallback method also failed:',
+            fallbackError
+          )
+          lastError =
+            fallbackError instanceof Error
+              ? fallbackError
+              : new Error('Fallback method failed')
+        }
+      }
+    }
+  }
+
+  // If we get here, all URLs failed
+  throw lastError || new Error('All download URLs failed')
+}
+
+/**
+ * Downloads a file from the given URL using a blob-based approach to preserve file extension.
  *
  * @param url - The URL of the file to download.
  * @param filename - The name of the file to save as.
  */
-export const downloadFile = (url: string, filename: string) => {
-  // Create a temporary anchor element
-  const a = document.createElement('a')
-
-  // Set the href attribute to the file's URL
-  a.href = url
-
-  // Set the download attribute with the desired file name
-  a.download = filename
-
-  // Set target="_blank" to ensure that link opens in new tab
-  a.setAttribute('target', '_blank')
-
-  // Append the anchor to the body (not displayed)
-  document.body.appendChild(a)
-
-  // Programmatically trigger a click event on the anchor to start the download
-  a.click()
-
-  // Remove the anchor from the document
-  document.body.removeChild(a)
+export const downloadFile = async (url: string, filename: string) => {
+  // Use the new downloadFileWithFallback function with a single URL
+  await downloadFileWithFallback([url], filename)
 }
 
 /**

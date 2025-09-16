@@ -13,13 +13,15 @@ export const useMuteLists = () => {
       authors: [],
       replaceableEvents: [],
       hardBlockedAuthors: [],
-      hardBlockedEvents: []
+      hardBlockedEvents: [],
+      blockedFileHashes: []
     },
     user: {
       authors: [],
       replaceableEvents: [],
       hardBlockedAuthors: [],
-      hardBlockedEvents: []
+      hardBlockedEvents: [],
+      blockedFileHashes: []
     }
   })
 

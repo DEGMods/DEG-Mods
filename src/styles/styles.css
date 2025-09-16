@@ -725,6 +725,37 @@ a:hover {
   }
 }
 
+@keyframes swoosh {
+  0% {
+    transform: translateX(-100%);
+  }
+  100% {
+    transform: translateX(100%);
+  }
+}
+
+.swooshLoading {
+  position: relative;
+  overflow: hidden;
+}
+
+.swooshLoading::before {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  background: linear-gradient(
+    90deg,
+    transparent,
+    rgba(255, 255, 255, 0.3),
+    transparent
+  );
+  animation: swoosh 2s ease-in-out infinite;
+  pointer-events: none;
+}
+
 .uploadBoxMain {
   background: hsl(0deg 0% 0% / 10%);
   border-radius: 10px;

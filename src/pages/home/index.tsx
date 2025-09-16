@@ -6,6 +6,7 @@ import { Swiper, SwiperSlide } from 'swiper/react'
 import { BlogCard } from '../../components/BlogCard'
 import { GameCard } from '../../components/GameCard'
 import { ModCard } from '../../components/ModCard'
+import { ImageWithFallback } from '../../components/ImageWithFallback'
 import { LANDING_PAGE_DATA, PROFILE_BLOG_FILTER_LIMIT } from '../../constants'
 import {
   useAppSelector,
@@ -174,10 +175,11 @@ const SlideContent = ({ naddr }: SlideContentProps) => {
   return (
     <>
       <div className="IBMSMSCWSPicWrapper">
-        <img
+        <ImageWithFallback
           src={mod.featuredImageUrl}
           onError={handleModImageError}
           className="IBMSMSCWSPic"
+          prioritizeOriginal={true}
         />
       </div>
       <div className="IBMSMSCWSInfo">

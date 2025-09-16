@@ -10,7 +10,8 @@ import {
   CommentEvent,
   ModPageLoaderResult,
   CommentsSortBy,
-  CommentsFilterOptions
+  CommentsFilterOptions,
+  ModDetails
 } from 'types'
 import { DEFAULT_COMMENT_FILTER_OPTIONS, handleCommentSubmit } from 'utils'
 import { Filter } from './Filter'
@@ -18,7 +19,7 @@ import { CommentForm } from './CommentForm'
 import { Comment } from './Comment'
 
 type Props = {
-  addressable: Addressable
+  addressable: Addressable & Partial<ModDetails> // Support both basic Addressable and full ModDetails
   setCommentCount: Dispatch<SetStateAction<number>>
 }
 
@@ -105,7 +106,12 @@ export const Comments = ({ addressable, setCommentCount }: Props) => {
       <h4 className="IBMSMSMBSSTitle">Comments</h4>
       <div className="IBMSMSMBSSComments">
         {/* Hide comment form if aTag is missing */}
-        {!!addressable.aTag && <CommentForm handleSubmit={handleSubmit} />}
+        {!!addressable.aTag && (
+          <CommentForm
+            handleSubmit={handleSubmit}
+            modDownloadUrls={addressable.downloadUrls || []}
+          />
+        )}
         <div>
           <button
             type="button"

@@ -17,7 +17,9 @@ import {
   MOD_FILTER_LIMIT,
   T_TAG_VALUE,
   HARD_BLOCK_LIST_KIND,
-  HARD_BLOCK_TAG
+  HARD_BLOCK_TAG,
+  HASH_BLOCK_LIST_KIND,
+  HASH_BLOCK_TAG
 } from 'constants.ts'
 import { Dexie } from 'dexie'
 import { createContext, ReactNode, useEffect, useMemo } from 'react'
@@ -474,6 +476,7 @@ export const NDKContextProvider = ({ children }: { children: ReactNode }) => {
     const adminMutedPosts = new Set<string>()
     const adminHardBlockedAuthors = new Set<string>()
     const adminHardBlockedPosts = new Set<string>()
+    const adminBlockedFileHashes = new Set<string>()
 
     const reportingNpub = import.meta.env.VITE_REPORTING_NPUB
     const adminHexKey = npubToHex(reportingNpub)
@@ -513,6 +516,23 @@ export const NDKContextProvider = ({ children }: { children: ReactNode }) => {
           }
         })
       }
+
+      // Get hash block list
+      const hashBlockListEvent = await fetchEvent({
+        kinds: [HASH_BLOCK_LIST_KIND],
+        authors: [adminHexKey],
+        '#d': [HASH_BLOCK_TAG]
+      })
+
+      if (hashBlockListEvent) {
+        const list = NDKList.from(hashBlockListEvent)
+        list.items.forEach((item) => {
+          if (item[0] === 'x') {
+            // 'x' tag is used for file hashes in NIP-94
+            adminBlockedFileHashes.add(item[1])
+          }
+        })
+      }
     }
 
     const userMutedAuthors = new Set<string>()
@@ -545,13 +565,15 @@ export const NDKContextProvider = ({ children }: { children: ReactNode }) => {
         authors: Array.from(adminMutedAuthors),
         replaceableEvents: Array.from(adminMutedPosts),
         hardBlockedAuthors: Array.from(adminHardBlockedAuthors),
-        hardBlockedEvents: Array.from(adminHardBlockedPosts)
+        hardBlockedEvents: Array.from(adminHardBlockedPosts),
+        blockedFileHashes: Array.from(adminBlockedFileHashes)
       },
       user: {
         authors: Array.from(userMutedAuthors),
         replaceableEvents: Array.from(userMutedPosts),
         hardBlockedAuthors: [],
-        hardBlockedEvents: []
+        hardBlockedEvents: [],
+        blockedFileHashes: []
       }
     }
   }

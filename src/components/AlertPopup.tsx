@@ -1,6 +1,7 @@
 import { createPortal } from 'react-dom'
 import { PropsWithChildren } from 'react'
 import { AlertPopupProps } from 'types'
+import { useBodyScrollDisable } from 'hooks'
 
 export const AlertPopup = ({
   header,
@@ -13,6 +14,7 @@ export const AlertPopup = ({
   noButtonColor,
   children
 }: PropsWithChildren<AlertPopupProps>) => {
+  useBodyScrollDisable(true)
   return createPortal(
     <div className="popUpMain">
       <div className="ContainerMain">

@@ -42,6 +42,7 @@ import { Reactions } from './Reactions'
 import { Zap } from './Zap'
 import { nip19 } from 'nostr-tools'
 import { CommentContent } from './CommentContent'
+import { CommentDropdown } from './CommentDropdown'
 import { NoteQuoteRepostPopup } from 'components/Notes/NoteQuoteRepostPopup'
 import { NoteRepostPopup } from 'components/Notes/NoteRepostPopup'
 import { useComments } from 'hooks/useComments'
@@ -52,6 +53,7 @@ import { useDeleted } from 'hooks/useDeleted'
 import { LoadingSpinner } from 'components/LoadingSpinner'
 import { ServerService } from 'controllers/server'
 import { useIsCommentWoT } from './useIsCommentWoT'
+import '../../styles/comment-dropdown.css'
 
 interface CommentProps {
   comment: CommentEvent
@@ -266,19 +268,29 @@ export const Comment = ({ comment, shouldShowMedia = false }: CommentProps) => {
                   {hexToNpub(comment.event.pubkey)}
                 </Link>
               </div>
-              {comment.event.created_at && (
-                <div className="IBMSMSMBSSCL_CommentActionsDetails">
-                  <a className="IBMSMSMBSSCL_CADTime">
-                    {formatDate(
-                      comment.event.created_at * 1000,
-                      'hh:mm aa'
-                    )}{' '}
-                  </a>
-                  <a className="IBMSMSMBSSCL_CADDate">
-                    {formatDate(comment.event.created_at * 1000, 'dd/MM/yyyy')}
-                  </a>
-                </div>
-              )}
+              <div className="IBMSMSMBSSCL_CommentTopRightSection">
+                <CommentDropdown
+                  comment={comment.event}
+                  userPubkey={userPubkey}
+                  onRequestDeletion={() => setShowDeletePopup(true)}
+                />
+                {comment.event.created_at && (
+                  <div className="IBMSMSMBSSCL_CommentActionsDetails">
+                    <a className="IBMSMSMBSSCL_CADTime">
+                      {formatDate(
+                        comment.event.created_at * 1000,
+                        'hh:mm aa'
+                      )}{' '}
+                    </a>
+                    <a className="IBMSMSMBSSCL_CADDate">
+                      {formatDate(
+                        comment.event.created_at * 1000,
+                        'dd/MM/yyyy'
+                      )}
+                    </a>
+                  </div>
+                )}
+              </div>
             </div>
           </div>
           <div className="IBMSMSMBSSCL_CommentBottom">
@@ -408,17 +420,6 @@ export const Comment = ({ comment, shouldShowMedia = false }: CommentProps) => {
                 >
                   <p className="IBMSMSMBSSCL_CAElementText">Reply</p>
                 </Link>
-                {userPubkey === comment.event.pubkey && (
-                  <div
-                    className="IBMSMSMBSSCL_CAElement IBMSMSMBSSCL_CAEReply"
-                    style={{ color: 'rgba(255, 70, 70, 0.65)' }}
-                    onClick={() => setShowDeletePopup(true)}
-                  >
-                    <p className="IBMSMSMBSSCL_CAElementText">
-                      Request Deletion
-                    </p>
-                  </div>
-                )}
               </div>
             </div>
           )}

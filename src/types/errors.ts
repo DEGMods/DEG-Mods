@@ -68,3 +68,23 @@ export class TimeoutError extends Error {
     Object.setPrototypeOf(this, TimeoutError.prototype)
   }
 }
+
+// Queue context types for better type safety
+export interface QueueContext {
+  queueToken?: string | null
+  position?: number
+  header?: string
+  rawResponse?: string
+  auth?: string | null
+}
+
+export const DEGMODS_ERROR_MESSAGES = {
+  UPLOAD_QUEUE_FULL: 'Server is busy. Your upload is queued.',
+  UPLOAD_QUEUE_POSITION: 'Waiting in upload queue...',
+  UPLOAD_QUEUE_EXPIRED: 'Upload queue expired. Please try uploading again.',
+  INVALID_FILE_TYPE: 'This file type is not allowed.',
+  AUTH_MISSING_SHA256: 'Upload authentication failed.',
+  SERVER_OUT_OF_SPACE: 'Server storage is full.',
+  FILE_TOO_LARGE: 'File is too large for this server.',
+  UPLOAD_DISABLED: 'Uploads are currently disabled on this server.'
+}

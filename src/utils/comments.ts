@@ -3,6 +3,11 @@ import { toast } from 'react-toastify'
 import { CommentEvent, CommentEventStatus } from 'types'
 import { log, LogType } from './utils'
 
+export interface DownloadLink {
+  url: string
+  title?: string
+}
+
 export function handleCommentSubmit(
   event: NDKEvent | undefined,
   setCommentEvents: React.Dispatch<React.SetStateAction<CommentEvent[]>>,
@@ -11,7 +16,8 @@ export function handleCommentSubmit(
 ) {
   return async (
     content: string,
-    isNSFW: boolean | undefined = false
+    isNSFW: boolean | undefined = false,
+    downloadLinks: DownloadLink[] = []
   ): Promise<boolean> => {
     if (content === '') return false
 
@@ -23,12 +29,20 @@ export function handleCommentSubmit(
       const reply = event.reply()
       reply.content = content.trim()
 
-      // Add r tag to track the source of the comment
-      reply.tags.push(['r', window.location.host])
-
       // Add NSFW tag if the comment is marked as NSFW
       if (isNSFW) {
         reply.tags.push(['nsfw', 'true'])
+      }
+
+      // Add original download links as r tags (no validation or blossom server processing)
+      if (downloadLinks.length > 0) {
+        downloadLinks.forEach((link) => {
+          const downloadTag = link.title
+            ? ['r', link.url, 'download', link.title]
+            : ['r', link.url, 'download']
+
+          reply.tags.push(downloadTag)
+        })
       }
 
       setCommentEvents((prev) => {

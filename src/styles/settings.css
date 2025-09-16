@@ -8,9 +8,9 @@
 .relayListItem {
   width: 100%;
   border-radius: 10px;
-  background: rgba(255,255,255,0.1);
-  border: solid 1px rgba(255,255,255,0.1);
-  box-shadow: 0 0 8px 0 rgb(0,0,0,0.1);
+  background: rgba(255, 255, 255, 0.1);
+  border: solid 1px rgba(255, 255, 255, 0.1);
+  box-shadow: 0 0 8px 0 rgb(0, 0, 0, 0.1);
   display: flex;
   flex-direction: row;
   grid-gap: 0px;
@@ -18,7 +18,7 @@
 }
 
 .relayListItemSec {
-  padding: 5px 15px;
+  padding: 5px 10px;
 }
 
 .relayListItemSec.relayListItemSecPic {
@@ -26,13 +26,13 @@
   flex-direction: column;
   justify-content: center;
   align-items: center;
-  background: rgba(255,255,255,0.1);
+  background: rgba(255, 255, 255, 0.1);
 }
 
 .relayListItemSecPicImg {
   width: 25px;
   height: 25px;
-  background: rgba(0,0,0,0.1);
+  background: rgba(0, 0, 0, 0.1);
   border-radius: 5px;
 }
 
@@ -40,11 +40,11 @@
   flex-grow: 1;
   display: flex;
   flex-direction: column;
-  grid-gap: 5px;
 }
 
 .relayListItemSec.relayListItemSecActions {
-  width: 75px;
+  margin: 5px;
+  width: 45px;
   display: flex;
   flex-direction: column;
   grid-gap: 10px;
@@ -60,6 +60,5 @@
   flex-direction: row;
   flex-wrap: wrap;
   grid-gap: 10px;
-  color: rgba(255,255,255,0.5);
+  color: rgba(255, 255, 255, 0.5);
 }
-

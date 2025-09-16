@@ -2,6 +2,7 @@ import { createPortal } from 'react-dom'
 import { PropsWithChildren } from 'react'
 import { NDKEvent } from '@nostr-dev-kit/ndk'
 import { NoteSubmit } from './NoteSubmit'
+import { useBodyScrollDisable } from '../../hooks'
 
 interface NoteQuoteRepostPopup {
   ndkEvent: NDKEvent
@@ -12,6 +13,8 @@ export const NoteQuoteRepostPopup = ({
   ndkEvent,
   handleClose
 }: PropsWithChildren<NoteQuoteRepostPopup>) => {
+  useBodyScrollDisable(true)
+
   const content = `nostr:${ndkEvent.encode()}`
 
   return createPortal(
