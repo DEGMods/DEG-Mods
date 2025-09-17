@@ -208,7 +208,7 @@ export const ImageWithFallback: React.FC<ImageWithFallbackProps> = ({
   const shouldShowIcon = showVerificationIcon && hash && !isSearching
 
   return (
-    <div className="image-with-fallback-container">
+    <div className="image-with-fallback-container IBMSMSCWSPicWrapper">
       <img
         src={actualImageUrl}
         alt={alt}

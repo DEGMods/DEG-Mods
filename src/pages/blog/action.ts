@@ -1,5 +1,10 @@
 import { NDKFilter, NDKKind } from '@nostr-dev-kit/ndk'
-import { HARD_BLOCK_LIST_KIND, HARD_BLOCK_TAG } from 'constants.ts'
+import {
+  HARD_BLOCK_LIST_KIND,
+  HARD_BLOCK_TAG,
+  ILLEGAL_BLOCK_LIST_KIND,
+  ILLEGAL_BLOCK_TAG
+} from 'constants.ts'
 import { NDKContextType } from 'contexts/NDKContext'
 import { nip19, UnsignedEvent } from 'nostr-tools'
 import { ActionFunctionArgs } from 'react-router-dom'
@@ -393,8 +398,118 @@ export const blogRouteAction =
       return null
     }
 
+    const handleIllegalBlock = async () => {
+      const filter: NDKFilter = {
+        kinds: [ILLEGAL_BLOCK_LIST_KIND],
+        authors: [hexPubkey],
+        '#d': [ILLEGAL_BLOCK_TAG]
+      }
+
+      const illegalBlockListEvent = await ndkContext.fetchEventFromUserRelays(
+        filter,
+        hexPubkey,
+        UserRelaysType.Write
+      )
+
+      let unsignedEvent: UnsignedEvent
+      if (illegalBlockListEvent) {
+        const tags = illegalBlockListEvent.tags
+        const alreadyExists =
+          tags.findIndex((item) => item[0] === 'a' && item[1] === aTag) !== -1
+
+        if (alreadyExists) {
+          toast.warn(`Blog reference is already in illegal block list`)
+          return null
+        }
+
+        tags.push(['a', aTag])
+        unsignedEvent = {
+          pubkey: illegalBlockListEvent.pubkey,
+          kind: ILLEGAL_BLOCK_LIST_KIND,
+          content: illegalBlockListEvent.content,
+          created_at: now(),
+          tags: [...tags]
+        }
+      } else {
+        unsignedEvent = {
+          pubkey: hexPubkey,
+          kind: ILLEGAL_BLOCK_LIST_KIND,
+          content: '',
+          created_at: now(),
+          tags: [
+            ['d', ILLEGAL_BLOCK_TAG],
+            ['a', aTag]
+          ]
+        }
+      }
+
+      const isUpdated = await signAndPublish(
+        unsignedEvent,
+        ndkContext.ndk,
+        ndkContext.publish
+      )
+
+      if (!isUpdated) {
+        toast.error('Failed to update illegal block list')
+      }
+      return null
+    }
+
+    const handleIllegalUnblock = async () => {
+      const filter: NDKFilter = {
+        kinds: [ILLEGAL_BLOCK_LIST_KIND],
+        authors: [hexPubkey],
+        '#d': [ILLEGAL_BLOCK_TAG]
+      }
+
+      const illegalBlockListEvent = await ndkContext.fetchEventFromUserRelays(
+        filter,
+        hexPubkey,
+        UserRelaysType.Write
+      )
+
+      if (!illegalBlockListEvent) {
+        toast.error(`Couldn't get illegal block list event from relays`)
+        return null
+      }
+
+      const tags = illegalBlockListEvent.tags
+      const filteredTags = tags.filter((item) => {
+        if (item[0] === 'd' && item[1] === ILLEGAL_BLOCK_TAG) {
+          return true
+        }
+
+        return !(item[0] === 'a' && item[1] === aTag)
+      })
+      const unsignedEvent: UnsignedEvent = {
+        pubkey: illegalBlockListEvent.pubkey,
+        kind: ILLEGAL_BLOCK_LIST_KIND,
+        content: illegalBlockListEvent.content,
+        created_at: now(),
+        tags: filteredTags
+      }
+
+      const isUpdated = await signAndPublish(
+        unsignedEvent,
+        ndkContext.ndk,
+        ndkContext.publish
+      )
+
+      if (!isUpdated) {
+        toast.error('Failed to update illegal block list')
+      }
+      return null
+    }
+
     const requestData = formData as {
-      intent: 'nsfw' | 'block' | 'delete' | 'hardblock' | 'hardunblock'
+      intent:
+        | 'nsfw'
+        | 'block'
+        | 'delete'
+        | 'hardblock'
+        | 'hardunblock'
+        | 'illegalblock'
+        | 'illegalunblock'
       value: boolean
     }
 
@@ -405,6 +520,12 @@ export const blogRouteAction =
 
       case 'hardblock':
         await (requestData.value ? handleHardBlock() : handleHardUnblock())
+        break
+
+      case 'illegalblock':
+        await (requestData.value
+          ? handleIllegalBlock()
+          : handleIllegalUnblock())
         break
 
       case 'nsfw':

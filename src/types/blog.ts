@@ -44,7 +44,10 @@ export interface BlogPageLoaderResult {
   isBlocked: boolean
   isHardBlocked: boolean
   hardBlockedType?: 'post' | 'user'
+  isIllegalBlocked: boolean
+  illegalBlockedType?: 'post' | 'user'
   postWarning?: 'user' | 'admin'
+  isBlockCheckComplete: boolean
 }
 
 export interface BlogsFilterOptions {

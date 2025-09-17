@@ -77,21 +77,33 @@ export const useFilteredBlogs = (
           muteLists.admin.authors.includes(blog.author) ||
           muteLists.admin.replaceableEvents.includes(blog.naddr) ||
           muteLists.admin.hardBlockedAuthors.includes(blog.author) ||
-          muteLists.admin.hardBlockedEvents.includes(blog.naddr)
+          muteLists.admin.hardBlockedEvents.includes(blog.naddr) ||
+          muteLists.admin.illegalBlockedAuthors.includes(blog.author) ||
+          muteLists.admin.illegalBlockedEvents.includes(blog.naddr)
       )
     } else if (
       isUnmoderatedFully &&
       (isAdmin || isOwner || enhancedModeration)
     ) {
       // Allow "Unmoderated Fully" when author visits own profile or has enhanced moderation enabled
-      // Only apply filtering if the user is not an admin or the admin has not selected "Unmoderated Fully"
+      // Admins can see all content including illegal blocks in "Unmoderated Fully" mode
+      // No filtering applied
+      if (!isAdmin) {
+        filtered = filtered.filter(
+          (blog) =>
+            !muteLists.admin.illegalBlockedAuthors.includes(blog.author) &&
+            !muteLists.admin.illegalBlockedEvents.includes(blog.naddr)
+        )
+      }
     } else {
       filtered = filtered.filter(
         (blog) =>
           !muteLists.admin.authors.includes(blog.author) &&
           !muteLists.admin.replaceableEvents.includes(blog.naddr) &&
           !muteLists.admin.hardBlockedAuthors.includes(blog.author) &&
-          !muteLists.admin.hardBlockedEvents.includes(blog.naddr)
+          !muteLists.admin.hardBlockedEvents.includes(blog.naddr) &&
+          !muteLists.admin.illegalBlockedAuthors.includes(blog.author) &&
+          !muteLists.admin.illegalBlockedEvents.includes(blog.naddr)
       )
     }
 
@@ -123,6 +135,8 @@ export const useFilteredBlogs = (
     muteLists.admin.replaceableEvents,
     muteLists.admin.hardBlockedAuthors,
     muteLists.admin.hardBlockedEvents,
+    muteLists.admin.illegalBlockedAuthors,
+    muteLists.admin.illegalBlockedEvents,
     muteLists.user.authors,
     muteLists.user.replaceableEvents,
     deletedBlogIds,

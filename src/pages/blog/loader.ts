@@ -99,7 +99,10 @@ export const blogRouteLoader =
         isAddedToNSFW: false,
         isBlocked: false,
         isHardBlocked: false,
-        hardBlockedType: undefined
+        hardBlockedType: undefined,
+        isIllegalBlocked: false,
+        illegalBlockedType: undefined,
+        isBlockCheckComplete: false
       }
 
       // Check the blog event result
@@ -143,10 +146,42 @@ export const blogRouteLoader =
 
       const muteLists = settled[2]
       if (muteLists.status === 'fulfilled' && muteLists.value) {
+        // Mark block check as complete once mute lists are loaded
+        result.isBlockCheckComplete = true
+
         if (muteLists && muteLists.value) {
           if (result.blog && result.blog.aTag) {
-            // Check for hard blocks first
+            // Check for illegal blocks first (highest priority)
             if (
+              muteLists.value.admin.illegalBlockedEvents.includes(
+                result.blog.aTag
+              ) ||
+              (result.blog.author &&
+                muteLists.value.admin.illegalBlockedAuthors.includes(
+                  result.blog.author
+                ))
+            ) {
+              result.isIllegalBlocked = true
+              result.postWarning = 'admin'
+
+              // Determine whether the post or user is blocked
+              if (
+                muteLists.value.admin.illegalBlockedEvents.includes(
+                  result.blog.aTag
+                )
+              ) {
+                result.illegalBlockedType = 'post'
+              } else if (
+                result.blog.author &&
+                muteLists.value.admin.illegalBlockedAuthors.includes(
+                  result.blog.author
+                )
+              ) {
+                result.illegalBlockedType = 'user'
+              }
+            }
+            // Check for hard blocks second
+            else if (
               muteLists.value.admin.hardBlockedEvents.includes(
                 result.blog.aTag
               ) ||
@@ -200,6 +235,9 @@ export const blogRouteLoader =
                 result.blog.aTag
               ) &&
               !muteLists.value.admin.hardBlockedEvents.includes(
+                result.blog.aTag
+              ) &&
+              !muteLists.value.admin.illegalBlockedEvents.includes(
                 result.blog.aTag
               )
             ) {

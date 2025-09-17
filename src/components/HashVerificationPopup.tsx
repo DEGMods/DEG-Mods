@@ -210,6 +210,16 @@ export const HashVerificationPopup = ({
           )
           throw new Error('Failed to parse challenge response')
         }
+      } else if (response.ok && isChallengableUrl(downloadUrl)) {
+        console.log(
+          '[HashVerification] Challengeable URL approved immediately (grace period) - proceeding with direct download'
+        )
+        console.log(
+          '[HashVerification] Status:',
+          response.status,
+          'Challengeable:',
+          isChallengableUrl(downloadUrl)
+        )
       } else {
         console.log(
           '[HashVerification] No challenge required - proceeding with direct download'
@@ -576,11 +586,9 @@ export const HashVerificationPopup = ({
           downloadedFile,
           downloadUrl: allUrls[startIndex]
         })
-        // Only auto-download if this wasn't a challengeable URL
-        // (challengeable URLs should only download after challenge completion)
-        if (!isChallengableUrl(allUrls[startIndex])) {
-          downloadVerifiedFile(downloadedFile)
-        }
+        // Auto-download the file
+        // This includes challengeable URLs that were immediately approved (grace period)
+        downloadVerifiedFile(downloadedFile)
         return
       } catch (error) {
         setVerificationResult({
@@ -673,11 +681,9 @@ export const HashVerificationPopup = ({
             downloadUrl,
             validationResult
           })
-          // Only auto-download if this wasn't a challengeable URL
-          // (challengeable URLs should only download after challenge completion)
-          if (!isChallengableUrl(downloadUrl)) {
-            downloadVerifiedFile(downloadedFile)
-          }
+          // Auto-download the verified file
+          // This includes challengeable URLs that were immediately approved (grace period)
+          downloadVerifiedFile(downloadedFile)
           return
         } else {
           setVerificationResult({
@@ -1077,8 +1083,11 @@ export const HashVerificationPopup = ({
                     fontWeight: 'bold'
                   }}
                 >
-                  {hasValidHash
-                    ? 'Hash verified and file downloaded!'
+                  {verificationResult.downloadUrl &&
+                  isChallengableUrl(verificationResult.downloadUrl)
+                    ? hasValidHash
+                      ? 'Hash verified and file downloaded!'
+                      : 'File downloaded!'
                     : 'File downloaded!'}
                 </span>
               </div>

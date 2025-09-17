@@ -36,6 +36,7 @@ import { NDKEvent, NDKNip07Signer } from '@nostr-dev-kit/ndk'
 import { log, LogType } from 'utils'
 import { ServerService } from 'controllers/server'
 import { HardBlockedContent } from 'components/HardBlockedContent'
+import { IllegalBlockedContent } from 'components/IllegalBlockedContent'
 
 const BLOG_REPORT_REASONS = [
   { label: 'Actually CP', key: 'actuallyCP' },
@@ -55,7 +56,10 @@ export const BlogPage = () => {
     isBlocked,
     isHardBlocked,
     hardBlockedType,
-    postWarning
+    isIllegalBlocked,
+    illegalBlockedType,
+    postWarning,
+    isBlockCheckComplete
   } = useLoaderData() as BlogPageLoaderResult
   const userState = useAppSelector((state) => state.user)
   const { ndk } = useNDKContext()
@@ -117,6 +121,21 @@ export const BlogPage = () => {
         {
           intent: 'hardblock',
           value: !(isHardBlocked && hardBlockedType === 'post')
+        },
+        {
+          method: 'post',
+          encType: 'application/json'
+        }
+      )
+    }
+  }
+
+  const handleIllegalBlock = () => {
+    if (navigation.state === 'idle') {
+      submit(
+        {
+          intent: 'illegalblock',
+          value: !(isIllegalBlocked && illegalBlockedType === 'post')
         },
         {
           method: 'post',
@@ -197,7 +216,16 @@ export const BlogPage = () => {
       <div className="ContainerMain">
         <div className="IBMSecMainGroup IBMSecMainGroupAlt">
           <div className="IBMSMSplitMain">
-            {isHardBlocked && !isAdmin ? (
+            {!isBlockCheckComplete ? (
+              <div
+                className="d-flex justify-content-center align-items-center"
+                style={{ minHeight: '200px' }}
+              >
+                <LoadingSpinner desc="Checking content restrictions" />
+              </div>
+            ) : isIllegalBlocked && !isAdmin ? (
+              <IllegalBlockedContent illegalBlockedType={illegalBlockedType} />
+            ) : isHardBlocked && !isAdmin ? (
               <HardBlockedContent hardBlockedType={hardBlockedType} />
             ) : (
               <>
@@ -210,6 +238,8 @@ export const BlogPage = () => {
                             type={postWarning}
                             isHardBlocked={isHardBlocked}
                             hardBlockedType={hardBlockedType}
+                            isIllegalBlocked={isIllegalBlocked}
+                            illegalBlockedType={illegalBlockedType}
                           />
                         )}
                         <div className="IBMSMSMBSSPost">
@@ -427,6 +457,29 @@ export const BlogPage = () => {
                                           : 'Hard Block'}{' '}
                                         Post
                                       </a>
+                                      <a
+                                        className="dropdown-item dropdownMainMenuItem"
+                                        onClick={handleIllegalBlock}
+                                        style={{
+                                          color: 'rgba(255, 20, 20, 1)'
+                                        }}
+                                      >
+                                        <svg
+                                          xmlns="http://www.w3.org/2000/svg"
+                                          viewBox="0 0 512 512"
+                                          width="1em"
+                                          height="1em"
+                                          fill="currentColor"
+                                          className="IBMSMSMSSS_Author_Top_Icon"
+                                        >
+                                          <path d="M256 0C114.6 0 0 114.6 0 256s114.6 256 256 256s256-114.6 256-256S397.4 0 256 0zM256 464c-114.7 0-208-93.31-208-208S141.3 48 256 48s208 93.31 208 208S370.7 464 256 464zM175 175c9.4-9.4 24.6-9.4 33.9 0l47 47 47-47c9.4-9.4 24.6-9.4 33.9 0s9.4 24.6 0 33.9l-47 47 47 47c9.4 9.4 9.4 24.6 0 33.9s-24.6 9.4-33.9 0l-47-47-47 47c-9.4 9.4-24.6 9.4-33.9 0s-9.4-24.6 0-33.9l47-47-47-47c-9.4-9.4-9.4-24.6 0-33.9z"></path>
+                                        </svg>
+                                        {isIllegalBlocked &&
+                                        illegalBlockedType === 'post'
+                                          ? 'Illegal Unblock'
+                                          : 'Illegal Block'}{' '}
+                                        Post
+                                      </a>
                                     </>
                                   )}
                                 </div>
@@ -523,9 +576,10 @@ export const BlogPage = () => {
                 )}
               </>
             )}
-            {!!blog?.author && (!isHardBlocked || isAdmin) && (
-              <ProfileSection pubkey={blog.author} />
-            )}
+            {!!blog?.author &&
+              ((!isHardBlocked && !isIllegalBlocked) || isAdmin) && (
+                <ProfileSection pubkey={blog.author} />
+              )}
             <Outlet key={nevent} />
             {showNsfwPopup && (
               <NsfwAlertPopup

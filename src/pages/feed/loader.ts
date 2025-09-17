@@ -34,6 +34,8 @@ export const feedPageLoader =
           replaceableEvents: [],
           hardBlockedAuthors: [],
           hardBlockedEvents: [],
+          illegalBlockedAuthors: [],
+          illegalBlockedEvents: [],
           blockedFileHashes: []
         },
         user: {
@@ -41,6 +43,8 @@ export const feedPageLoader =
           replaceableEvents: [],
           hardBlockedAuthors: [],
           hardBlockedEvents: [],
+          illegalBlockedAuthors: [],
+          illegalBlockedEvents: [],
           blockedFileHashes: []
         }
       },

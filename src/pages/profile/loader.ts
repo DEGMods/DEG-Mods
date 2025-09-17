@@ -88,6 +88,8 @@ export const profileRouteLoader =
           replaceableEvents: [],
           hardBlockedAuthors: [],
           hardBlockedEvents: [],
+          illegalBlockedAuthors: [],
+          illegalBlockedEvents: [],
           blockedFileHashes: []
         },
         user: {
@@ -95,6 +97,8 @@ export const profileRouteLoader =
           replaceableEvents: [],
           hardBlockedAuthors: [],
           hardBlockedEvents: [],
+          illegalBlockedAuthors: [],
+          illegalBlockedEvents: [],
           blockedFileHashes: []
         }
       },

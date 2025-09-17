@@ -174,14 +174,12 @@ const SlideContent = ({ naddr }: SlideContentProps) => {
 
   return (
     <>
-      <div className="IBMSMSCWSPicWrapper">
-        <ImageWithFallback
-          src={mod.featuredImageUrl}
-          onError={handleModImageError}
-          className="IBMSMSCWSPic"
-          prioritizeOriginal={true}
-        />
-      </div>
+      <ImageWithFallback
+        src={mod.featuredImageUrl}
+        onError={handleModImageError}
+        className="IBMSMSCWSPic"
+        prioritizeOriginal={true}
+      />
       <div className="IBMSMSCWSInfo">
         <h3 className="IBMSMSCWSInfoHeading">{mod.title}</h3>
         <div className="IBMSMSCWSInfoTextWrapper">
@@ -278,11 +276,13 @@ const DisplayLatestMods = () => {
     const mutedAuthors = [
       ...muteLists.admin.authors,
       ...muteLists.admin.hardBlockedAuthors,
+      ...muteLists.admin.illegalBlockedAuthors,
       ...muteLists.user.authors
     ]
     const mutedEvents = [
       ...muteLists.admin.replaceableEvents,
       ...muteLists.admin.hardBlockedEvents,
+      ...muteLists.admin.illegalBlockedEvents,
       ...muteLists.user.replaceableEvents
     ]
 
@@ -312,8 +312,10 @@ const DisplayLatestMods = () => {
     latestMods,
     muteLists.admin.authors,
     muteLists.admin.hardBlockedAuthors,
+    muteLists.admin.illegalBlockedAuthors,
     muteLists.admin.replaceableEvents,
     muteLists.admin.hardBlockedEvents,
+    muteLists.admin.illegalBlockedEvents,
     muteLists.user.authors,
     muteLists.user.replaceableEvents,
     nsfwList,

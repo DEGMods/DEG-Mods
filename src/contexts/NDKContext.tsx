@@ -18,6 +18,8 @@ import {
   T_TAG_VALUE,
   HARD_BLOCK_LIST_KIND,
   HARD_BLOCK_TAG,
+  ILLEGAL_BLOCK_LIST_KIND,
+  ILLEGAL_BLOCK_TAG,
   HASH_BLOCK_LIST_KIND,
   HASH_BLOCK_TAG
 } from 'constants.ts'
@@ -476,6 +478,8 @@ export const NDKContextProvider = ({ children }: { children: ReactNode }) => {
     const adminMutedPosts = new Set<string>()
     const adminHardBlockedAuthors = new Set<string>()
     const adminHardBlockedPosts = new Set<string>()
+    const adminIllegalBlockedAuthors = new Set<string>()
+    const adminIllegalBlockedPosts = new Set<string>()
     const adminBlockedFileHashes = new Set<string>()
 
     const reportingNpub = import.meta.env.VITE_REPORTING_NPUB
@@ -513,6 +517,24 @@ export const NDKContextProvider = ({ children }: { children: ReactNode }) => {
             adminHardBlockedAuthors.add(item[1])
           } else if (item[0] === 'a') {
             adminHardBlockedPosts.add(item[1])
+          }
+        })
+      }
+
+      // Get illegal block list
+      const illegalBlockListEvent = await fetchEvent({
+        kinds: [ILLEGAL_BLOCK_LIST_KIND],
+        authors: [adminHexKey],
+        '#d': [ILLEGAL_BLOCK_TAG]
+      })
+
+      if (illegalBlockListEvent) {
+        const list = NDKList.from(illegalBlockListEvent)
+        list.items.forEach((item) => {
+          if (item[0] === 'p') {
+            adminIllegalBlockedAuthors.add(item[1])
+          } else if (item[0] === 'a') {
+            adminIllegalBlockedPosts.add(item[1])
           }
         })
       }
@@ -566,6 +588,8 @@ export const NDKContextProvider = ({ children }: { children: ReactNode }) => {
         replaceableEvents: Array.from(adminMutedPosts),
         hardBlockedAuthors: Array.from(adminHardBlockedAuthors),
         hardBlockedEvents: Array.from(adminHardBlockedPosts),
+        illegalBlockedAuthors: Array.from(adminIllegalBlockedAuthors),
+        illegalBlockedEvents: Array.from(adminIllegalBlockedPosts),
         blockedFileHashes: Array.from(adminBlockedFileHashes)
       },
       user: {
@@ -573,6 +597,8 @@ export const NDKContextProvider = ({ children }: { children: ReactNode }) => {
         replaceableEvents: Array.from(userMutedPosts),
         hardBlockedAuthors: [],
         hardBlockedEvents: [],
+        illegalBlockedAuthors: [],
+        illegalBlockedEvents: [],
         blockedFileHashes: []
       }
     }

@@ -302,7 +302,6 @@ export const DownloadDetailsPopup = ({
               display: 'flex',
               flexDirection: 'column',
               margin: '0',
-              maxHeight: 'calc(100vh - 40px)',
               minHeight: 'auto'
             }}
           >

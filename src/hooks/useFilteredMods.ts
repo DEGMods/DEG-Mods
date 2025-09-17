@@ -150,21 +150,33 @@ export const useFilteredMods = (
           muteLists.admin.authors.includes(mod.author) ||
           muteLists.admin.replaceableEvents.includes(mod.aTag) ||
           muteLists.admin.hardBlockedAuthors.includes(mod.author) ||
-          muteLists.admin.hardBlockedEvents.includes(mod.aTag)
+          muteLists.admin.hardBlockedEvents.includes(mod.aTag) ||
+          muteLists.admin.illegalBlockedAuthors.includes(mod.author) ||
+          muteLists.admin.illegalBlockedEvents.includes(mod.aTag)
       )
     } else if (
       isUnmoderatedFully &&
       (isAdmin || isOwner || enhancedModeration)
     ) {
       // Allow "Unmoderated Fully" when author visits own profile or has enhanced moderation enabled
-      // Only apply filtering if the user is not an admin or the admin has not selected "Unmoderated Fully"
+      // Admins can see all content including illegal blocks in "Unmoderated Fully" mode
+      // No filtering applied
+      if (!isAdmin) {
+        filtered = filtered.filter(
+          (mod) =>
+            !muteLists.admin.illegalBlockedAuthors.includes(mod.author) &&
+            !muteLists.admin.illegalBlockedEvents.includes(mod.aTag)
+        )
+      }
     } else {
       filtered = filtered.filter(
         (mod) =>
           !muteLists.admin.authors.includes(mod.author) &&
           !muteLists.admin.replaceableEvents.includes(mod.aTag) &&
           !muteLists.admin.hardBlockedAuthors.includes(mod.author) &&
-          !muteLists.admin.hardBlockedEvents.includes(mod.aTag)
+          !muteLists.admin.hardBlockedEvents.includes(mod.aTag) &&
+          !muteLists.admin.illegalBlockedAuthors.includes(mod.author) &&
+          !muteLists.admin.illegalBlockedEvents.includes(mod.aTag)
       )
     }
 
@@ -202,8 +214,10 @@ export const useFilteredMods = (
     userWotLevel,
     muteLists.admin.authors,
     muteLists.admin.hardBlockedAuthors,
+    muteLists.admin.illegalBlockedAuthors,
     muteLists.admin.replaceableEvents,
     muteLists.admin.hardBlockedEvents,
+    muteLists.admin.illegalBlockedEvents,
     muteLists.user.authors,
     muteLists.user.replaceableEvents,
     deletedModIds,

@@ -21,7 +21,8 @@ import {
   useNDKContext,
   useBlossomList,
   useCommentUsersBlossomList,
-  useImageFallback
+  useImageFallback,
+  useModerationSettings
 } from '../../hooks'
 import { useComments } from '../../hooks/useComments'
 import { appRoutes, getGamePageRoute, getModsEditPageRoute } from '../../routes'
@@ -42,7 +43,9 @@ import {
   ModPageLoaderResult,
   ModPermissions,
   MODPERMISSIONS_CONF,
-  MODPERMISSIONS_DESC
+  MODPERMISSIONS_DESC,
+  ModeratedFilter,
+  FilterOptions
 } from '../../types'
 import { UserBlossom } from '../../hooks/useUserBlossomList'
 import {
@@ -55,7 +58,9 @@ import {
   findAllDownloadUrls,
   downloadFileWithFallback,
   LogType,
-  getUniqueCommenterBlossomServers
+  getUniqueCommenterBlossomServers,
+  getLocalStorageItem,
+  DEFAULT_FILTER_OPTIONS
 } from '../../utils'
 import { Comments } from '../../components/comment'
 import { PublishDetails } from 'components/Internal/PublishDetails'
@@ -78,6 +83,7 @@ import { NDKEvent, NDKNip07Signer } from '@nostr-dev-kit/ndk'
 import { useDeletedBlogs } from 'hooks/useDeletedBlogs'
 import { ServerService } from 'controllers/server'
 import { HardBlockedContent } from 'components/HardBlockedContent'
+import { IllegalBlockedContent } from 'components/IllegalBlockedContent'
 
 const MOD_REPORT_REASONS = [
   { label: 'Actually CP', key: 'actuallyCP' },
@@ -91,7 +97,25 @@ const MOD_REPORT_REASONS = [
 ]
 
 export const ModPage = () => {
-  const { mod: mod, postWarning } = useModData()
+  const {
+    mod: mod,
+    postWarning,
+    isIllegalBlocked,
+    illegalBlockedType,
+    isHardBlocked,
+    hardBlockedType,
+    isBlockCheckComplete
+  } = useModData()
+
+  // Get admin status early
+  const userState = useAppSelector((state) => state.user)
+  const isAdmin = userState.user?.npub === import.meta.env.VITE_REPORTING_NPUB
+
+  // Get moderation settings and filter options
+  const { enhancedModeration } = useModerationSettings()
+  const filterOptions = JSON.parse(
+    getLocalStorageItem('filter', DEFAULT_FILTER_OPTIONS)
+  ) as FilterOptions
 
   // We can get author right away from naddr, no need to wait for mod data
   const { naddr, nevent } = useParams()
@@ -104,6 +128,13 @@ export const ModPage = () => {
       // Silently ignore - we will get author eventually from mods
     }
   }
+
+  // Determine if user should see blocked content
+  const isOwner = userState.user?.pubkey && userState.user.pubkey === author
+  const isUnmoderatedFully =
+    filterOptions.moderated === ModeratedFilter.Unmoderated_Fully
+  const canSeeBlockedContent =
+    isAdmin || (isUnmoderatedFully && (isOwner || enhancedModeration))
 
   const [commentCount, setCommentCount] = useState(0)
   const { commentEvents } = useComments(mod?.author, mod?.aTag)
@@ -125,12 +156,6 @@ export const ModPage = () => {
     }
   }
 
-  // Check if the post is hard blocked
-  const { isHardBlocked, hardBlockedType } =
-    useLoaderData() as ModPageLoaderResult
-  const userState = useAppSelector((state) => state.user)
-  const isAdmin = userState.user?.npub === import.meta.env.VITE_REPORTING_NPUB
-
   return (
     <>
       <RouterLoadingSpinner />
@@ -143,6 +168,8 @@ export const ModPage = () => {
                   <>
                     {isDeletionLoading ? (
                       <LoadingSpinner desc="Checking deletion status" />
+                    ) : !isBlockCheckComplete ? (
+                      <LoadingSpinner desc="Checking content restrictions" />
                     ) : isDeleted ? (
                       <p
                         className="text-muted d-flex align-items-end justify-content-center"
@@ -155,17 +182,28 @@ export const ModPage = () => {
                       >
                         This mod post has been deleted by its author
                       </p>
-                    ) : isHardBlocked && !isAdmin ? (
+                    ) : isIllegalBlocked && !isAdmin ? (
+                      <IllegalBlockedContent
+                        illegalBlockedType={illegalBlockedType}
+                      />
+                    ) : isHardBlocked && !canSeeBlockedContent ? (
                       <HardBlockedContent hardBlockedType={hardBlockedType} />
                     ) : (
                       <>
                         <div className="IBMSMSplitMainBigSideSec">
-                          <Game />
+                          <Game
+                            isHardBlocked={isHardBlocked}
+                            hardBlockedType={hardBlockedType}
+                            isIllegalBlocked={isIllegalBlocked}
+                            illegalBlockedType={illegalBlockedType}
+                          />
                           {postWarning && (
                             <PostWarnings
                               type={postWarning}
                               isHardBlocked={isHardBlocked}
                               hardBlockedType={hardBlockedType}
+                              isIllegalBlocked={isIllegalBlocked}
+                              illegalBlockedType={illegalBlockedType}
                             />
                           )}
                           <Body {...mod} />
@@ -232,9 +270,11 @@ export const ModPage = () => {
                   <Spinner />
                 )}
               </div>
-              {typeof author !== 'undefined' && (!isHardBlocked || isAdmin) && (
-                <ProfileSection pubkey={author} />
-              )}
+              {typeof author !== 'undefined' &&
+                (!isHardBlocked || canSeeBlockedContent) &&
+                (!isIllegalBlocked || isAdmin) && (
+                  <ProfileSection pubkey={author} />
+                )}
               <Outlet key={nevent} />
               {showNsfwPopup && (
                 <NsfwAlertPopup
@@ -250,17 +290,23 @@ export const ModPage = () => {
   )
 }
 
-const Game = () => {
+interface GameProps {
+  isHardBlocked: boolean
+  hardBlockedType?: 'post' | 'user'
+  isIllegalBlocked: boolean
+  illegalBlockedType?: 'post' | 'user'
+}
+
+const Game = ({
+  isHardBlocked,
+  hardBlockedType,
+  isIllegalBlocked,
+  illegalBlockedType
+}: GameProps) => {
   const { naddr } = useParams()
   const navigation = useNavigation()
-  const {
-    mod,
-    isAddedToNSFW,
-    isBlocked,
-    isRepost,
-    isHardBlocked,
-    hardBlockedType
-  } = useLoaderData() as ModPageLoaderResult
+  const { mod, isAddedToNSFW, isBlocked, isRepost } =
+    useLoaderData() as ModPageLoaderResult
   const userState = useAppSelector((state) => state.user)
   const { ndk } = useNDKContext()
   const isLoggedIn = userState.auth && userState.user?.pubkey !== 'undefined'
@@ -321,6 +367,21 @@ const Game = () => {
         {
           intent: 'hardblock',
           value: !(isHardBlocked && hardBlockedType === 'post')
+        },
+        {
+          method: 'post',
+          encType: 'application/json'
+        }
+      )
+    }
+  }
+
+  const handleIllegalBlock = () => {
+    if (navigation.state === 'idle') {
+      submit(
+        {
+          intent: 'illegalblock',
+          value: !(isIllegalBlocked && illegalBlockedType === 'post')
         },
         {
           method: 'post',
@@ -569,6 +630,26 @@ const Game = () => {
                     : 'Hard Block'}{' '}
                   Post
                 </a>
+                <a
+                  className="dropdown-item dropdownMainMenuItem"
+                  onClick={handleIllegalBlock}
+                  style={{ color: 'rgba(255, 20, 20, 1)' }}
+                >
+                  <svg
+                    xmlns="http://www.w3.org/2000/svg"
+                    viewBox="0 0 512 512"
+                    width="1em"
+                    height="1em"
+                    fill="currentColor"
+                    className="IBMSMSMSSS_Author_Top_Icon"
+                  >
+                    <path d="M256 0C114.6 0 0 114.6 0 256s114.6 256 256 256s256-114.6 256-256S397.4 0 256 0zM256 464c-114.7 0-208-93.31-208-208S141.3 48 256 48s208 93.31 208 208S370.7 464 256 464zM175 175c9.4-9.4 24.6-9.4 33.9 0l47 47 47-47c9.4-9.4 24.6-9.4 33.9 0s9.4 24.6 0 33.9l-47 47 47 47c9.4 9.4 9.4 24.6 0 33.9s-24.6 9.4-33.9 0l-47-47-47 47c-9.4 9.4-24.6 9.4-33.9 0s-9.4-24.6 0-33.9l47-47-47-47c-9.4-9.4-9.4-24.6 0-33.9z"></path>
+                  </svg>
+                  {isIllegalBlocked && illegalBlockedType === 'post'
+                    ? 'Illegal Unblock'
+                    : 'Illegal Block'}{' '}
+                  Post
+                </a>
               </>
             )}
           </div>
@@ -724,6 +805,10 @@ const Body = ({
           <div className="IBMSMSMBSSShotsWrapper">
             <div className="IBMSMSMBSSShots">
               {screenshotsUrls.map((url, index) => (
+                <div style={{
+                      width: 'auto'
+                      }}
+                    >
                 <ImageWithFallback
                   className="IBMSMSMBSSShotsImg"
                   src={url}
@@ -734,6 +819,7 @@ const Body = ({
                   defaultBlossomList={defaultHostMirrors}
                   prioritizeOriginal={true}
                 />
+                </div>
               ))}
             </div>
           </div>

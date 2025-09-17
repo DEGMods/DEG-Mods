@@ -69,7 +69,10 @@ const useModData = (): ModPageLoaderResult => {
     isBlocked: false,
     isRepost: false,
     isHardBlocked: false,
-    hardBlockedType: undefined
+    hardBlockedType: undefined,
+    isIllegalBlocked: false,
+    illegalBlockedType: undefined,
+    isBlockCheckComplete: false
   }
 
   // Set up the filters
@@ -208,8 +211,29 @@ const useModData = (): ModPageLoaderResult => {
 
   // Process mute lists
   if (muteLists) {
+    // Mark block check as complete once mute lists are loaded
+    result.isBlockCheckComplete = true
+
     if (result.mod && result.mod.aTag) {
-      // Check for hard blocks first
+      // Check for illegal blocks first (highest priority)
+      if (
+        muteLists.admin.illegalBlockedEvents.includes(result.mod.aTag) ||
+        muteLists.admin.illegalBlockedAuthors.includes(result.mod.author)
+      ) {
+        result.isIllegalBlocked = true
+        result.postWarning = 'admin'
+
+        // Determine whether the post or user is blocked
+        if (muteLists.admin.illegalBlockedEvents.includes(result.mod.aTag)) {
+          result.illegalBlockedType = 'post'
+        } else if (
+          muteLists.admin.illegalBlockedAuthors.includes(result.mod.author)
+        ) {
+          result.illegalBlockedType = 'user'
+        }
+      }
+
+      // Check for hard blocks (can be in addition to illegal blocks)
       if (
         muteLists.admin.hardBlockedEvents.includes(result.mod.aTag) ||
         muteLists.admin.hardBlockedAuthors.includes(result.mod.author)
@@ -254,13 +278,16 @@ const useModData = (): ModPageLoaderResult => {
 
     // Only apply filtering if the user is not an admin or the admin has not selected "Unmoderated Fully"
     // Allow "Unmoderated Fully" when author visits own profile
+    // Admins can see all content including illegal blocks in "Unmoderated Fully" mode
     if (!((isAdmin || isOwner) && isUnmoderatedFully)) {
       result.latest = result.latest.filter(
         (b) =>
           !muteLists.admin.authors.includes(b.author!) &&
           !muteLists.admin.hardBlockedAuthors.includes(b.author!) &&
+          !muteLists.admin.illegalBlockedAuthors.includes(b.author!) &&
           !muteLists.admin.replaceableEvents.includes(b.aTag!) &&
-          !muteLists.admin.hardBlockedEvents.includes(b.aTag!)
+          !muteLists.admin.hardBlockedEvents.includes(b.aTag!) &&
+          !muteLists.admin.illegalBlockedEvents.includes(b.aTag!)
       )
     }
 

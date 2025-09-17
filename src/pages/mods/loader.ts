@@ -27,6 +27,8 @@ export const modsRouteLoader = (ndkContext: NDKContextType) => async () => {
         replaceableEvents: [],
         hardBlockedAuthors: [],
         hardBlockedEvents: [],
+        illegalBlockedAuthors: [],
+        illegalBlockedEvents: [],
         blockedFileHashes: []
       },
       user: {
@@ -34,6 +36,8 @@ export const modsRouteLoader = (ndkContext: NDKContextType) => async () => {
         replaceableEvents: [],
         hardBlockedAuthors: [],
         hardBlockedEvents: [],
+        illegalBlockedAuthors: [],
+        illegalBlockedEvents: [],
         blockedFileHashes: []
       }
     },

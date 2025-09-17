@@ -22,8 +22,12 @@ export const BlogsFilter = React.memo(
     )
 
     useEffect(() => {
+      const isAdmin =
+        userState.user?.npub === import.meta.env.VITE_REPORTING_NPUB
+
       if (
         !enhancedModeration &&
+        !isAdmin &&
         filterOptions.moderated === ModeratedFilter.Unmoderated_Fully
       ) {
         setFilterOptions((prev) => ({
@@ -31,11 +35,20 @@ export const BlogsFilter = React.memo(
           moderated: ModeratedFilter.Moderated
         }))
       }
-    }, [enhancedModeration, filterOptions.moderated, setFilterOptions])
+    }, [
+      enhancedModeration,
+      filterOptions.moderated,
+      setFilterOptions,
+      userState.user?.npub
+    ])
 
     useEffect(() => {
+      const isAdmin =
+        userState.user?.npub === import.meta.env.VITE_REPORTING_NPUB
+
       if (
         !userState.auth &&
+        !isAdmin &&
         filterOptions.moderated === ModeratedFilter.Unmoderated_Fully
       ) {
         setFilterOptions((prev) => ({
@@ -43,7 +56,12 @@ export const BlogsFilter = React.memo(
           moderated: ModeratedFilter.Moderated
         }))
       }
-    }, [userState.auth, filterOptions.moderated, setFilterOptions])
+    }, [
+      userState.auth,
+      filterOptions.moderated,
+      setFilterOptions,
+      userState.user?.npub
+    ])
 
     return (
       <>
