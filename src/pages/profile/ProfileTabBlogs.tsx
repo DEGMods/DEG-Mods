@@ -227,8 +227,10 @@ export const ProfileTabBlogs = () => {
         (b) =>
           muteLists.admin.authors.includes(b.author!) ||
           muteLists.admin.hardBlockedAuthors.includes(b.author!) ||
+          muteLists.admin.illegalBlockedAuthors.includes(b.author!) ||
           muteLists.admin.replaceableEvents.includes(b.aTag!) ||
-          muteLists.admin.hardBlockedEvents.includes(b.aTag!)
+          muteLists.admin.hardBlockedEvents.includes(b.aTag!) ||
+          muteLists.admin.illegalBlockedEvents.includes(b.aTag!)
       )
     } else if (
       isUnmoderatedFully &&
@@ -241,8 +243,10 @@ export const ProfileTabBlogs = () => {
         (b) =>
           !muteLists.admin.authors.includes(b.author!) &&
           !muteLists.admin.hardBlockedAuthors.includes(b.author!) &&
+          !muteLists.admin.illegalBlockedAuthors.includes(b.author!) &&
           !muteLists.admin.replaceableEvents.includes(b.aTag!) &&
-          !muteLists.admin.hardBlockedEvents.includes(b.aTag!)
+          !muteLists.admin.hardBlockedEvents.includes(b.aTag!) &&
+          !muteLists.admin.illegalBlockedEvents.includes(b.aTag!)
       )
     }
 
@@ -273,6 +277,8 @@ export const ProfileTabBlogs = () => {
     muteLists.admin.authors,
     muteLists.admin.hardBlockedAuthors,
     muteLists.admin.hardBlockedEvents,
+    muteLists.admin.illegalBlockedAuthors,
+    muteLists.admin.illegalBlockedEvents,
     muteLists.admin.replaceableEvents,
     muteLists.user.authors,
     muteLists.user.replaceableEvents,

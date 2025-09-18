@@ -19,6 +19,7 @@ export interface ProfilePageLoaderResult {
   profile: UserProfile
   isBlocked: boolean
   isHardBlocked: boolean
+  isIllegalBlocked: boolean
   muteLists: {
     admin: MuteLists
     user: MuteLists
@@ -82,6 +83,7 @@ export const profileRouteLoader =
       profile: {},
       isBlocked: false,
       isHardBlocked: false,
+      isIllegalBlocked: false,
       muteLists: {
         admin: {
           authors: [],
@@ -133,6 +135,10 @@ export const profileRouteLoader =
     if (muteListResult.status === 'fulfilled' && muteListResult.value) {
       result.muteLists = muteListResult.value
       result.isBlocked = result.muteLists.user.authors.includes(profilePubkey)
+      result.isHardBlocked =
+        result.muteLists.admin.hardBlockedAuthors.includes(profilePubkey)
+      result.isIllegalBlocked =
+        result.muteLists.admin.illegalBlockedAuthors.includes(profilePubkey)
     } else if (muteListResult.status === 'rejected') {
       log(
         true,

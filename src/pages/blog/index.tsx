@@ -63,9 +63,7 @@ export const BlogPage = () => {
   } = useLoaderData() as BlogPageLoaderResult
   const userState = useAppSelector((state) => state.user)
   const { ndk } = useNDKContext()
-  const isAdmin =
-    userState.user?.npub &&
-    userState.user.npub === import.meta.env.VITE_REPORTING_NPUB
+  const isAdmin = userState.user?.npub === import.meta.env.VITE_REPORTING_NPUB
   const isLoggedIn = userState.auth && userState.user?.pubkey !== 'undefined'
   const navigation = useNavigation()
   const [commentCount, setCommentCount] = useState(0)

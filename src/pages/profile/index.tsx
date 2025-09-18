@@ -15,14 +15,20 @@ import { ProfileTabBlogs } from './ProfileTabBlogs'
 import { ProfileTabPosts } from './ProfileTabPosts'
 import { ProfileTabMods } from './ProfileTabMods'
 import { ReportUserPopup } from './ReportUserPopup'
-import { HARD_BLOCK_LIST_KIND, HARD_BLOCK_TAG } from 'constants.ts'
+import {
+  HARD_BLOCK_LIST_KIND,
+  HARD_BLOCK_TAG,
+  ILLEGAL_BLOCK_LIST_KIND,
+  ILLEGAL_BLOCK_TAG
+} from 'constants.ts'
 
 export const ProfilePage = () => {
   const {
     profilePubkey,
     profile,
     isBlocked: _isBlocked,
-    isHardBlocked: _isHardBlocked
+    isHardBlocked: _isHardBlocked,
+    isIllegalBlocked: _isIllegalBlocked
   } = useLoaderData() as ProfilePageLoaderResult
   const scrollTargetRef = useRef<HTMLDivElement>(null)
   const { ndk, publish, fetchEventFromUserRelays } = useNDKContext()
@@ -42,6 +48,8 @@ export const ProfilePage = () => {
 
   const [isBlocked, setIsBlocked] = useState(_isBlocked)
   const [isUserHardBlocked, setIsUserHardBlocked] = useState(_isHardBlocked)
+  const [isUserIllegalBlocked, setIsUserIllegalBlocked] =
+    useState(_isIllegalBlocked)
 
   const handleBlock = async () => {
     if (!profilePubkey) {
@@ -310,6 +318,139 @@ export const ProfilePage = () => {
     setIsLoading(false)
   }
 
+  const handleIllegalBlockUser = async () => {
+    if (!profilePubkey) {
+      toast.error(`Something went wrong. Unable to find user's pubkey`)
+      return
+    }
+
+    const userHexKey = userState.user?.pubkey as string
+    if (!userHexKey) {
+      toast.error('Could not get pubkey for updating illegal block list')
+      return
+    }
+
+    setIsLoading(true)
+    setLoadingSpinnerDesc('Finding illegal block list')
+
+    const filter: NDKFilter = {
+      kinds: [ILLEGAL_BLOCK_LIST_KIND],
+      authors: [userHexKey],
+      '#d': [ILLEGAL_BLOCK_TAG]
+    }
+
+    const illegalBlockListEvent = await fetchEventFromUserRelays(
+      filter,
+      userHexKey,
+      UserRelaysType.Write
+    )
+
+    let unsignedEvent: UnsignedEvent
+    if (illegalBlockListEvent) {
+      const tags = illegalBlockListEvent.tags
+      const alreadyExists =
+        tags.findIndex(
+          (item) => item[0] === 'p' && item[1] === profilePubkey
+        ) !== -1
+
+      if (alreadyExists) {
+        setIsLoading(false)
+        setIsUserIllegalBlocked(true)
+        return toast.warn(`User is already in illegal block list`)
+      }
+
+      tags.push(['p', profilePubkey])
+      unsignedEvent = {
+        pubkey: illegalBlockListEvent.pubkey,
+        kind: ILLEGAL_BLOCK_LIST_KIND,
+        content: illegalBlockListEvent.content,
+        created_at: now(),
+        tags: [...tags]
+      }
+    } else {
+      unsignedEvent = {
+        pubkey: userHexKey,
+        kind: ILLEGAL_BLOCK_LIST_KIND,
+        content: '',
+        created_at: now(),
+        tags: [
+          ['d', ILLEGAL_BLOCK_TAG],
+          ['p', profilePubkey]
+        ]
+      }
+    }
+
+    setLoadingSpinnerDesc('Updating illegal block list')
+    const isUpdated = await signAndPublish(unsignedEvent, ndk, publish)
+    if (isUpdated) {
+      setIsUserIllegalBlocked(true)
+      toast.success('User illegal blocked successfully')
+    } else {
+      toast.error('Failed to update illegal block list')
+    }
+    setIsLoading(false)
+  }
+
+  const handleIllegalUnblockUser = async () => {
+    if (!profilePubkey) {
+      toast.error(`Something went wrong. Unable to find user's pubkey`)
+      return
+    }
+
+    const userHexKey = userState.user?.pubkey as string
+    if (!userHexKey) {
+      toast.error('Could not get pubkey for updating illegal block list')
+      return
+    }
+
+    setIsLoading(true)
+    setLoadingSpinnerDesc('Finding illegal block list')
+
+    const filter: NDKFilter = {
+      kinds: [ILLEGAL_BLOCK_LIST_KIND],
+      authors: [userHexKey],
+      '#d': [ILLEGAL_BLOCK_TAG]
+    }
+
+    const illegalBlockListEvent = await fetchEventFromUserRelays(
+      filter,
+      userHexKey,
+      UserRelaysType.Write
+    )
+
+    if (!illegalBlockListEvent) {
+      toast.error(`Couldn't get illegal block list event from relays`)
+      setIsLoading(false)
+      return
+    }
+
+    const tags = illegalBlockListEvent.tags
+    const filteredTags = tags.filter((item) => {
+      if (item[0] === 'd' && item[1] === ILLEGAL_BLOCK_TAG) {
+        return true
+      }
+
+      return !(item[0] === 'p' && item[1] === profilePubkey)
+    })
+    const unsignedEvent: UnsignedEvent = {
+      pubkey: illegalBlockListEvent.pubkey,
+      kind: ILLEGAL_BLOCK_LIST_KIND,
+      content: illegalBlockListEvent.content,
+      created_at: now(),
+      tags: filteredTags
+    }
+
+    setLoadingSpinnerDesc('Updating illegal block list')
+    const isUpdated = await signAndPublish(unsignedEvent, ndk, publish)
+    if (isUpdated) {
+      setIsUserIllegalBlocked(false)
+      toast.success('User illegal unblocked successfully')
+    } else {
+      toast.error('Failed to update illegal block list')
+    }
+    setIsLoading(false)
+  }
+
   // Tabs
   const [tab, setTab] = useState(0)
 
@@ -448,30 +589,56 @@ export const ProfilePage = () => {
                               {isBlocked ? 'Unblock' : 'Block User'}
                             </a>
                             {isAdmin && (
-                              <a
-                                className="dropdown-item dropdownMainMenuItem"
-                                onClick={
-                                  isUserHardBlocked
-                                    ? handleHardUnblockUser
-                                    : handleHardBlockUser
-                                }
-                                style={{ color: 'rgba(255, 70, 70, 0.8)' }}
-                              >
-                                <svg
-                                  xmlns="http://www.w3.org/2000/svg"
-                                  viewBox="0 0 512 512"
-                                  width="1em"
-                                  height="1em"
-                                  fill="currentColor"
-                                  className="IBMSMSMSSS_Author_Top_Icon"
+                              <>
+                                <a
+                                  className="dropdown-item dropdownMainMenuItem"
+                                  onClick={
+                                    isUserHardBlocked
+                                      ? handleHardUnblockUser
+                                      : handleHardBlockUser
+                                  }
+                                  style={{ color: 'rgba(255, 70, 70, 0.8)' }}
                                 >
-                                  <path d="M256 0C114.6 0 0 114.6 0 256s114.6 256 256 256s256-114.6 256-256S397.4 0 256 0zM256 464c-114.7 0-208-93.31-208-208S141.3 48 256 48s208 93.31 208 208S370.7 464 256 464zM256 304c13.25 0 24-10.75 24-24v-128C280 138.8 269.3 128 256 128S232 138.8 232 152v128C232 293.3 242.8 304 256 304zM256 337.1c-17.36 0-31.44 14.08-31.44 31.44C224.6 385.9 238.6 400 256 400s31.44-14.08 31.44-31.44C287.4 351.2 273.4 337.1 256 337.1z"></path>
-                                </svg>
-                                {isUserHardBlocked
-                                  ? 'Hard Unblock'
-                                  : 'Hard Block'}{' '}
-                                User
-                              </a>
+                                  <svg
+                                    xmlns="http://www.w3.org/2000/svg"
+                                    viewBox="0 0 512 512"
+                                    width="1em"
+                                    height="1em"
+                                    fill="currentColor"
+                                    className="IBMSMSMSSS_Author_Top_Icon"
+                                  >
+                                    <path d="M256 0C114.6 0 0 114.6 0 256s114.6 256 256 256s256-114.6 256-256S397.4 0 256 0zM256 464c-114.7 0-208-93.31-208-208S141.3 48 256 48s208 93.31 208 208S370.7 464 256 464zM256 304c13.25 0 24-10.75 24-24v-128C280 138.8 269.3 128 256 128S232 138.8 232 152v128C232 293.3 242.8 304 256 304zM256 337.1c-17.36 0-31.44 14.08-31.44 31.44C224.6 385.9 238.6 400 256 400s31.44-14.08 31.44-31.44C287.4 351.2 273.4 337.1 256 337.1z"></path>
+                                  </svg>
+                                  {isUserHardBlocked
+                                    ? 'Hard Unblock'
+                                    : 'Hard Block'}{' '}
+                                  User
+                                </a>
+                                <a
+                                  className="dropdown-item dropdownMainMenuItem"
+                                  onClick={
+                                    isUserIllegalBlocked
+                                      ? handleIllegalUnblockUser
+                                      : handleIllegalBlockUser
+                                  }
+                                  style={{ color: 'rgba(255, 20, 20, 1)' }}
+                                >
+                                  <svg
+                                    xmlns="http://www.w3.org/2000/svg"
+                                    viewBox="0 0 512 512"
+                                    width="1em"
+                                    height="1em"
+                                    fill="currentColor"
+                                    className="IBMSMSMSSS_Author_Top_Icon"
+                                  >
+                                    <path d="M256 0C114.6 0 0 114.6 0 256s114.6 256 256 256s256-114.6 256-256S397.4 0 256 0zM256 464c-114.7 0-208-93.31-208-208S141.3 48 256 48s208 93.31 208 208S370.7 464 256 464zM175 208.1L222.1 255.1L175 303C165.7 312.4 165.7 327.6 175 336.1C184.4 346.3 199.6 346.3 208.1 336.1L255.1 289.9L303 336.1C312.4 346.3 327.6 346.3 336.1 336.1C346.3 327.6 346.3 312.4 336.1 303L289.9 255.1L336.1 208.1C346.3 199.6 346.3 184.4 336.1 175C327.6 165.7 312.4 165.7 303 175L255.1 222.1L208.1 175C199.6 165.7 184.4 165.7 175 175C165.7 184.4 165.7 199.6 175 208.1V208.1z"></path>
+                                  </svg>
+                                  {isUserIllegalBlocked
+                                    ? 'Illegal Unblock'
+                                    : 'Illegal Block'}{' '}
+                                  User
+                                </a>
+                              </>
                             )}
                           </>
                         )}

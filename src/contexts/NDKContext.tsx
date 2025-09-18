@@ -79,6 +79,12 @@ export interface NDKContextType {
     admin: MuteLists
     user: MuteLists
   }>
+  getRelayInfo: () => {
+    configuredRelays: string[]
+    connectedRelays: string[]
+    activeRelays: string[]
+    totalRelays: number
+  }
 }
 
 // Create the context with an initial value of `null`
@@ -165,6 +171,25 @@ export const NDKContextProvider = ({ children }: { children: ReactNode }) => {
     addAdminRelays(ndk)
 
     ndk.connect()
+
+    // Log connected relays after connection
+    setTimeout(() => {
+      console.log('=== NDK Relay Information ===')
+      console.log('Explicit relays configured:', [
+        'wss://user.kindpag.es',
+        'wss://purplepag.es',
+        'wss://relay.damus.io/',
+        import.meta.env.VITE_APP_RELAY
+      ])
+      console.log('Connected relays:', Array.from(ndk.pool.relays.keys()))
+      console.log(
+        'Active relay connections:',
+        Array.from(ndk.pool.relays.values())
+          .filter((relay) => relay.connectivity.status === 1) // 1 = connected
+          .map((relay) => relay.url)
+      )
+      console.log('Total relay pool size:', ndk.pool.relays.size)
+    }, 2000) // Wait 2 seconds for connections to establish
 
     return ndk
   }, [])
@@ -604,6 +629,31 @@ export const NDKContextProvider = ({ children }: { children: ReactNode }) => {
     }
   }
 
+  /**
+   * Gets information about the current relay connections
+   * @returns Object containing relay connection information
+   */
+  const getRelayInfo = () => {
+    const configuredRelays = [
+      'wss://user.kindpag.es',
+      'wss://purplepag.es',
+      'wss://relay.damus.io/',
+      import.meta.env.VITE_APP_RELAY
+    ].filter(Boolean) // Remove any undefined values
+
+    const connectedRelays = Array.from(ndk.pool.relays.keys())
+    const activeRelays = Array.from(ndk.pool.relays.values())
+      .filter((relay) => relay.connectivity.status === 1) // 1 = connected
+      .map((relay) => relay.url)
+
+    return {
+      configuredRelays,
+      connectedRelays,
+      activeRelays,
+      totalRelays: ndk.pool.relays.size
+    }
+  }
+
   return (
     <NDKContext.Provider
       value={{
@@ -617,7 +667,8 @@ export const NDKContextProvider = ({ children }: { children: ReactNode }) => {
         getTotalZapAmount,
         publish,
         getNSFWList,
-        getMuteLists
+        getMuteLists,
+        getRelayInfo
       }}
     >
       {children}
