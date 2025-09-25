@@ -346,6 +346,13 @@ const TipButtonWithDialog = React.memo(() => {
                   sp1qq205tj23sq3z6qjxt5ts5ps8gdwcrkwypej3h2z2hdclmaptl25xxqjfqhc2de4gaxprgm0yqwfr737swpvvmrph9ctkeyk60knz6xpjhqumafrd
                 </span>
               </p>
+              <p>
+                DEG Mod's Litecoin Address
+                <br />
+                <span className="BTCAddressPopZapTextSpan">
+                  ltc1q8gz5jpk0d72r4aqlh37z4wepl773zqzl3pkkah
+                </span>
+              </p>
             </div>
           }
         />
