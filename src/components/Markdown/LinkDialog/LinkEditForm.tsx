@@ -4,25 +4,29 @@ import styles from './../Dialog.module.scss'
 interface LinkFormFields {
   url: string
   title: string
+  text: string
 }
 
 interface LinkEditFormProps {
   url: string
   title: string
-  onSubmit: (link: { url: string; title: string }) => void
+  text: string
+  onSubmit: (link: { url: string; title: string; text: string }) => void
   onCancel: () => void
 }
 
 export function LinkEditForm({
   url,
   title,
+  text,
   onSubmit,
   onCancel
 }: LinkEditFormProps) {
   const { register, handleSubmit, setValue } = useForm<LinkFormFields>({
     values: {
       url,
-      title
+      title,
+      text
     }
   })
 

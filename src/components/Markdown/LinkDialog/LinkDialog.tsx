@@ -92,6 +92,7 @@ export const LinkDialog = () => {
             <LinkEditForm
               url={linkDialogState.url}
               title={linkDialogState.title}
+              text={linkDialogState.text}
               onSubmit={updateLink}
               onCancel={cancelLinkEdit.bind(null)}
             />

@@ -27,7 +27,7 @@ import {
   truncate
 } from '../utils'
 import { LoadingSpinner } from './LoadingSpinner'
-import { ZapPopUp } from './Zap'
+// import { ZapPopUp } from './Zap'
 import { BioWithPopUp } from './BioPopop'
 import {
   NDKEvent,
@@ -173,7 +173,7 @@ export const Profile = ({ pubkey }: ProfileProps) => {
   const about = profile?.bio || profile?.about || '[bio not set up]'
   const image = profile?.image || FALLBACK_PROFILE_IMAGE
   const nip05 = profile?.nip05
-  const lud16 = profile?.lud16
+  // const lud16 = profile?.lud16
 
   const npub = hexToNpub(pubkey)
 
@@ -263,10 +263,10 @@ export const Profile = ({ pubkey }: ProfileProps) => {
               </div>
               {typeof nprofile !== 'undefined' && (
                 <ProfileQRButtonWithPopUp nprofile={nprofile} />
-              )}
+              )}{/*
               {typeof lud16 !== 'undefined' && lud16 !== '' && (
                 <ZapButtonWithPopUp pubkey={pubkey} />
-              )}
+              )}*/}
             </div>
           </div>
         </div>
@@ -375,12 +375,14 @@ const ProfileQRPopup = ({ nprofile, handleClose }: ProfileQRPopupProps) => {
     document.body
   )
 }
-
+/*
 type ZapButtonWithPopUpProps = {
   pubkey: string
 }
 
-const ZapButtonWithPopUp = ({ pubkey }: ZapButtonWithPopUpProps) => {
+const ZapButtonWithPopUp = ({ 
+  pubkey 
+  }: ZapButtonWithPopUpProps) => {
   const [isOpen, setIsOpen] = useState(false)
 
   useBodyScrollDisable(isOpen)
@@ -412,7 +414,7 @@ const ZapButtonWithPopUp = ({ pubkey }: ZapButtonWithPopUpProps) => {
     </>
   )
 }
-
+*/
 type FollowButtonProps = {
   pubkey: string
 }

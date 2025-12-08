@@ -1,5 +1,5 @@
 import { NDKSubscriptionCacheUsage } from '@nostr-dev-kit/ndk'
-import { Dots } from 'components/Spinner'
+// import { Dots } from 'components/Spinner'
 import { ZapSplit } from 'components/Zap'
 import {
   useAppSelector,
@@ -8,9 +8,9 @@ import {
   useNDKContext
 } from 'hooks'
 import { useState } from 'react'
-import { toast } from 'react-toastify'
+// import { toast } from 'react-toastify'
 import { Addressable } from 'types'
-import { abbreviateNumber, log, LogType } from 'utils'
+// import { abbreviateNumber, log, LogType } from 'utils'
 
 type ZapProps = {
   addressable: Addressable
@@ -18,10 +18,10 @@ type ZapProps = {
 
 export const Zap = ({ addressable }: ZapProps) => {
   const [isOpen, setIsOpen] = useState(false)
-  const [isLoading, setIsLoading] = useState(true)
+  // const [isLoading, setIsLoading] = useState(true)
   const [isAvailable, setIsAvailable] = useState(false)
-  const [totalZappedAmount, setTotalZappedAmount] = useState(0)
-  const [hasZapped, setHasZapped] = useState(false)
+  // const [totalZappedAmount, setTotalZappedAmount] = useState(0)
+  // const [hasZapped, setHasZapped] = useState(false)
 
   const userState = useAppSelector((state) => state.user)
   const { getTotalZapAmount, findMetadata } = useNDKContext()
@@ -35,9 +35,9 @@ export const Zap = ({ addressable }: ZapProps) => {
       .then((res) => {
         setIsAvailable(typeof res?.lud16 !== 'undefined' && res.lud16 !== '')
       })
-      .catch((err) => {
+      /*.catch((err) => {
         log(true, LogType.Error, err.message || err)
-      })
+      })*/
 
     getTotalZapAmount(
       addressable.author,
@@ -45,15 +45,15 @@ export const Zap = ({ addressable }: ZapProps) => {
       addressable.aTag,
       userState.user?.pubkey as string
     )
-      .then((res) => {
+      /*.then((res) => {
         setTotalZappedAmount(res.accumulatedZapAmount)
         setHasZapped(res.hasZapped)
       })
       .catch((err) => {
         toast.error(err.message || err)
-      })
+      })*/
       .finally(() => {
-        setIsLoading(false)
+        // setIsLoading(false)
       })
   })
 
@@ -62,7 +62,7 @@ export const Zap = ({ addressable }: ZapProps) => {
 
   return (
     <>
-      <div
+      {/*<div
         id="reactBolt"
         className={`IBMSMSMBSS_Details_Card IBMSMSMBSS_D_CBolt ${
           hasZapped ? 'IBMSMSMBSS_D_CBActive' : ''
@@ -87,14 +87,14 @@ export const Zap = ({ addressable }: ZapProps) => {
         <div className="IBMSMSMBSSCL_CAElementLoadWrapper">
           <div className="IBMSMSMBSSCL_CAElementLoad"></div>
         </div>
-      </div>
+      </div>*/}
       {isOpen && (
         <ZapSplit
           pubkey={addressable.author}
           eventId={addressable.id}
           aTag={addressable.aTag}
-          setTotalZapAmount={setTotalZappedAmount}
-          setHasZapped={setHasZapped}
+          // setTotalZapAmount={setTotalZappedAmount}
+          // setHasZapped={setHasZapped}
           handleClose={() => setIsOpen(false)}
         />
       )}

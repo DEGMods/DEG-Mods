@@ -56,16 +56,6 @@ const FAQ_ITEMS: FAQItem[] = [
     Afterwards, relevant authorities would handle the rest.`
   },
   {
-    question:
-      'Why did you have to add Bitcoin? Why not traditional payment methods like Visa, PayPal, etc?',
-    answer: `For various reasons. With traditional payment methods, not everyone has access to them, they
-      can pressure or threaten us, mod creators, or even gamers to censor or ban, or restrict usage of this site
-      by holding our funds or stealing them. They can prevent you from tipping on this site or specific mod creators,
-      and there's no privacy. These are just a few reasons why we aren't using traditional payment methods.
-      With Bitcoin, anyone has access to it, nobody controls it so you can't be threatened with/by it,
-      you can actually own and properly control it, and it provides pseudonymity.`
-  },
-  {
     question: 'Is this an open-source project?',
     answer: `Yes, DEG Mods is open-source. You can access the code repository
     here (sharing soon).`
@@ -169,35 +159,6 @@ export const AboutPage = () => {
                     comments, as well as being completely functional as well.
                     You'd also be able to just simply run the site on your PC,
                     without having it up on a domain.
-                  </p>
-                  <h3 className="LearnTextHeading">Tips / Donations</h3>
-                  <p className="LearnTextPara">
-                    DEG Mods supports hassle-free money transfers for modders.
-                    Fans can show their appreciation by directly tipping mod
-                    creators via Bitcoin through the Lightning Network, an
-                    action known as Zapping. Choose to support creators so they
-                    can continue making more valuable game mods!
-                    <br />
-                  </p>
-                  <h3 className="LearnTextHeading">
-                    Wait, Crypto?! Ew.
-                    <br />
-                  </h3>
-                  <p className="LearnTextPara">
-                    We know. You don't have to use it. Nothing is reliant on it
-                    on this platform/site. Pretend its not even there. We're not
-                    even making any money out of this project/site, in-fact,
-                    we're running at a loss (unless direct donations/tips covers
-                    it, and/or we managed to add reasonable monetization systems
-                    to help cover further development and maintenance costs).
-                    This is just a passion project to help free (liberate) game
-                    mods and their creators, and this part potentially helps
-                    them financially, even those in other countries where
-                    "normal" methods of money payment/transfer are not an
-                    option. You can just find the mod you want and download it,
-                    or publish the mod you've created, and never even touch
-                    Bitcoin.
-                    <br />
                   </p>
                   <p className="LearnTextPara">
                     DEG Mods is a response to censorship and oppression, to

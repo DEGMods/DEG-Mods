@@ -5,7 +5,7 @@ import {
 import React, { useEffect, useState } from 'react'
 import { Link, useRevalidator } from 'react-router-dom'
 import { Banner } from '../components/Banner'
-import { ZapPopUp } from '../components/Zap'
+// import { ZapPopUp } from '../components/Zap'
 import {
   useAppDispatch,
   useAppSelector,
@@ -285,79 +285,81 @@ export const Header = () => {
 
 const TipButtonWithDialog = React.memo(() => {
   const [adminNpub, setAdminNpub] = useState<string | null>(null)
-  const [isOpen, setIsOpen] = useState(false)
+  const [isOpen] = useState(false)
 
   useBodyScrollDisable(isOpen)
 
   useDidMount(async () => {
     const adminNpubs = import.meta.env.VITE_ADMIN_NPUBS.split(',')
     setAdminNpub(adminNpubs[0])
+    console.log(adminNpub)
   })
 
   return (
-    <>
-      <a
-        className={`${navStyles.NMTI_SecInside_Link} ${navStyles.NMTI_SI_LinkTip}`}
-        onClick={() => setIsOpen(true)}
-      >
-        <svg
-          xmlns="http://www.w3.org/2000/svg"
-          viewBox="-64 0 512 512"
-          width="1em"
-          height="1em"
-          fill="currentColor"
-        >
-          <path d="M240.5 224H352C365.3 224 377.3 232.3 381.1 244.7C386.6 257.2 383.1 271.3 373.1 280.1L117.1 504.1C105.8 513.9 89.27 514.7 77.19 505.9C65.1 497.1 60.7 481.1 66.59 467.4L143.5 288H31.1C18.67 288 6.733 279.7 2.044 267.3C-2.645 254.8 .8944 240.7 10.93 231.9L266.9 7.918C278.2-1.92 294.7-2.669 306.8 6.114C318.9 14.9 323.3 30.87 317.4 44.61L240.5 224z"></path>
-        </svg>
-        Tip
-      </a>
-      {isOpen && adminNpub && (
-        <ZapPopUp
-          title="Tip/Zap DEG Mods"
-          receiver={adminNpub}
-          handleClose={() => setIsOpen(false)}
-          labelDescriptionMain={
-            <p className="labelDescriptionMain" style={{ textAlign: 'center' }}>
-              If you don't want the development and maintenance of DEG Mods to
-              stop, then a tip helps!
-            </p>
-          }
-          lastNode={
-            <div className="BTCAddressPopZap">
-              <p>
-                DEG Mod's Bitcoin Address
-                <br />
-                <span className="BTCAddressPopZapTextSpan">
-                  bc1qhy8avyfdmqvjs8gqz4axelcgfggrs75m07g80v
-                </span>
-              </p>
-              <p>
-                DEG Mod's Silent Payment Bitcoin Address (Be careful.{' '}
-                <a
-                  href="https://youtu.be/payDPlHzp58?t=215"
-                  className="linkMain"
-                  target="_blank"
-                >
-                  Learn more
-                </a>
-                ):
-                <br />
-                <span className="BTCAddressPopZapTextSpan">
-                  sp1qq205tj23sq3z6qjxt5ts5ps8gdwcrkwypej3h2z2hdclmaptl25xxqjfqhc2de4gaxprgm0yqwfr737swpvvmrph9ctkeyk60knz6xpjhqumafrd
-                </span>
-              </p>
-              <p>
-                DEG Mod's Litecoin Address
-                <br />
-                <span className="BTCAddressPopZapTextSpan">
-                  ltc1q8gz5jpk0d72r4aqlh37z4wepl773zqzl3pkkah
-                </span>
-              </p>
-            </div>
-          }
-        />
-      )}
-    </>
+    // <>
+    //   <a
+    //     className={`${navStyles.NMTI_SecInside_Link} ${navStyles.NMTI_SI_LinkTip}`}
+    //     onClick={() => setIsOpen(true)}
+    //   >
+    //     <svg
+    //       xmlns="http://www.w3.org/2000/svg"
+    //       viewBox="-64 0 512 512"
+    //       width="1em"
+    //       height="1em"
+    //       fill="currentColor"
+    //     >
+    //       <path d="M240.5 224H352C365.3 224 377.3 232.3 381.1 244.7C386.6 257.2 383.1 271.3 373.1 280.1L117.1 504.1C105.8 513.9 89.27 514.7 77.19 505.9C65.1 497.1 60.7 481.1 66.59 467.4L143.5 288H31.1C18.67 288 6.733 279.7 2.044 267.3C-2.645 254.8 .8944 240.7 10.93 231.9L266.9 7.918C278.2-1.92 294.7-2.669 306.8 6.114C318.9 14.9 323.3 30.87 317.4 44.61L240.5 224z"></path>
+    //     </svg>
+    //     Tip
+    //   </a>
+    //   {isOpen && adminNpub && (
+    //     <ZapPopUp
+    //       title="Tip/Zap DEG Mods"
+    //       receiver={adminNpub}
+    //       handleClose={() => setIsOpen(false)}
+    //       labelDescriptionMain={
+    //         <p className="labelDescriptionMain" style={{ textAlign: 'center' }}>
+    //           If you don't want the development and maintenance of DEG Mods to
+    //           stop, then a tip helps!
+    //         </p>
+    //       }
+    //       lastNode={
+    //         <div className="BTCAddressPopZap">
+    //           <p>
+    //             DEG Mod's Bitcoin Address
+    //             <br />
+    //             <span className="BTCAddressPopZapTextSpan">
+    //               bc1qhy8avyfdmqvjs8gqz4axelcgfggrs75m07g80v
+    //             </span>
+    //           </p>
+    //           <p>
+    //             DEG Mod's Silent Payment Bitcoin Address (Be careful.{' '}
+    //             <a
+    //               href="https://youtu.be/payDPlHzp58?t=215"
+    //               className="linkMain"
+    //               target="_blank"
+    //             >
+    //               Learn more
+    //             </a>
+    //             ):
+    //             <br />
+    //             <span className="BTCAddressPopZapTextSpan">
+    //               sp1qq205tj23sq3z6qjxt5ts5ps8gdwcrkwypej3h2z2hdclmaptl25xxqjfqhc2de4gaxprgm0yqwfr737swpvvmrph9ctkeyk60knz6xpjhqumafrd
+    //             </span>
+    //           </p>
+    //           <p>
+    //             DEG Mod's Litecoin Address
+    //             <br />
+    //             <span className="BTCAddressPopZapTextSpan">
+    //               ltc1q8gz5jpk0d72r4aqlh37z4wepl773zqzl3pkkah
+    //             </span>
+    //           </p>
+    //         </div>
+    //       }
+    //     />
+    //   )}
+    // </>
+    <></>
   )
 })
 
