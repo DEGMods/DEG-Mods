@@ -87,6 +87,10 @@ export interface NDKContextType {
   }
 }
 
+// Timeout for NDK fetch operations (ms).
+// Prevents a hung relay from blocking the entire UI.
+const NDK_FETCH_TIMEOUT_MS = 5000
+
 // Create the context with an initial value of `null`
 export const NDKContext = createContext<NDKContextType | null>(null)
 
@@ -235,11 +239,13 @@ export const NDKContextProvider = ({ children }: { children: ReactNode }) => {
       filter['authors'] = [author]
     }
 
-    return ndk
-      .fetchEvents(filter, {
+    return Promise.race([
+      ndk.fetchEvents(filter, {
         closeOnEose: true,
         cacheUsage: NDKSubscriptionCacheUsage.PARALLEL
-      })
+      }),
+      timeout(NDK_FETCH_TIMEOUT_MS)
+    ])
       .then((ndkEventSet) => {
         const ndkEvents = Array.from(ndkEventSet)
         orderEventsChronologically(ndkEvents)
@@ -268,11 +274,13 @@ export const NDKContextProvider = ({ children }: { children: ReactNode }) => {
    * @returns  Returns a promise that resolves to the found event or null if not found.
    */
   const fetchEvents = async (filter: NDKFilter): Promise<NDKEvent[]> => {
-    return ndk
-      .fetchEvents(filter, {
+    return Promise.race([
+      ndk.fetchEvents(filter, {
         closeOnEose: true,
         cacheUsage: NDKSubscriptionCacheUsage.PARALLEL
-      })
+      }),
+      timeout(NDK_FETCH_TIMEOUT_MS)
+    ])
       .then((ndkEventSet) => {
         const ndkEvents = Array.from(ndkEventSet)
         return orderEventsChronologically(ndkEvents)
@@ -330,14 +338,16 @@ export const NDKContextProvider = ({ children }: { children: ReactNode }) => {
         return [] as string[]
       })
 
-    return ndk
-      .fetchEvents(
+    return Promise.race([
+      ndk.fetchEvents(
         filter,
         { closeOnEose: true, cacheUsage: NDKSubscriptionCacheUsage.PARALLEL },
         relayUrls.length
           ? NDKRelaySet.fromRelayUrls(relayUrls, ndk, true)
           : undefined
-      )
+      ),
+      timeout(NDK_FETCH_TIMEOUT_MS)
+    ])
       .then((ndkEventSet) => {
         const ndkEvents = Array.from(ndkEventSet)
         return orderEventsChronologically(ndkEvents)
@@ -388,7 +398,10 @@ export const NDKContextProvider = ({ children }: { children: ReactNode }) => {
     const user = new NDKUser({ npub })
     user.ndk = ndk
 
-    const userProfile = await user.fetchProfile(opts)
+    const userProfile = await Promise.race([
+      user.fetchProfile(opts),
+      timeout(NDK_FETCH_TIMEOUT_MS)
+    ])
 
     return userProfile
   }

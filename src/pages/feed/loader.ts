@@ -9,7 +9,8 @@ import {
   getFallbackPubkey,
   getReportingSet,
   log,
-  LogType
+  LogType,
+  timeout
 } from 'utils'
 
 export interface FeedPageLoaderResult {
@@ -67,7 +68,10 @@ export const feedPageLoader =
       ndkContext.getMuteLists(loggedInUserPubkey),
       getReportingSet(CurationSetIdentifiers.NSFW, ndkContext),
       getReportingSet(CurationSetIdentifiers.Repost, ndkContext),
-      ndkUser.followSet()
+      Promise.race([
+        ndkUser.followSet(),
+        timeout(5000)
+      ]).catch(() => new Set<string>())
     ])
 
     // Check the mutelist event result

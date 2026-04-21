@@ -1,7 +1,7 @@
 import { NDKContextType } from 'contexts/NDKContext'
 import { LoaderFunctionArgs, redirect } from 'react-router-dom'
 import { CommentsLoaderResult } from 'types/comments'
-import { log, LogType } from 'utils'
+import { log, LogType, timeout } from 'utils'
 
 export const commentsLoader =
   (ndkContext: NDKContextType) =>
@@ -18,7 +18,10 @@ export const commentsLoader =
     }
 
     try {
-      const replyEvent = await ndkContext.ndk.fetchEvent(target)
+      const replyEvent = await Promise.race([
+        ndkContext.ndk.fetchEvent(target),
+        timeout(5000)
+      ])
 
       if (!replyEvent) {
         throw new Error('We are unable to find the comment on the relays')
