@@ -1,4 +1,4 @@
-import { NDKFilter, NDKKind } from '@nostr-dev-kit/ndk'
+import { NDKEvent, NDKFilter, NDKKind, NDKSubscriptionCacheUsage } from '@nostr-dev-kit/ndk'
 import { PROFILE_BLOG_FILTER_LIMIT } from '../../constants'
 import { NDKContextType } from 'contexts/NDKContext'
 import { nip19 } from 'nostr-tools'
@@ -20,8 +20,7 @@ import {
   getLocalStorageItem,
   getReportingSet,
   log,
-  LogType,
-  timeout
+  LogType
 } from 'utils'
 
 export const modRouteLoader =
@@ -92,22 +91,65 @@ export const modRouteLoader =
         latestFilter['#L'] = ['content-warning']
       }
 
+      // Subscribe-based fetch that resolves on EOSE instead of a hard timeout.
+      // This handles multi-tab relay contention gracefully — relays report when
+      // they're done instead of racing against an arbitrary wall-clock deadline.
+      const subscribeForEvent = (
+        filter: NDKFilter
+      ): Promise<NDKEvent | null> => {
+        return new Promise((resolve) => {
+          let bestEvent: NDKEvent | null = null
+          const sub = ndkContext.ndk.subscribe(filter, {
+            closeOnEose: true,
+            cacheUsage: NDKSubscriptionCacheUsage.PARALLEL
+          })
+          sub.on('event', (event: NDKEvent) => {
+            if (
+              !bestEvent ||
+              event.created_at! > bestEvent.created_at!
+            ) {
+              bestEvent = event
+            }
+          })
+          sub.on('eose', () => {
+            resolve(bestEvent)
+          })
+          // Generous fallback timeout in case EOSE never fires
+          setTimeout(() => {
+            resolve(bestEvent)
+          }, 15000)
+        })
+      }
+
+      const subscribeForEvents = (
+        filter: NDKFilter
+      ): Promise<NDKEvent[]> => {
+        return new Promise((resolve) => {
+          const events: NDKEvent[] = []
+          const seen = new Set<string>()
+          const sub = ndkContext.ndk.subscribe(filter, {
+            closeOnEose: true,
+            cacheUsage: NDKSubscriptionCacheUsage.PARALLEL
+          })
+          sub.on('event', (event: NDKEvent) => {
+            if (!seen.has(event.id)) {
+              seen.add(event.id)
+              events.push(event)
+            }
+          })
+          sub.on('eose', () => {
+            resolve(events)
+          })
+          setTimeout(() => {
+            resolve(events)
+          }, 15000)
+        })
+      }
+
       // Parallel fetch mod event, latest events, mute, nsfw, repost lists
       const settled = await Promise.allSettled([
-        (async () => {
-          const result = await Promise.race([
-            ndkContext.fetchEvent(modFilter),
-            timeout(2000)
-          ])
-          return result
-        })(),
-        (async () => {
-          const result = await Promise.race([
-            ndkContext.fetchEvents(latestFilter),
-            timeout(2000)
-          ])
-          return result
-        })(),
+        subscribeForEvent(modFilter),
+        subscribeForEvents(latestFilter),
         (async () => {
           const result = await ndkContext.getMuteLists(loggedInUserPubkey)
           return result

@@ -1,5 +1,5 @@
 import { useContext, useCallback, useMemo } from 'react'
-import { NDKFilter, NDKKind } from '@nostr-dev-kit/ndk'
+import { NDKEvent, NDKFilter, NDKKind, NDKSubscriptionCacheUsage } from '@nostr-dev-kit/ndk'
 import { PROFILE_BLOG_FILTER_LIMIT } from '../../constants'
 import { NDKContext } from 'contexts/NDKContext'
 import { nip19 } from 'nostr-tools'
@@ -21,8 +21,7 @@ import {
   getLocalStorageItem,
   getReportingSet,
   log,
-  LogType,
-  timeout
+  LogType
 } from 'utils'
 import { useAsyncLoader } from '../../hooks'
 
@@ -122,10 +121,21 @@ const useModData = (): ModPageLoaderResult => {
         throw new Error('NDK context is not available or invalid naddr')
       }
 
-      const result = await Promise.race([
-        ndkContext.fetchEvent(modFilter),
-        timeout(2000)
-      ])
+      // Subscribe-based fetch — resolves on EOSE instead of hard timeout
+      const result = await new Promise<NDKEvent | null>((resolve) => {
+        let bestEvent: NDKEvent | null = null
+        const sub = ndkContext.ndk.subscribe(modFilter, {
+          closeOnEose: true,
+          cacheUsage: NDKSubscriptionCacheUsage.PARALLEL
+        })
+        sub.on('event', (event: NDKEvent) => {
+          if (!bestEvent || event.created_at! > bestEvent.created_at!) {
+            bestEvent = event
+          }
+        })
+        sub.on('eose', () => resolve(bestEvent))
+        setTimeout(() => resolve(bestEvent), 15000)
+      })
       return result
     }, [naddr, ndkContext, modFilter, decodeError])
   )
@@ -136,11 +146,23 @@ const useModData = (): ModPageLoaderResult => {
         throw new Error('NDK context is not available or decode error occurred')
       }
 
-      const result = await Promise.race([
-        ndkContext.fetchEvents(latestFilter),
-        timeout(2000)
-      ])
-
+      // Subscribe-based fetch — resolves on EOSE instead of hard timeout
+      const result = await new Promise<NDKEvent[]>((resolve) => {
+        const events: NDKEvent[] = []
+        const seen = new Set<string>()
+        const sub = ndkContext.ndk.subscribe(latestFilter, {
+          closeOnEose: true,
+          cacheUsage: NDKSubscriptionCacheUsage.PARALLEL
+        })
+        sub.on('event', (event: NDKEvent) => {
+          if (!seen.has(event.id)) {
+            seen.add(event.id)
+            events.push(event)
+          }
+        })
+        sub.on('eose', () => resolve(events))
+        setTimeout(() => resolve(events), 15000)
+      })
       return result
     }, [ndkContext, latestFilter, decodeError])
   )
