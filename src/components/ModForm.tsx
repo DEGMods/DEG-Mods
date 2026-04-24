@@ -10,6 +10,7 @@ import React, {
 import {
   useActionData,
   useLoaderData,
+  useNavigate,
   useNavigation,
   useSubmit
 } from 'react-router-dom'
@@ -30,8 +31,10 @@ import {
   LogType,
   memoizedNormalizeSearchString,
   MOD_DRAFT_CACHE_KEY,
-  normalizeSearchString
+  normalizeSearchString,
+  removeLocalStorageItem
 } from '../utils'
+import { getModPageRoute } from '../routes'
 import { CheckboxField, InputField, InputFieldWithImageUpload } from './Inputs'
 import { OriginalAuthor } from './OriginalAuthor'
 import { CategoryAutocomplete } from './CategoryAutocomplete'
@@ -42,7 +45,7 @@ import { InputError } from './Inputs/Error'
 import { FileUpload } from './Inputs/FileUpload'
 import { useLocalCache } from 'hooks/useLocalCache'
 import { toast } from 'react-toastify'
-import { useGames } from 'hooks'
+import { useGames, useNDKContext } from 'hooks'
 
 export const ModForm = () => {
   const data = useLoaderData() as ModPageLoaderResult
@@ -54,6 +57,7 @@ export const ModForm = () => {
   )
   const navigation = useNavigation()
   const submit = useSubmit()
+  const { ndk } = useNDKContext()
 
   // Enable cache for the new mod
   const isEditing = typeof mod !== 'undefined'
@@ -180,16 +184,38 @@ export const ModForm = () => {
     []
   )
   const [showTryAgainPopup, setShowTryAgainPopup] = useState<boolean>(false)
+  const navigate = useNavigate()
   useEffect(() => {
     const isTimeout = actionData?.type === 'timeout'
-    setShowTryAgainPopup(isTimeout)
     if (isTimeout) {
-      setFormState((prev) => ({
-        ...prev,
-        aTag: actionData.data.aTag,
-        dTag: actionData.data.dTag,
-        published_at: actionData.data.published_at
-      }))
+      // Check if the event actually published despite the timeout
+      const checkEvent = async () => {
+        try {
+          const events = await ndk.fetchEvents(
+            { ids: [actionData.data.eventId] },
+            { closeOnEose: true }
+          )
+          if (events.size > 0) {
+            // Event was published successfully despite timeout
+            toast.success('Event published successfully!')
+            removeLocalStorageItem(MOD_DRAFT_CACHE_KEY)
+            navigate(getModPageRoute(actionData.data.naddr))
+            return
+          }
+        } catch {
+          // Query failed, show try again popup
+        }
+
+        // Event not found — offer retry
+        setFormState((prev) => ({
+          ...prev,
+          aTag: actionData.data.aTag,
+          dTag: actionData.data.dTag,
+          published_at: actionData.data.published_at
+        }))
+        setShowTryAgainPopup(true)
+      }
+      checkEvent()
     }
   }, [actionData])
   const handleTryAgainConfirm = useCallback(

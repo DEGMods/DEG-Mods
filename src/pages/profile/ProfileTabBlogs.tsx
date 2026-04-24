@@ -132,8 +132,19 @@ export const ProfileTabBlogs = () => {
     }
     fetchEvents(filter)
       .then((events) => {
-        setBlogs(events.map(extractBlogCardDetails).filter((b) => b.naddr))
-        setHasMore(events.length > PROFILE_BLOG_FILTER_LIMIT)
+        const allBlogs = events.map(extractBlogCardDetails).filter((b) => b.naddr)
+        // Deduplicate by aTag coordinate — keep newest version
+        const blogMap = new Map<string, Partial<BlogCardDetails>>()
+        for (const blog of allBlogs) {
+          const key = blog.aTag || blog.id!
+          const existing = blogMap.get(key)
+          if (!existing || (blog.edited_at && existing.edited_at && blog.edited_at > existing.edited_at)) {
+            blogMap.set(key, blog)
+          }
+        }
+        const dedupedBlogs = Array.from(blogMap.values())
+        setBlogs(dedupedBlogs)
+        setHasMore(dedupedBlogs.length > PROFILE_BLOG_FILTER_LIMIT)
       })
       .finally(() => {
         setIsLoading(false)

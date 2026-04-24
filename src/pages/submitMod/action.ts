@@ -173,12 +173,19 @@ export const submitModRouteAction =
       }
 
       const ndkEvent = new NDKEvent(ndkContext.ndk, signedEvent)
-      // Publishing a mod sometime hangs (ndk.publish has internal timeout of 10s)
-      // Make sure to actually throw a timeout error (30s)
+
+      const naddr = nip19.naddrEncode({
+        identifier: aTag,
+        pubkey: signedEvent.pubkey,
+        kind: signedEvent.kind
+      })
+
+      // Publishing a mod sometimes hangs (ndk.publish has internal timeout of 10s)
+      // Make sure to actually throw a timeout error (10s)
       try {
         const publishedOnRelays = await Promise.race([
           ndkContext.publish(ndkEvent),
-          timeout(30000)
+          timeout(10000)
         ])
         // Handle cases where publishing failed or succeeded
         if (publishedOnRelays.length === 0) {
@@ -192,13 +199,6 @@ export const submitModRouteAction =
 
           !isEditing && removeLocalStorageItem(MOD_DRAFT_CACHE_KEY)
 
-          const naddr = nip19.naddrEncode({
-            identifier: aTag,
-            pubkey: signedEvent.pubkey,
-            kind: signedEvent.kind,
-            relays: publishedOnRelays
-          })
-
           return redirect(getModPageRoute(naddr))
         }
       } catch (error) {
@@ -208,7 +208,9 @@ export const submitModRouteAction =
             data: {
               dTag: uuid,
               aTag,
-              published_at: published_at
+              published_at: published_at,
+              eventId: signedEvent.id,
+              naddr
             }
           }
           return result

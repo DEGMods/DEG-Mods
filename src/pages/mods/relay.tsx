@@ -94,15 +94,21 @@ export const ModsPageWithRelays = () => {
           return true
         })
         setMods((existingMods) => {
-          const uniqueMods = [
-            ...existingMods,
-            ...filteredMods.filter(
-              (mod) =>
-                !existingMods.some((existingMod) => existingMod.id === mod.id)
-            )
-          ]
-
-          return uniqueMods
+          const modMap = new Map<string, ModDetails>()
+          // Add existing mods first
+          for (const mod of existingMods) {
+            const key = mod.aTag || mod.id
+            modMap.set(key, mod)
+          }
+          // Add/replace with new mods (keep newest by edited_at)
+          for (const mod of filteredMods) {
+            const key = mod.aTag || mod.id
+            const existing = modMap.get(key)
+            if (!existing || mod.edited_at > existing.edited_at) {
+              modMap.set(key, mod)
+            }
+          }
+          return Array.from(modMap.values())
         })
       })
       .finally(() => {
@@ -207,20 +213,25 @@ export const ModsPageWithRelays = () => {
             }
           }
 
-          // Skip existing
-          if (
-            prevMods.find(
-              (e) =>
-                e.id === ndkEvent.id ||
-                prevMods.findIndex((n) => n.id === ndkEvent.id) !== -1
-            )
-          ) {
+          const newMod = extractModData(ndkEvent)
+          // Deduplicate by aTag coordinate — replace old version with newer one
+          const existingIndex = prevMods.findIndex(
+            (m) => m.aTag === newMod.aTag
+          )
+          if (existingIndex !== -1) {
+            if (newMod.edited_at > prevMods[existingIndex].edited_at) {
+              console.log(
+                `[ModsPageWithRelays] Replacing mod at coordinate: ${newMod.aTag}`
+              )
+              const updated = [...prevMods]
+              updated[existingIndex] = newMod
+              return updated
+            }
             console.log(
-              `[ModsPageWithRelays] Skipping duplicate mod: ${ndkEvent.id}`
+              `[ModsPageWithRelays] Skipping older version: ${ndkEvent.id}`
             )
             return prevMods
           }
-          const newMod = extractModData(ndkEvent)
           console.log(
             `[ModsPageWithRelays] Adding new mod to list: ${ndkEvent.id} (${newMod.title})`
           )
@@ -297,12 +308,20 @@ export const ModsPageWithRelays = () => {
             }
             return true
           })
-          const combinedMods = [...prevMods, ...filteredMods]
-          const uniqueMods = Array.from(
-            new Set(combinedMods.map((mod) => mod.id))
-          )
-            .map((id) => combinedMods.find((mod) => mod.id === id))
-            .filter((mod): mod is ModDetails => mod !== undefined)
+          // Deduplicate by aTag coordinate, keeping newest version
+          const modMap = new Map<string, ModDetails>()
+          for (const mod of prevMods) {
+            const key = mod.aTag || mod.id
+            modMap.set(key, mod)
+          }
+          for (const mod of filteredMods) {
+            const key = mod.aTag || mod.id
+            const existing = modMap.get(key)
+            if (!existing || mod.edited_at > existing.edited_at) {
+              modMap.set(key, mod)
+            }
+          }
+          const uniqueMods = Array.from(modMap.values())
 
           setIsLoadMoreVisible(newMods.length >= MOD_FILTER_LIMIT)
 

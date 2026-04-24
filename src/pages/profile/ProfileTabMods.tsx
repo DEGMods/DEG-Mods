@@ -191,15 +191,22 @@ export const ProfileTabMods = () => {
     fetchMods(fetchModsOptions)
       .then((res) => {
         setMods((prevMods) => {
-          const newMods = res
-          const combinedMods = [...prevMods, ...newMods]
-          const uniqueMods = Array.from(
-            new Set(combinedMods.map((mod) => mod.id))
-          )
-            .map((id) => combinedMods.find((mod) => mod.id === id))
-            .filter((mod): mod is ModDetails => mod !== undefined)
+          // Deduplicate by aTag coordinate, keeping newest version
+          const modMap = new Map<string, ModDetails>()
+          for (const mod of prevMods) {
+            const key = mod.aTag || mod.id
+            modMap.set(key, mod)
+          }
+          for (const mod of res) {
+            const key = mod.aTag || mod.id
+            const existing = modMap.get(key)
+            if (!existing || mod.edited_at > existing.edited_at) {
+              modMap.set(key, mod)
+            }
+          }
+          const uniqueMods = Array.from(modMap.values())
 
-          setIsLoadMoreVisible(newMods.length >= MOD_FILTER_LIMIT)
+          setIsLoadMoreVisible(res.length >= MOD_FILTER_LIMIT)
 
           return uniqueMods
         })
@@ -243,17 +250,19 @@ export const ProfileTabMods = () => {
             return prevMods
           }
 
-          // Skip existing
-          if (
-            prevMods.find(
-              (e) =>
-                e.id === ndkEvent.id ||
-                prevMods.findIndex((n) => n.id === ndkEvent.id) !== -1
-            )
-          ) {
+          const newMod = extractModData(ndkEvent)
+          // Deduplicate by aTag coordinate — replace old version with newer one
+          const existingIndex = prevMods.findIndex(
+            (m) => m.aTag === newMod.aTag
+          )
+          if (existingIndex !== -1) {
+            if (newMod.edited_at > prevMods[existingIndex].edited_at) {
+              const updated = [...prevMods]
+              updated[existingIndex] = newMod
+              return updated
+            }
             return prevMods
           }
-          const newMod = extractModData(ndkEvent)
           return [...prevMods, newMod]
         })
       })

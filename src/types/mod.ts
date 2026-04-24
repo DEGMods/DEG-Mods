@@ -113,6 +113,8 @@ export type SubmitModActionResult =
         dTag: string
         aTag: string
         published_at: number
+        eventId: string
+        naddr: string
       }
     }
 
