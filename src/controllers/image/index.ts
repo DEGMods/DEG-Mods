@@ -67,11 +67,6 @@ export const MEDIA_OPTIONS: MediaOption[] = [
     type: 'blossomband-server'
   },
   {
-    name: 'nostrcheck.me',
-    host: 'https://nostrcheck.me/',
-    type: 'nostrcheck-server'
-  },
-  {
     name: 'nostpic.com',
     host: 'https://nostpic.com/',
     type: 'nostrcheck-server'
