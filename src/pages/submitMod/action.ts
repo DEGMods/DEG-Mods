@@ -174,10 +174,10 @@ export const submitModRouteAction =
 
       const ndkEvent = new NDKEvent(ndkContext.ndk, signedEvent)
 
-      const naddr = nip19.naddrEncode({
+      const modNaddr = nip19.naddrEncode({
         identifier: aTag,
         pubkey: signedEvent.pubkey,
-        kind: signedEvent.kind
+        kind: signedEvent.kind!
       })
 
       // Publishing a mod sometimes hangs (ndk.publish has internal timeout of 10s)
@@ -199,7 +199,7 @@ export const submitModRouteAction =
 
           !isEditing && removeLocalStorageItem(MOD_DRAFT_CACHE_KEY)
 
-          return redirect(getModPageRoute(naddr))
+          return redirect(getModPageRoute(modNaddr))
         }
       } catch (error) {
         if (error instanceof TimeoutError) {
@@ -209,8 +209,8 @@ export const submitModRouteAction =
               dTag: uuid,
               aTag,
               published_at: published_at,
-              eventId: signedEvent.id,
-              naddr
+              eventId: signedEvent.id!,
+              naddr: modNaddr
             }
           }
           return result
