@@ -1,5 +1,5 @@
 import { nip19 } from 'nostr-tools'
-import { useMemo, useState } from 'react'
+import { useEffect, useMemo, useState } from 'react'
 import { Link, useNavigate, useNavigation } from 'react-router-dom'
 import { A11y, Autoplay, Navigation, Pagination } from 'swiper/modules'
 import { Swiper, SwiperSlide } from 'swiper/react'
@@ -7,7 +7,7 @@ import { BlogCard } from '../../components/BlogCard'
 import { GameCard } from '../../components/GameCard'
 import { ModCard } from '../../components/ModCard'
 import { ImageWithFallback } from '../../components/ImageWithFallback'
-import { LANDING_PAGE_DATA, PROFILE_BLOG_FILTER_LIMIT } from '../../constants'
+import { LANDING_PAGE_DATA, MOD_FILTER_LIMIT, PROFILE_BLOG_FILTER_LIMIT, T_TAG_VALUE } from '../../constants'
 import {
   useAppSelector,
   useDidMount,
@@ -24,6 +24,7 @@ import {
   extractBlogCardDetails,
   extractModData,
   handleModImageError,
+  isModDataComplete,
   log,
   LogType,
   npubToHex
@@ -34,7 +35,7 @@ import '../../styles/SimpleSlider.css'
 import '../../styles/styles.css'
 
 // Import Swiper styles
-import { NDKFilter, NDKKind } from '@nostr-dev-kit/ndk'
+import { NDKFilter, NDKKind, NDKSubscriptionCacheUsage } from '@nostr-dev-kit/ndk'
 import 'swiper/css'
 import 'swiper/css/navigation'
 import 'swiper/css/pagination'
@@ -249,7 +250,7 @@ const DisplayMod = ({ naddr }: DisplayModProps) => {
 
 const DisplayLatestMods = () => {
   const navigate = useNavigate()
-  const { fetchMods } = useNDKContext()
+  const { ndk } = useNDKContext()
   const { siteWot, siteWotLevel, userWot, userWotLevel } = useAppSelector(
     (state) => state.wot
   )
@@ -260,17 +261,49 @@ const DisplayLatestMods = () => {
   const nsfwList = useNSFWList()
   const repostList = useRepostList()
 
-  useDidMount(() => {
-    fetchMods({ source: window.location.host })
-      .then((mods) => {
-        // Sort by the latest (published_at descending)
-        mods.sort((a, b) => b.published_at - a.published_at)
-        setLatestMods(mods)
+  useEffect(() => {
+    const filter: NDKFilter = {
+      kinds: [NDKKind.Classified],
+      '#t': [T_TAG_VALUE],
+      '#r': [window.location.host],
+      limit: MOD_FILTER_LIMIT
+    }
+
+    const sub = ndk.subscribe(filter, {
+      closeOnEose: true,
+      cacheUsage: NDKSubscriptionCacheUsage.PARALLEL
+    })
+
+    sub.on('event', (ndkEvent) => {
+      if (!isModDataComplete(ndkEvent)) return
+      const mod = extractModData(ndkEvent)
+
+      setLatestMods((prev) => {
+        // Deduplicate by aTag coordinate — replace old version with newer one
+        const existingIndex = prev.findIndex((m) => m.aTag === mod.aTag)
+        if (existingIndex !== -1) {
+          // Keep the newer version
+          if (mod.edited_at > prev[existingIndex].edited_at) {
+            const updated = [...prev]
+            updated[existingIndex] = mod
+            return updated
+          }
+          return prev
+        }
+        return [...prev, mod]
       })
-      .finally(() => {
-        setIsFetchingLatestMods(false)
-      })
-  })
+    })
+
+    sub.on('eose', () => {
+      setIsFetchingLatestMods(false)
+    })
+
+    sub.start()
+
+    return () => {
+      sub.stop()
+    }
+  }, [ndk])
 
   const filteredMods = useMemo(() => {
     const mutedAuthors = [
@@ -307,6 +340,8 @@ const DisplayLatestMods = () => {
       }
     }
 
+    // Sort by latest published_at and take top 4
+    filtered.sort((a, b) => b.published_at - a.published_at)
     return filtered.slice(0, 4)
   }, [
     latestMods,
@@ -432,12 +467,16 @@ const DisplayLatestBlogs = () => {
           }
         })
 
-        // Remove duplicates
+        // Remove duplicates by aTag coordinate (keep newest version)
         const unique = Array.from(
           events
-            .filter((b) => b.id)
+            .filter((b) => b.aTag || b.id)
             .reduce((map, obj) => {
-              map.set(obj.id!, obj)
+              const key = obj.aTag || obj.id!
+              const existing = map.get(key)
+              if (!existing || (obj.edited_at && existing.edited_at && obj.edited_at > existing.edited_at)) {
+                map.set(key, obj)
+              }
               return map
             }, new Map<string, Partial<BlogCardDetails>>())
             .values()

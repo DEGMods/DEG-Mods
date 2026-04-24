@@ -92,9 +92,19 @@ export const blogsRouteLoader =
           fetchEventsResult.value
         ) {
           // Extract the blog card details from the events
-          result.blogs = fetchEventsResult.value
+          const allBlogs = fetchEventsResult.value
             .map(extractBlogCardDetails)
             .filter((b) => b.naddr)
+          // Deduplicate by aTag coordinate — keep newest version
+          const blogMap = new Map<string, Partial<BlogCardDetails>>()
+          for (const blog of allBlogs) {
+            const key = blog.aTag || blog.id!
+            const existing = blogMap.get(key)
+            if (!existing || (blog.edited_at && existing.edited_at && blog.edited_at > existing.edited_at)) {
+              blogMap.set(key, blog)
+            }
+          }
+          result.blogs = Array.from(blogMap.values())
         } else if (fetchEventsResult.status === 'rejected') {
           log(
             true,
