@@ -147,7 +147,19 @@ export const constructModListFromEvents = (
     .filter(isModDataComplete) // Filter out incomplete events
     .map((event) => extractModData(event)) // Extract data and construct ModDetails
 
-  return modDetailsList
+  // Deduplicate by aTag (coordinate) — keep only the latest version
+  // For addressable replaceable events (kind 30000-40000), multiple versions
+  // may exist in the cache or across relays with different event IDs
+  const deduped = new Map<string, ModDetails>()
+  for (const mod of modDetailsList) {
+    const key = mod.aTag || mod.id // Fall back to id if no aTag
+    const existing = deduped.get(key)
+    if (!existing || mod.edited_at > existing.edited_at) {
+      deduped.set(key, mod)
+    }
+  }
+
+  return Array.from(deduped.values())
 }
 
 /**
