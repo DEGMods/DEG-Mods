@@ -404,6 +404,8 @@ export const FileUpload = React.memo(
                   console.log(
                     `[FileUpload] Moving to mirrors stage for ${urls.length} uploaded files`
                   )
+                  onChange(urls)
+                  onUploadComplete?.({ urls, hashes })
                   setStage('mirrors')
                 } else {
                   console.log(
@@ -1379,7 +1381,7 @@ export const FileUpload = React.memo(
             onClose={() => setPopupOpen(false)}
             onSetHostMirrors={setHostMirrors}
             onSetDefaultHostMirrors={setDefaultHostMirrors}
-            mainHost={hostMirrors.mainHost || getDefaultMediaOption().host}
+            mainHost={getDefaultMediaOption().host}
             defaultMirrors={defaultHostMirrors}
             mirrors={hostMirrors.mirrors}
             mirrorStatus={mirrorStatus}

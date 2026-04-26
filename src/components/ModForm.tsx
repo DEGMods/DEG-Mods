@@ -40,7 +40,7 @@ import { OriginalAuthor } from './OriginalAuthor'
 import { CategoryAutocomplete } from './CategoryAutocomplete'
 import { AlertPopup } from './AlertPopup'
 import { Editor, EditorRef } from './Markdown/Editor'
-import { MEDIA_OPTIONS, FILE_SIZE_LIMITS } from 'controllers'
+import { FILE_SIZE_LIMITS } from 'controllers'
 import { InputError } from './Inputs/Error'
 import { FileUpload } from './Inputs/FileUpload'
 import { useLocalCache } from 'hooks/useLocalCache'
@@ -324,7 +324,7 @@ export const ModForm = () => {
 
       <InputFieldWithImageUpload
         label="Featured Image URL"
-        description={`We recommend to upload images to ${MEDIA_OPTIONS[0].host}`}
+        description={`We recommend to upload images to https://bs.degmods.com/`}
         inputMode="url"
         placeholder="Image URL"
         name="featuredImageUrl"
@@ -394,7 +394,7 @@ export const ModForm = () => {
           </button>
         </div>
         <p className="labelDescriptionMain">
-          We recommend to upload images to {MEDIA_OPTIONS[0].host}
+          We recommend to upload images to https://bs.degmods.com/
         </p>
 
         <FileUpload
