@@ -144,8 +144,8 @@ export const FileUpload = React.memo(
     const correspondingMediaOption = useMemo(
       () =>
         MEDIA_OPTIONS.find((mo) => mo.host === hostMirrors.mainHost) ||
-        getDefaultMediaOption(),
-      [hostMirrors.mainHost, getDefaultMediaOption]
+        MEDIA_OPTIONS[0],
+      [hostMirrors.mainHost]
     )
 
     const handleUpload = useCallback(
@@ -1381,7 +1381,7 @@ export const FileUpload = React.memo(
             onClose={() => setPopupOpen(false)}
             onSetHostMirrors={setHostMirrors}
             onSetDefaultHostMirrors={setDefaultHostMirrors}
-            mainHost={getDefaultMediaOption().host}
+            mainHost={hostMirrors.mainHost || (accept && Object.keys(accept).some((k) => k.includes('zip')) ? getDefaultMediaOption().host : '')}
             defaultMirrors={defaultHostMirrors}
             mirrors={hostMirrors.mirrors}
             mirrorStatus={mirrorStatus}
