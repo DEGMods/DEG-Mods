@@ -144,8 +144,8 @@ export const FileUpload = React.memo(
     const correspondingMediaOption = useMemo(
       () =>
         MEDIA_OPTIONS.find((mo) => mo.host === hostMirrors.mainHost) ||
-        MEDIA_OPTIONS[0],
-      [hostMirrors.mainHost]
+        getDefaultMediaOption(),
+      [hostMirrors.mainHost, getDefaultMediaOption]
     )
 
     const handleUpload = useCallback(
@@ -1379,7 +1379,7 @@ export const FileUpload = React.memo(
             onClose={() => setPopupOpen(false)}
             onSetHostMirrors={setHostMirrors}
             onSetDefaultHostMirrors={setDefaultHostMirrors}
-            mainHost={hostMirrors.mainHost}
+            mainHost={hostMirrors.mainHost || getDefaultMediaOption().host}
             defaultMirrors={defaultHostMirrors}
             mirrors={hostMirrors.mirrors}
             mirrorStatus={mirrorStatus}
@@ -1406,6 +1406,7 @@ export const FileUpload = React.memo(
               )
               return !!imageController.scan
             })()}
+            showMalwareWarning={!!accept && Object.keys(accept).some((k) => k.includes('zip'))}
             scanned={isScanned}
             scanError={scanError}
             onClearScanError={clearScanError}

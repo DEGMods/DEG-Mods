@@ -31,6 +31,7 @@ interface FileUploadPopupProps {
   scanError?: string | null
   onClearScanError?: () => void
   uploadQueue?: Record<string, UploadQueueInfo>
+  showMalwareWarning?: boolean
 }
 
 export const FileUploadPopup = ({
@@ -54,7 +55,8 @@ export const FileUploadPopup = ({
   mirrorErrors,
   scanError,
   onClearScanError,
-  uploadQueue
+  uploadQueue,
+  showMalwareWarning = false
 }: FileUploadPopupProps) => {
   useBodyScrollDisable(true)
   // Set mainHost to first item in MEDIA_OPTIONS if externalMainHost is empty or not set
@@ -646,7 +648,7 @@ export const FileUploadPopup = ({
               </div>
 
               {/* Malware Scanning Alert */}
-              {!(
+              {showMalwareWarning && !(
                 mainHost.includes('https://') &&
                 mainHost.includes('bs.degmods.com')
               ) && (
