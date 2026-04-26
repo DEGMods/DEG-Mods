@@ -1381,7 +1381,7 @@ export const FileUpload = React.memo(
             onClose={() => setPopupOpen(false)}
             onSetHostMirrors={setHostMirrors}
             onSetDefaultHostMirrors={setDefaultHostMirrors}
-            mainHost={accept && Object.keys(accept).some((k) => k.includes('zip')) ? (hostMirrors.mainHost || getDefaultMediaOption().host) : ''}
+            mainHost={accept && Object.keys(accept).some((k) => k.includes('zip')) ? getDefaultMediaOption().host : ''}
             defaultMirrors={defaultHostMirrors}
             mirrors={hostMirrors.mirrors}
             mirrorStatus={mirrorStatus}
