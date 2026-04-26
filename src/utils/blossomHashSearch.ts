@@ -246,7 +246,7 @@ export const findAllDownloadUrls = async (
   personalBlossomList: Blossom[] = [],
   defaultBlossomList: Blossom[] = [],
   commenterBlossomList: Blossom[] = [],
-  prioritizeOriginal: boolean = false
+  _prioritizeOriginal: boolean = false
 ): Promise<string[]> => {
   try {
     // If no hash provided, try to extract from fallback URL

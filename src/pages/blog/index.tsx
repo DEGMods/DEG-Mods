@@ -490,7 +490,7 @@ export const BlogPage = () => {
                                 className="IBMSMSMBSSPostPicture"
                                 style={{
                                   background: `url("${
-                                    blog.image !== '' ? rewriteBlossomUrl(blog.image) : placeholder
+                                    blog.image !== '' ? rewriteBlossomUrl(blog.image ?? '') : placeholder
                                   }") center / cover no-repeat`
                                 }}
                               ></div>

@@ -71,18 +71,20 @@ export const feedPageLoader =
       getReportingSet(CurationSetIdentifiers.NSFW, ndkContext),
       getReportingSet(CurationSetIdentifiers.Repost, ndkContext),
       Promise.race([
-        ndkContext.ndk.fetchEvents(
-          { kinds: [NDKKind.Contacts], authors: [loggedInUserPubkey] },
-          { closeOnEose: true, cacheUsage: NDKSubscriptionCacheUsage.PARALLEL }
-        ).then((events) => {
-          const follows = new Set<string>()
-          events.forEach((event) => {
-            if (event.kind === NDKKind.Contacts) {
-              filterValidPTags(event.tags).forEach((f) => follows.add(f))
-            }
-          })
-          return follows
-        }),
+        loggedInUserPubkey
+          ? ndkContext.ndk.fetchEvents(
+              { kinds: [NDKKind.Contacts], authors: [loggedInUserPubkey] },
+              { closeOnEose: true, cacheUsage: NDKSubscriptionCacheUsage.PARALLEL }
+            ).then((events) => {
+              const follows = new Set<string>()
+              events.forEach((event) => {
+                if (event.kind === NDKKind.Contacts) {
+                  filterValidPTags(event.tags).forEach((f) => follows.add(f))
+                }
+              })
+              return follows
+            })
+          : Promise.resolve(new Set<string>()),
         timeout(10000)
       ]).catch(() => new Set<string>())
     ])
