@@ -36,7 +36,8 @@ import {
   DEFAULT_COMMENT_FILTER_OPTIONS,
   DEFAULT_FILTER_OPTIONS,
   hexToNpub,
-  getFirstTagValue
+  getFirstTagValue,
+  rewriteBlossomUrl
 } from 'utils'
 import { Reactions } from './Reactions'
 import { Zap } from './Zap'
@@ -253,9 +254,9 @@ export const Comment = ({ comment, shouldShowMedia = false }: CommentProps) => {
                 className="IBMSMSMBSSCL_CommentTopPP"
                 to={profileRoute}
                 style={{
-                  background: `url('${
+                  background: `url('${rewriteBlossomUrl(
                     profile?.image || ''
-                  }') center / cover no-repeat`
+                  )}') center / cover no-repeat`
                 }}
               />
             </div>

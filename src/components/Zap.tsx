@@ -26,7 +26,8 @@ import {
   log,
   LogType,
   timeout,
-  unformatNumber
+  unformatNumber,
+  rewriteBlossomUrl
 } from '../utils'
 import { LoadingSpinner } from './LoadingSpinner'
 import { FALLBACK_PROFILE_IMAGE } from 'constants.ts'
@@ -937,9 +938,9 @@ export const ZapSplit = ({
                         <div
                           className="ZapSplitUserBoxUserPic"
                           style={{
-                            background: `url('${
+                            background: `url('${rewriteBlossomUrl(
                               author?.image || FALLBACK_PROFILE_IMAGE
-                            }') center / cover no-repeat`
+                            )}') center / cover no-repeat`
                           }}
                         ></div>
                         <div className="ZapSplitUserBoxUserDetails">
@@ -978,9 +979,9 @@ export const ZapSplit = ({
                         <div
                           className="ZapSplitUserBoxUserPic"
                           style={{
-                            background: `url('${
+                            background: `url('${rewriteBlossomUrl(
                               admin?.image || FALLBACK_PROFILE_IMAGE
-                            }') center / cover no-repeat`
+                            )}') center / cover no-repeat`
                           }}
                         ></div>
                         <div className="ZapSplitUserBoxUserDetails">

@@ -21,7 +21,7 @@ import {
   useNDKContext,
   useBlossomList,
   useCommentUsersBlossomList,
-  useImageFallback,
+
   useModerationSettings
 } from '../../hooks'
 import { useComments } from '../../hooks/useComments'
@@ -60,7 +60,8 @@ import {
   LogType,
   getUniqueCommenterBlossomServers,
   getLocalStorageItem,
-  DEFAULT_FILTER_OPTIONS
+  DEFAULT_FILTER_OPTIONS,
+  rewriteBlossomUrl
 } from '../../utils'
 import { Comments } from '../../components/comment'
 import { PublishDetails } from 'components/Internal/PublishDetails'
@@ -735,13 +736,8 @@ const Body = ({
   // Get blossom server lists for image fallback
   const { hostMirrors, defaultHostMirrors } = useBlossomList()
 
-  // Use image fallback for featured image background
-  const { currentUrl: featuredImageCurrentUrl } = useImageFallback({
-    originalUrl: featuredImageUrl,
-    personalBlossomList: hostMirrors.mirrors,
-    defaultBlossomList: defaultHostMirrors,
-    prioritizeOriginal: true
-  })
+  // Rewrite bs.degmods.com URL to use a mirror server
+  const featuredImageCurrentUrl = rewriteBlossomUrl(featuredImageUrl)
 
   const openLightBoxOnSlide = (slide: number) => {
     setLightBoxController((prev) => ({
@@ -817,7 +813,6 @@ const Body = ({
                   onClick={() => openLightBoxOnSlide(index + 1)}
                   personalBlossomList={hostMirrors.mirrors}
                   defaultBlossomList={defaultHostMirrors}
-                  prioritizeOriginal={true}
                 />
                 </div>
               ))}

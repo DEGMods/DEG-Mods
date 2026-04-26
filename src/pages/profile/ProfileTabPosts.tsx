@@ -39,7 +39,8 @@ export const ProfileTabPosts = () => {
       limit: 50
     }
 
-    ndk
+    // Wrap in a timeout to prevent infinite loading when relays are down
+    const fetchPromise = ndk
       .fetchEvents(filter, {
         closeOnEose: true,
         cacheUsage: NDKSubscriptionCacheUsage.PARALLEL
@@ -47,6 +48,15 @@ export const ProfileTabPosts = () => {
       .then((ndkEventSet) => {
         const ndkEvents = Array.from(ndkEventSet)
         setNotes(ndkEvents)
+      })
+
+    const timeoutPromise = new Promise<void>((_, reject) =>
+      setTimeout(() => reject(new Error('Relay fetch timeout')), 15000)
+    )
+
+    Promise.race([fetchPromise, timeoutPromise])
+      .catch(() => {
+        // Timeout or fetch error — stop loading
       })
       .finally(() => {
         setIsFetching(false)

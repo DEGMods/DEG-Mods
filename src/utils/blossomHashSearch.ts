@@ -55,7 +55,15 @@ export const getAllBlossomServers = (
     url.endsWith('/') ? url : `${url}/`
   )
 
-  return uniqueServers
+  // Exclude bs.degmods.com from the search list to reduce server load.
+  // Files on bs.degmods.com are still reachable via the fallbackUrl in
+  // findAllDownloadUrls, so nothing breaks for un-mirrored files.
+  const EXCLUDED_HOST = 'bs.degmods.com'
+  const filtered = uniqueServers.filter((u) => !u.includes(EXCLUDED_HOST))
+
+
+
+  return filtered
 }
 
 /**
@@ -83,7 +91,8 @@ const getFileExtensionFromUrl = (url: string): string => {
 }
 
 /**
- * Check if a hash exists on a specific server
+ * Check if a hash exists on a specific server using Image element probing.
+ * This bypasses CORS issues since browsers don't enforce CORS on &lt;img&gt; loads.
  * @param serverUrl - The blossom server URL
  * @param hash - The SHA256 hash to search for
  * @param preferredExtension - Preferred file extension to try first
@@ -100,62 +109,53 @@ export const checkHashOnServer = async (
     // Normalize server URL
     const baseUrl = serverUrl.endsWith('/') ? serverUrl : `${serverUrl}/`
 
-    // Try different URL patterns for the hash, prioritizing the preferred extension
+    // Build URLs to try — with extension first, then without
     const possibleUrls: string[] = []
-
-    // If we have a preferred extension, try it first
     if (preferredExtension) {
       possibleUrls.push(`${baseUrl}${hash}${preferredExtension}`)
-    } else {
-      possibleUrls.push(`${baseUrl}${hash}`)
     }
+    // Always also try without extension as fallback
+    possibleUrls.push(`${baseUrl}${hash}`)
 
-    // Try each possible URL
-    for (let i = 0; i < possibleUrls.length; i++) {
-      const url = possibleUrls[i]
+
+
+    // Try each possible URL using HEAD request (works for all file types)
+    for (const url of possibleUrls) {
+      if (signal?.aborted) {
+
+        return null
+      }
 
       try {
-        // Use HEAD request to check if file exists
         const controller = new AbortController()
-        const timeoutId = setTimeout(() => controller.abort(), 3000) // 3 second timeout
+        const timeoutId = setTimeout(() => controller.abort(), 2000)
 
-        // Combine signals if provided (with fallback for older browsers)
-        let combinedSignal = controller.signal
+        // Combine with parent signal
         if (signal) {
-          // Use AbortSignal.any if available, otherwise just use the provided signal
-          if (typeof AbortSignal.any === 'function') {
-            combinedSignal = AbortSignal.any([signal, controller.signal])
-          } else {
-            combinedSignal = signal
-          }
+          signal.addEventListener('abort', () => controller.abort(), { once: true })
         }
 
         const response = await fetch(url, {
           method: 'HEAD',
-          signal: combinedSignal,
-          redirect: 'follow',
-          headers: {
-            Accept:
-              'image/avif,image/webp,image/apng,image/svg+xml,image/*,*/*;q=0.8',
-            'Sec-Fetch-Dest': 'image',
-            'Sec-Fetch-Mode': 'no-cors'
-          }
+          signal: controller.signal
         })
 
         clearTimeout(timeoutId)
 
-        // Only accept 200 OK responses for hash verification
-        if (response.status === 200) {
+
+
+        if (response.ok) {
+          console.log(`[BlossomSearch] ✓ Found on server: ${url}`)
           return url
         }
-      } catch (error) {
-        // Continue to next URL if this one fails
+      } catch {
+
         continue
       }
     }
 
     return null
-  } catch (error) {
+  } catch {
     return null
   }
 }
@@ -174,12 +174,7 @@ export const searchHashAcrossServers = async (
   preferredExtension: string = '',
   maxConcurrent: number = 5
 ): Promise<ServerSearchResult[]> => {
-  console.debug(
-    `[BlossomSearch] Starting search for hash ${hash} across ${servers.length} servers`
-  )
-  console.debug(
-    `[BlossomSearch] Search parameters: preferredExtension=${preferredExtension}, maxConcurrent=${maxConcurrent}`
-  )
+
 
   if (!hash || hash.length !== 64) {
     const error = 'Invalid hash: must be 64-character SHA256 hash'
@@ -192,7 +187,7 @@ export const searchHashAcrossServers = async (
   // Set overall timeout for the search
   const timeoutId = setTimeout(() => {
     controller.abort()
-  }, 15000) // 15 second total timeout
+  }, 6000) // 6 second total timeout
 
   try {
     // Process servers in batches to limit concurrent requests
@@ -285,26 +280,37 @@ export const findAllDownloadUrls = async (
     // Get all successful results
     const successfulResults = results.filter((result) => result.success)
 
-    if (successfulResults.length > 0) {
-      const workingUrls = successfulResults.map((result) => result.url)
 
-      // For mod posts, prioritize original URL even if hash doesn't match
-      if (prioritizeOriginal) {
-        // Return original URL first, then alternatives as fallbacks
-        const uniqueUrls = [...new Set([fallbackUrl, ...workingUrls])]
-        return uniqueUrls
-      } else {
-        // Default behavior: Return working URLs first, then fallback URL if it's not already included
+
+    // Check if fallback is bs.degmods.com
+    const isDegmodsFallback = fallbackUrl.includes('bs.degmods.com')
+
+    if (successfulResults.length > 0) {
+      // Prefer non-degmods servers but include bs.degmods.com as fallback for downloads
+      const nonDegmods = successfulResults.filter(
+        (r) => !r.url.includes('bs.degmods.com')
+      )
+
+      if (nonDegmods.length > 0) {
+        const workingUrls = nonDegmods.map((r) => r.url)
+        // Include bs.degmods.com at the end as a fallback option for downloads
         const uniqueUrls = [...new Set([...workingUrls, fallbackUrl])]
         return uniqueUrls
       }
     }
 
+    // No mirror alternatives found, use original bs.degmods.com URL
+    if (isDegmodsFallback) {
+
+      return [fallbackUrl]
+    }
+
+
     return [fallbackUrl]
   } catch (error) {
     return [fallbackUrl]
   } finally {
-    console.warn('Error finding download URLs:')
+
   }
 }
 

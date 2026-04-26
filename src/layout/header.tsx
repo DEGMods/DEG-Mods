@@ -18,7 +18,7 @@ import { setAuth, setUser } from '../store/reducers/user'
 import mainStyles from '../styles//main.module.scss'
 import navStyles from '../styles/nav.module.scss'
 import '../styles/popup.css'
-import { npubToHex } from '../utils'
+import { npubToHex, rewriteBlossomUrl } from '../utils'
 import logo from '../assets/img/DEG Mods Logo With Text.svg'
 import placeholder from '../assets/img/DEG Mods Default PP.png'
 import { resetUserWot } from 'store/reducers/wot'
@@ -177,7 +177,7 @@ export const Header = () => {
                   <div className={navStyles.NMTI_SecInside_Link}>
                     {userState.user.image && (
                       <img
-                        src={userState.user.image}
+                        src={rewriteBlossomUrl(userState.user.image)}
                         alt="Profile Avatar"
                         className={navStyles.NMTI_SecInside_LinkImg}
                       />

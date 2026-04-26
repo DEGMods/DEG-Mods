@@ -1,4 +1,5 @@
 import { FALLBACK_PROFILE_IMAGE } from 'constants.ts'
+import { rewriteBlossomUrl } from '../utils/blossomRewrite'
 import { Event, Filter, nip19, UnsignedEvent } from 'nostr-tools'
 import { QRCodeSVG } from 'qrcode.react'
 import { Fragment, useEffect, useMemo, useState } from 'react'
@@ -143,7 +144,7 @@ export const ProfileSection = ({ pubkey }: Props) => {
                         <div
                           className="IBMSMSMSSS_ShortPostsPost_BottomImg"
                           style={{
-                            background: `linear-gradient(0deg, #232323 5%, rgba(255, 255, 255, 0)), url("${post.imageUrl}") top / cover no-repeat`
+                            background: `linear-gradient(0deg, #232323 5%, rgba(255, 255, 255, 0)), url("${rewriteBlossomUrl(post.imageUrl)}") top / cover no-repeat`
                           }}
                         ></div>
                       )}
@@ -219,7 +220,7 @@ export const Profile = ({ pubkey }: ProfileProps) => {
                   <div
                     className="IBMSMSMSSS_Author_Top_PP"
                     style={{
-                      background: `url('${image}') center / cover no-repeat`
+                      background: `url('${rewriteBlossomUrl(image)}') center / cover no-repeat`
                     }}
                   ></div>
                 </div>

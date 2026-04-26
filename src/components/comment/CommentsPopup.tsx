@@ -43,7 +43,8 @@ import {
   adjustTextareaHeight,
   DEFAULT_COMMENT_FILTER_OPTIONS,
   handleCommentSubmit,
-  hexToNpub
+  hexToNpub,
+  rewriteBlossomUrl
 } from 'utils'
 import { Reactions } from './Reactions'
 import { Zap } from './Zap'
@@ -349,9 +350,9 @@ export const CommentsPopup = ({
                         className="IBMSMSMBSSCL_CommentTopPP"
                         to={profileRoute}
                         style={{
-                          background: `url('${
+                          background: `url('${rewriteBlossomUrl(
                             profile?.image || ''
-                          }') center / cover no-repeat`
+                          )}') center / cover no-repeat`
                         }}
                       />
                     </div>

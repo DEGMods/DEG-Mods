@@ -19,7 +19,7 @@ export const isValidBlossomServerUrl = (url: string): boolean => {
  * Mirror a file hash to a specified blossom server
  * @param hash - The SHA-256 hash of the file to mirror
  * @param sourceUrl - The source URL where the file can be downloaded from
- * @param blossomServerUrl - The blossom server URL to mirror to (defaults to bs.degmods.com)
+ * @param blossomServerUrl - The blossom server URL to mirror to (defaults to blossom.band)
  * @returns Promise<'success' | 'error'> - The result of the mirror operation
  */
 export const mirrorToBlossomServer = async (
@@ -47,14 +47,14 @@ export const mirrorToBlossomServer = async (
 
       imageController = new ImageController(customBlossomOption)
     } else {
-      // Use default main blossom server (bs.degmods.com)
+      // Use default main blossom server (blossom.band)
       const mainBlossomOption = MEDIA_OPTIONS.find(
-        (option) => option.name === 'bs.degmods.com'
+        (option) => option.name === 'blossom.band'
       )
 
       if (!mainBlossomOption) {
         console.error(
-          'Main blossom server (bs.degmods.com) not found in MEDIA_OPTIONS'
+          'Main blossom server (blossom.band) not found in MEDIA_OPTIONS'
         )
         return 'error'
       }

@@ -1,4 +1,5 @@
 import { useMemo, useState } from 'react'
+import { rewriteBlossomUrl } from '../../utils/blossomRewrite'
 import {
   useLoaderData,
   Link as ReactRouterLink,
@@ -79,6 +80,9 @@ export const BlogPage = () => {
 
   const [showReportPopUp, setShowReportPopUp] = useState<number>()
   useBodyScrollDisable(!!showReportPopUp)
+
+
+
 
   const submit = useSubmit()
   const handleBlock = () => {
@@ -486,7 +490,7 @@ export const BlogPage = () => {
                                 className="IBMSMSMBSSPostPicture"
                                 style={{
                                   background: `url("${
-                                    blog.image !== '' ? blog.image : placeholder
+                                    blog.image !== '' ? rewriteBlossomUrl(blog.image) : placeholder
                                   }") center / cover no-repeat`
                                 }}
                               ></div>

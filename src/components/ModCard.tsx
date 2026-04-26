@@ -57,7 +57,6 @@ export const ModCard = React.memo((props: ModDetails) => {
             onError={handleModImageError}
             className="cMMPicture"
             alt={`featured image for mod ${props.title}`}
-            prioritizeOriginal={true}
           />
           {props.nsfw && (
             <div className="IBMSMSMBSSTagsTag IBMSMSMBSSTagsTagNSFW IBMSMSMBSSTagsTagNSFWCard">

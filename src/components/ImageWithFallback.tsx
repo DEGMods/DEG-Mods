@@ -1,9 +1,46 @@
-import React, { useState, useCallback, useEffect } from 'react'
-import { useImageFallback } from '../hooks/useImageFallback'
-import { useBlossomList } from '../hooks/useBlossomList'
-import { Blossom } from '../hooks/useBlossomList'
-import { ImageHashVerification } from '../components/ImageHashVerification'
+import React, { useState, useCallback, useRef } from 'react'
+import { extractHashFromUrl } from '../utils/hashBlocking'
 import '../styles/imageWithFallback.css'
+
+/**
+ * Ordered list of blossom servers to try.
+ * bs.degmods.com is last — we want to offload traffic from it.
+ */
+const FALLBACK_SERVERS = [
+  'https://blossom.band',
+  'https://blossom.primal.net',
+  'https://bs.degmods.com',
+]
+
+/**
+ * Build a fallback chain of URLs for a given hash + extension.
+ * e.g. for hash "abc123" and ext ".jpg":
+ *   1. https://blossom.band/abc123.jpg
+ *   2. https://blossom.primal.net/abc123.jpg
+ *   3. https://bs.degmods.com/abc123.jpg
+ */
+function buildFallbackChain(hash: string, extension: string): string[] {
+  return FALLBACK_SERVERS.map(server => `${server}/${hash}${extension}`)
+}
+
+/**
+ * Extract the file extension from a URL path.
+ * e.g. "https://bs.degmods.com/abc123.jpg" → ".jpg"
+ */
+function getExtensionFromUrl(url: string): string {
+  try {
+    const pathname = new URL(url).pathname
+    const dotIndex = pathname.lastIndexOf('.')
+    if (dotIndex !== -1) {
+      return pathname.slice(dotIndex)
+    }
+  } catch {
+    // fallback: try regex
+    const match = url.match(/(\.\w+)(?:\?|$)/)
+    if (match) return match[1]
+  }
+  return ''
+}
 
 interface ImageWithFallbackProps {
   src: string
@@ -12,19 +49,24 @@ interface ImageWithFallbackProps {
   style?: React.CSSProperties
   onClick?: () => void
   onError?: (e: React.SyntheticEvent<HTMLImageElement>) => void
-  // Blossom server context (optional - will use defaults if not provided)
-  personalBlossomList?: Blossom[]
-  defaultBlossomList?: Blossom[]
-  commenterBlossomList?: Blossom[]
-  // Control features
   showVerificationIcon?: boolean
   enableFallback?: boolean
-  prioritizeOriginal?: boolean // If true, prioritizes the original URL even if hash doesn't match (for mod posts)
+  // Keep these in the interface for compatibility, but they're no longer used
+  personalBlossomList?: any[]
+  defaultBlossomList?: any[]
+  commenterBlossomList?: any[]
+  prioritizeOriginal?: boolean
 }
 
 /**
- * Image component with automatic fallback to alternative blossom servers
- * and optional hash verification popup
+ * Image component with automatic fallback chain.
+ *
+ * For bs.degmods.com hash URLs:
+ *   1. Tries blossom.band first
+ *   2. On error → tries blossom.primal.net
+ *   3. On error → falls back to bs.degmods.com
+ *
+ * For other URLs: loads directly, no fallback.
  */
 export const ImageWithFallback: React.FC<ImageWithFallbackProps> = ({
   src,
@@ -33,253 +75,74 @@ export const ImageWithFallback: React.FC<ImageWithFallbackProps> = ({
   style,
   onClick,
   onError,
-  personalBlossomList,
-  defaultBlossomList,
-  commenterBlossomList,
-  showVerificationIcon = true,
   enableFallback = true,
-  prioritizeOriginal = false
 }) => {
-  const [showVerification, setShowVerification] = useState(false)
-  const [imageError, setImageError] = useState(false)
-  const [actualImageUrl, setActualImageUrl] = useState(src)
+  // Extract hash and build fallback chain
+  const hash = extractHashFromUrl(src)
+  const extension = getExtensionFromUrl(src)
+  const isDegmodsUrl = src.includes('bs.degmods.com')
 
-  // Get blossom lists from hook if not provided
-  const { hostMirrors, defaultHostMirrors } = useBlossomList()
-  const finalPersonalList = personalBlossomList || hostMirrors.mirrors
-  const finalDefaultList = defaultBlossomList || defaultHostMirrors
+  // Build the URL chain: for degmods hash URLs, try mirrors first.
+  // For non-degmods URLs, just use the original.
+  const urlChain = (enableFallback && isDegmodsUrl && hash)
+    ? buildFallbackChain(hash, extension)
+    : [src]
 
-  const {
-    currentUrl,
-    isSearching,
-    hasAlternatives,
-    error,
-    allUrls,
-    hash,
-    retryWithFallback,
-    isBlobUrl,
-    loadImageWithBlobSupport
-  } = useImageFallback({
-    originalUrl: src,
-    personalBlossomList: finalPersonalList,
-    defaultBlossomList: finalDefaultList,
-    commenterBlossomList,
-    enabled: enableFallback,
-    prioritizeOriginal
-  })
+  // Track which URL in the chain we're currently trying
+  const [urlIndex, setUrlIndex] = useState(0)
+  const [loadedFromMirror, setLoadedFromMirror] = useState(false)
+  const imgRef = useRef<HTMLImageElement>(null)
 
-  const handleImageError = useCallback(
-    async (e: React.SyntheticEvent<HTMLImageElement>) => {
-      console.log(`[ImageWithFallback] Image error for URL: ${currentUrl}`)
+  // Current URL to display
+  const currentUrl = urlChain[Math.min(urlIndex, urlChain.length - 1)]
 
-      // If this is already a blob URL, don't try to convert again
-      if (currentUrl.startsWith('blob:')) {
-        console.log(`[ImageWithFallback] Blob URL failed, trying alternatives`)
-        setImageError(true)
+  const handleError = useCallback(
+    (e: React.SyntheticEvent<HTMLImageElement>) => {
+      const nextIndex = urlIndex + 1
 
-        // Try next URL if available
-        if (hasAlternatives && allUrls.length > 1) {
-          const currentIndex = allUrls.indexOf(currentUrl)
-          const nextIndex = currentIndex + 1
-          if (nextIndex < allUrls.length) {
-            const nextUrl = allUrls[nextIndex]
-            try {
-              const blobUrl = await loadImageWithBlobSupport(nextUrl)
-              e.currentTarget.src = blobUrl
-              console.log(
-                `[ImageWithFallback] Trying fallback with blob conversion: ${nextUrl}`
-              )
-              return
-            } catch (blobError) {
-              console.log(
-                `[ImageWithFallback] Blob conversion failed for ${nextUrl}:`,
-                blobError
-              )
-            }
-          }
-        }
-
-        if (onError) {
-          onError(e)
-        }
-        return
-      }
-
-      // For regular URLs, try to convert to blob URL first
-      try {
+      if (nextIndex < urlChain.length) {
+        // Try next server in the chain
         console.log(
-          `[ImageWithFallback] Attempting blob conversion for: ${currentUrl}`
+          `[ImageFallback] Failed: ${urlChain[urlIndex]} → trying: ${urlChain[nextIndex]}`
         )
-        const blobUrl = await loadImageWithBlobSupport(currentUrl)
-        e.currentTarget.src = blobUrl
-        console.log(
-          `[ImageWithFallback] Successfully converted to blob URL: ${blobUrl}`
-        )
-        setImageError(false) // Reset error state on success
-        return // Success! Don't treat as error
-      } catch (blobError) {
-        console.log(`[ImageWithFallback] Blob conversion failed:`, blobError)
-      }
-
-      setImageError(true)
-
-      // Call the provided onError handler
-      if (onError) {
-        onError(e)
-      }
-
-      // If we have alternatives, try the next URL with blob conversion
-      if (hasAlternatives && allUrls.length > 1) {
-        const currentIndex = allUrls.indexOf(currentUrl)
-        const nextIndex = currentIndex + 1
-        if (nextIndex < allUrls.length) {
-          const nextUrl = allUrls[nextIndex]
-          try {
-            const blobUrl = await loadImageWithBlobSupport(nextUrl)
-            e.currentTarget.src = blobUrl
-            console.log(
-              `[ImageWithFallback] Trying fallback with blob conversion: ${nextUrl}`
-            )
-          } catch (fallbackError) {
-            console.log(
-              `[ImageWithFallback] Fallback blob conversion failed:`,
-              fallbackError
-            )
-            // Fall back to direct URL
-            e.currentTarget.src = nextUrl
-            console.log(
-              `[ImageWithFallback] Trying direct fallback URL: ${nextUrl}`
-            )
-          }
-        }
+        setUrlIndex(nextIndex)
+      } else {
+        // All servers failed
+        console.log(`[ImageFallback] All servers failed for hash: ${hash}`)
+        if (onError) onError(e)
       }
     },
-    [onError, hasAlternatives, allUrls, currentUrl, loadImageWithBlobSupport]
+    [urlIndex, urlChain, hash, onError]
   )
 
-  const handleVerificationClick = useCallback((e: React.MouseEvent) => {
-    e.preventDefault() // Prevent default link behavior
-    e.stopPropagation() // Prevent triggering parent onClick
-    e.nativeEvent.stopImmediatePropagation() // Stop all other event listeners
-    setShowVerification(true)
-  }, [])
-
-  const handleVerificationClose = useCallback(() => {
-    setShowVerification(false)
-  }, [])
-
-  const handleRetryClick = useCallback(
-    (e: React.MouseEvent) => {
-      e.preventDefault() // Prevent default link behavior
-      e.stopPropagation() // Prevent triggering parent onClick
-      e.nativeEvent.stopImmediatePropagation() // Stop all other event listeners
-      retryWithFallback()
-    },
-    [retryWithFallback]
-  )
-
-  // Proactively convert images to blob URLs if they might have blossom server issues
-  useEffect(() => {
-    const convertToBlob = async () => {
-      if (!currentUrl.startsWith('blob:') && hash && !imageError) {
-        try {
-          const blobUrl = await loadImageWithBlobSupport(currentUrl)
-          if (blobUrl !== currentUrl) {
-            setActualImageUrl(blobUrl)
-            console.log(
-              `[ImageWithFallback] Proactively converted to blob URL: ${blobUrl}`
-            )
-          }
-        } catch (error) {
-          // If proactive conversion fails, that's okay - we'll handle it in onError
-          console.log(
-            `[ImageWithFallback] Proactive blob conversion failed, will handle in onError:`,
-            error
-          )
-        }
-      }
+  const handleLoad = useCallback(() => {
+    // Check if we loaded from a mirror (not the original bs.degmods.com)
+    if (isDegmodsUrl && urlIndex < urlChain.length - 1) {
+      setLoadedFromMirror(true)
     }
-
-    // Small delay to avoid immediate conversion on mount
-    const timer = setTimeout(convertToBlob, 100)
-    return () => clearTimeout(timer)
-  }, [currentUrl, hash, imageError, loadImageWithBlobSupport])
-
-  const shouldShowIcon = showVerificationIcon && hash && !isSearching
+  }, [isDegmodsUrl, urlIndex, urlChain.length])
 
   return (
     <div className="image-with-fallback-container IBMSMSCWSPicWrapper">
       <img
-        src={actualImageUrl}
+        ref={imgRef}
+        src={currentUrl}
         alt={alt}
         className={`image-with-fallback ${className}`}
         style={style}
         onClick={onClick}
-        onError={handleImageError}
+        onError={handleError}
+        onLoad={handleLoad}
       />
 
-      {/* Show blob indicator */}
-      {isBlobUrl && actualImageUrl.startsWith('blob:') && (
+      {/* Mirror indicator */}
+      {loadedFromMirror && (
         <div
-          className="image-blob-indicator"
-          title="Loaded via blob conversion"
+          className="image-fallback-success"
+          title={`Loaded from ${new URL(currentUrl).hostname}`}
         >
-          <span>B</span>
+          <span>✓</span>
         </div>
-      )}
-
-      {/* Loading indicator */}
-      {isSearching && (
-        <div className="image-fallback-loading">
-          <div className="image-fallback-spinner" />
-        </div>
-      )}
-
-      {/* Success indicator for alternative server */}
-      {hasAlternatives && currentUrl !== src && !imageError && (
-        <div className="image-fallback-success">
-          <span title="Loaded from mirror server">✓</span>
-        </div>
-      )}
-
-      {/* Verification icon */}
-      {shouldShowIcon && (
-        <div
-          className="image-verification-icon"
-          onClick={handleVerificationClick}
-          title="Verify image hash"
-        >
-          <svg width="16" height="16" viewBox="0 0 24 24" fill="currentColor">
-            <path d="M12 1L3 5v6c0 5.55 3.84 10.74 9 12 5.16-1.26 9-6.45 9-12V5l-9-4z" />
-            <path
-              d="M10 17l-4-4 1.41-1.41L10 14.17l6.59-6.59L18 9l-8 8z"
-              fill="white"
-            />
-          </svg>
-        </div>
-      )}
-
-      {/* Error retry button */}
-      {error && !isSearching && (
-        <div className="image-fallback-error">
-          <button
-            className="image-retry-button"
-            onClick={handleRetryClick}
-            title="Retry with alternative servers"
-          >
-            ↻
-          </button>
-        </div>
-      )}
-
-      {/* Hash verification popup */}
-      {showVerification && hash && (
-        <ImageHashVerification
-          imageUrl={currentUrl}
-          expectedHash={hash}
-          allUrls={allUrls}
-          onClose={handleVerificationClose}
-        />
       )}
     </div>
   )

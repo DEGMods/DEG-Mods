@@ -1,4 +1,7 @@
-import { NDKUser } from '@nostr-dev-kit/ndk'
+import {
+  NDKKind,
+  NDKSubscriptionCacheUsage
+} from '@nostr-dev-kit/ndk'
 import { NDKContextType } from 'contexts/NDKContext'
 import { LoaderFunctionArgs, redirect } from 'react-router-dom'
 import { appRoutes } from 'routes'
@@ -12,6 +15,7 @@ import {
   LogType,
   timeout
 } from 'utils'
+import { filterValidPTags } from 'utils/wot'
 
 export interface FeedPageLoaderResult {
   muteLists: {
@@ -61,16 +65,25 @@ export const feedPageLoader =
 
     // Exception for visiting notes directly
     if (!loggedInUserPubkey && !note) return redirect(appRoutes.home)
-    const ndkUser = new NDKUser({ pubkey: loggedInUserPubkey })
-    ndkUser.ndk = ndkContext.ndk
 
     const settled = await Promise.allSettled([
       ndkContext.getMuteLists(loggedInUserPubkey),
       getReportingSet(CurationSetIdentifiers.NSFW, ndkContext),
       getReportingSet(CurationSetIdentifiers.Repost, ndkContext),
       Promise.race([
-        ndkUser.followSet(),
-        timeout(5000)
+        ndkContext.ndk.fetchEvents(
+          { kinds: [NDKKind.Contacts], authors: [loggedInUserPubkey] },
+          { closeOnEose: true, cacheUsage: NDKSubscriptionCacheUsage.PARALLEL }
+        ).then((events) => {
+          const follows = new Set<string>()
+          events.forEach((event) => {
+            if (event.kind === NDKKind.Contacts) {
+              filterValidPTags(event.tags).forEach((f) => follows.add(f))
+            }
+          })
+          return follows
+        }),
+        timeout(10000)
       ]).catch(() => new Set<string>())
     ])
 
@@ -113,7 +126,7 @@ export const feedPageLoader =
       )
     }
 
-    // Check the followSet result
+    // Check the following result
     const followSetResult = settled[3]
     if (followSetResult.status === 'fulfilled') {
       result.followList = Array.from(followSetResult.value)

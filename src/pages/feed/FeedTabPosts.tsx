@@ -48,7 +48,8 @@ export const FeedTabPosts = () => {
       limit: 50
     }
 
-    ndk
+    // Wrap in a timeout to prevent infinite loading when relays are down
+    const fetchPromise = ndk
       .fetchEvents(filter, {
         closeOnEose: true,
         cacheUsage: NDKSubscriptionCacheUsage.PARALLEL
@@ -59,32 +60,43 @@ export const FeedTabPosts = () => {
         )
         setNotes(ndkEvents)
         const firstNote = ndkEvents[0]
-        const filter: NDKFilter = {
-          authors: [...followList, userPubkey],
-          kinds: [NDKKind.Text, NDKKind.Repost],
-          since: firstNote.created_at
-        }
-        sub = ndk.subscribe(filter, {
-          closeOnEose: false,
-          cacheUsage: NDKSubscriptionCacheUsage.PARALLEL
-        })
-        sub.on('event', (ndkEvent) => {
-          setDiscoveredNotes((prev) => {
-            // Skip existing
-            if (
-              prev.find(
-                (e) =>
-                  e.id === ndkEvent.id ||
-                  ndkEvents.findIndex((n) => n.id === ndkEvent.id) !== -1
-              )
-            ) {
-              return [...prev]
-            }
-
-            return [...prev, ndkEvent]
+        if (firstNote) {
+          const filter: NDKFilter = {
+            authors: [...followList, userPubkey],
+            kinds: [NDKKind.Text, NDKKind.Repost],
+            since: firstNote.created_at
+          }
+          sub = ndk.subscribe(filter, {
+            closeOnEose: false,
+            cacheUsage: NDKSubscriptionCacheUsage.PARALLEL
           })
-        })
-        sub.start()
+          sub.on('event', (ndkEvent) => {
+            setDiscoveredNotes((prev) => {
+              // Skip existing
+              if (
+                prev.find(
+                  (e) =>
+                    e.id === ndkEvent.id ||
+                    ndkEvents.findIndex((n) => n.id === ndkEvent.id) !== -1
+                )
+              ) {
+                return [...prev]
+              }
+
+              return [...prev, ndkEvent]
+            })
+          })
+          sub.start()
+        }
+      })
+
+    const timeoutPromise = new Promise<void>((_, reject) =>
+      setTimeout(() => reject(new Error('Relay fetch timeout')), 15000)
+    )
+
+    Promise.race([fetchPromise, timeoutPromise])
+      .catch(() => {
+        // Timeout or fetch error — stop loading
       })
       .finally(() => {
         setIsFetching(false)

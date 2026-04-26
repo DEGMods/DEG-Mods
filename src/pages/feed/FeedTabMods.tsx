@@ -118,7 +118,8 @@ export const FeedTabMods = () => {
       filter['#r'] = [window.location.host]
     }
 
-    ndk
+    // Wrap in a timeout to prevent infinite loading when relays are down
+    const fetchPromise = ndk
       .fetchEvents(filter, {
         closeOnEose: true,
         cacheUsage: NDKSubscriptionCacheUsage.PARALLEL
@@ -126,6 +127,15 @@ export const FeedTabMods = () => {
       .then((ndkEventSet) => {
         const ndkEvents = Array.from(ndkEventSet)
         setMods(constructModListFromEvents(ndkEvents))
+      })
+
+    const timeoutPromise = new Promise<void>((_, reject) =>
+      setTimeout(() => reject(new Error('Relay fetch timeout')), 15000)
+    )
+
+    Promise.race([fetchPromise, timeoutPromise])
+      .catch(() => {
+        // Timeout or fetch error — stop loading
       })
       .finally(() => {
         setIsFetching(false)

@@ -22,7 +22,7 @@ import { useState } from 'react'
 import { Link, useNavigation, useSubmit } from 'react-router-dom'
 import { appRoutes, getProfilePageRoute } from 'routes'
 import { FeedPostsFilter, NSFWFilter, UserProfile } from 'types'
-import { DEFAULT_FILTER_OPTIONS, hexToNpub, log, LogType } from 'utils'
+import { DEFAULT_FILTER_OPTIONS, hexToNpub, log, LogType, rewriteBlossomUrl } from 'utils'
 import { NoteRepostPopup } from './NoteRepostPopup'
 import { NoteQuoteRepostPopup } from './NoteQuoteRepostPopup'
 import { NsfwCommentWrapper } from 'components/NsfwCommentWrapper'
@@ -281,9 +281,9 @@ export const Note = ({ ndkEvent }: NoteProps) => {
                 className="IBMSMSMBSSCL_CommentTopPP"
                 to={profileRoute}
                 style={{
-                  background: `url('${
+                  background: `url('${rewriteBlossomUrl(
                     noteProfile?.image || ''
-                  }') center / cover no-repeat`
+                  )}') center / cover no-repeat`
                 }}
               />
             </div>

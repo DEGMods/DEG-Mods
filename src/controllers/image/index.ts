@@ -57,25 +57,25 @@ export const MEDIA_DROPZONE_OPTIONS: DropzoneOptions = {
 
 export const MEDIA_OPTIONS: MediaOption[] = [
   {
-    name: 'bs.degmods.com',
-    host: 'https://bs.degmods.com/',
-    type: 'degmods-server'
-  },
-  {
     name: 'blossom.band',
     host: 'https://blossom.band/',
     type: 'blossomband-server'
   },
   {
+    name: 'bs.degmods.com',
+    host: 'https://bs.degmods.com/',
+    type: 'degmods-server'
+  },
+  {
     name: 'nostpic.com',
     host: 'https://nostpic.com/',
     type: 'nostrcheck-server'
+  },
+  {
+    name: 'blossom.primal.net',
+    host: 'https://blossom.primal.net/',
+    type: 'blossomband-server'
   }
-  // {
-  //   name: 'void.cat',
-  //   host: 'https://void.cat/',
-  //   type: 'route96'
-  // }
 ]
 
 // if url is localhost, use degmods-server

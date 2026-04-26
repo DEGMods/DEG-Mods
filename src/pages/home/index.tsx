@@ -179,7 +179,6 @@ const SlideContent = ({ naddr }: SlideContentProps) => {
         src={mod.featuredImageUrl}
         onError={handleModImageError}
         className="IBMSMSCWSPic"
-        prioritizeOriginal={true}
       />
       <div className="IBMSMSCWSInfo">
         <h3 className="IBMSMSCWSInfoHeading">{mod.title}</h3>

@@ -89,7 +89,7 @@ export interface NDKContextType {
 
 // Timeout for NDK fetch operations (ms).
 // Prevents a hung relay from blocking the entire UI.
-const NDK_FETCH_TIMEOUT_MS = 5000
+const NDK_FETCH_TIMEOUT_MS = 15000
 
 // Create the context with an initial value of `null`
 export const NDKContext = createContext<NDKContextType | null>(null)
@@ -287,8 +287,7 @@ export const NDKContextProvider = ({ children }: { children: ReactNode }) => {
       })
       .catch((err) => {
         // Log the error and show a notification if fetching fails
-        log(true, LogType.Error, 'An error occurred in fetching events', err)
-        toast.error('An error occurred in fetching events') // Show error notification
+        log(false, LogType.Error, 'An error occurred in fetching events', err)
         return [] // Return an empty array in case of an error
       })
   }
@@ -354,8 +353,7 @@ export const NDKContextProvider = ({ children }: { children: ReactNode }) => {
       })
       .catch((err) => {
         // Log the error and show a notification if fetching fails
-        log(true, LogType.Error, 'An error occurred in fetching events', err)
-        toast.error('An error occurred in fetching events') // Show error notification
+        log(false, LogType.Error, 'An error occurred in fetching events', err)
         return [] // Return an empty array in case of an error
       })
   }

@@ -42,7 +42,12 @@ export const useImageFallback = ({
   prioritizeOriginal = false
 }: UseImageFallbackOptions): UseImageFallbackResult => {
   const [currentUrl, setCurrentUrl] = useState(originalUrl)
-  const [isSearching, setIsSearching] = useState(false)
+  // Start isSearching as true if the URL has a hash and fallback is enabled.
+  // This prevents consumers (ImageWithFallback) from using the original URL
+  // before the hash search has had a chance to find alternatives.
+  const [isSearching, setIsSearching] = useState(() => {
+    return enabled && !!extractHashFromUrl(originalUrl)
+  })
   const [hasAlternatives, setHasAlternatives] = useState(false)
   const [error, setError] = useState<string | undefined>()
   const [allUrls, setAllUrls] = useState<string[]>([originalUrl])
@@ -55,24 +60,18 @@ export const useImageFallback = ({
     const extractedHash = extractHashFromUrl(originalUrl)
     setHash(extractedHash || undefined)
 
-    if (extractedHash) {
-      log(
-        false,
-        LogType.Info,
-        `[ImageFallback] Extracted hash from URL: ${extractedHash}`
-      )
-    } else {
-      log(
-        false,
-        LogType.Info,
-        `[ImageFallback] No hash found in URL: ${originalUrl}`
-      )
-    }
+    console.log(
+      `[ImageFallback] Hash extraction: url=${originalUrl}, hash=${extractedHash || 'NONE'}`
+    )
   }, [originalUrl])
 
   // Search for alternative URLs when hash is available
   const searchForAlternatives = useCallback(async () => {
-    if (!enabled || !hash || hasSearched || isSearching) {
+    console.log(
+      `[ImageFallback] searchForAlternatives called: enabled=${enabled}, hash=${hash}, hasSearched=${hasSearched}`
+    )
+    if (!enabled || !hash || hasSearched) {
+      console.log(`[ImageFallback] Search skipped (condition not met)`)
       return
     }
 
@@ -129,7 +128,6 @@ export const useImageFallback = ({
     enabled,
     hash,
     hasSearched,
-    isSearching,
     originalUrl,
     personalBlossomList,
     defaultBlossomList,

@@ -7,7 +7,7 @@ import { CommentContent } from 'components/comment/CommentContent'
 import { getProfilePageRoute } from 'routes'
 import { nip19 } from 'nostr-tools'
 import { UserProfile } from 'types'
-import { hexToNpub, log, LogType } from 'utils'
+import { hexToNpub, log, LogType, rewriteBlossomUrl } from 'utils'
 import { formatDate } from 'date-fns'
 
 interface NoteRepostProps {
@@ -88,9 +88,9 @@ export const NoteRepostPopup = ({
                 className="IBMSMSMBSSCL_CommentTopPP"
                 to={profileRoute}
                 style={{
-                  background: `url('${
+                  background: `url('${rewriteBlossomUrl(
                     profile?.image || ''
-                  }') center / cover no-repeat`
+                  )}') center / cover no-repeat`
                 }}
               />
             </div>

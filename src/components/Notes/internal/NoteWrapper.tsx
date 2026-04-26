@@ -4,7 +4,7 @@ import { appRoutes, getProfilePageRoute } from 'routes'
 import { filterFromId, NDKEvent } from '@nostr-dev-kit/ndk'
 import { useState } from 'react'
 import { UserProfile } from 'types'
-import { hexToNpub } from 'utils'
+import { hexToNpub, rewriteBlossomUrl } from 'utils'
 import { formatDate } from 'date-fns'
 import { CommentContent } from 'components/comment/CommentContent'
 import { Dots } from 'components/Spinner'
@@ -43,9 +43,9 @@ export const NoteWrapper = ({ noteEntity }: NoteWrapperProps) => {
               className="IBMSMSMBSSCL_CommentTopPP"
               to={profileRoute}
               style={{
-                background: `url('${
+                background: `url('${rewriteBlossomUrl(
                   profile?.image || ''
-                }') center / cover no-repeat`
+                )}') center / cover no-repeat`
               }}
             />
           </div>

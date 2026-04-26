@@ -10,6 +10,7 @@ import {
 import { useLocalStorage } from '../hooks/useLocalStorage'
 import { FileHashChecker } from './FileHashChecker'
 import { useBodyScrollDisable } from '../hooks'
+import { rewriteBlossomUrl } from '../utils/blossomRewrite'
 
 export const DownloadDetailsPopup = ({
   title,
@@ -53,7 +54,7 @@ export const DownloadDetailsPopup = ({
   // Blossom server URL input state
   const [blossomServerUrl, setBlossomServerUrl] = useLocalStorage<string>(
     'preferred-blossom-server',
-    'https://bs.degmods.com'
+    'https://blossom.band'
   )
   const [urlError, setUrlError] = useState<string>('')
 
@@ -426,7 +427,7 @@ export const DownloadDetailsPopup = ({
                       </div>
                       <div className="IBMSMSMBSSDownloadsElementInsideAltTableRowCol">
                         <img
-                          src={mediaUrl}
+                          src={rewriteBlossomUrl(mediaUrl)}
                           className="IBMSMSMBSSDownloadsElementInsideAltTableRowCol_Img"
                           alt=""
                         />
