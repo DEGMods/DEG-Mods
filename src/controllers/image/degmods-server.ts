@@ -85,16 +85,19 @@ export class DegmodsServer extends NostrCheckServer {
   }
 
   getResponse = async (url: string, auth: string, file: File) => {
+    // Read file into memory first — Firefox has issues streaming File objects
+    // as fetch body after they've been read by getFileSha256 (causes 408 timeout)
+    const fileBuffer = await file.arrayBuffer()
     const sha256 = await getFileSha256(file)
 
     const fetchResponse = await fetch(url, {
       method: 'PUT',
       headers: {
         Authorization: 'Nostr ' + auth,
-        'Content-Type': file.type,
+        'Content-Type': file.type || 'application/octet-stream',
         'X-Sha256': sha256
       },
-      body: file
+      body: new Blob([fileBuffer], { type: file.type })
     })
 
     if (fetchResponse.ok) {
@@ -202,17 +205,18 @@ export class DegmodsServer extends NostrCheckServer {
     file: File,
     queueToken: string
   ) => {
+    const fileBuffer = await file.arrayBuffer()
     const sha256 = await getFileSha256(file)
 
     const fetchResponse = await fetch(url, {
       method: 'PUT',
       headers: {
         Authorization: 'Nostr ' + auth,
-        'Content-Type': file.type,
+        'Content-Type': file.type || 'application/octet-stream',
         'X-Sha256': sha256,
         'X-Upload-Queue-Token': queueToken
       },
-      body: file
+      body: new Blob([fileBuffer], { type: file.type })
     })
 
     if (fetchResponse.ok) {
