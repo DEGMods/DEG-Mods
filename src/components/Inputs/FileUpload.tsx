@@ -144,8 +144,8 @@ export const FileUpload = React.memo(
     const correspondingMediaOption = useMemo(
       () =>
         MEDIA_OPTIONS.find((mo) => mo.host === hostMirrors.mainHost) ||
-        MEDIA_OPTIONS[0],
-      [hostMirrors.mainHost]
+        mediaOption,
+      [hostMirrors.mainHost, mediaOption]
     )
 
     const handleUpload = useCallback(
