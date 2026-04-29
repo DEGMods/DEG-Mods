@@ -114,28 +114,35 @@ export const writeRouteAction =
       }
 
       const ndkEvent = new NDKEvent(ndkContext.ndk, signedEvent)
-      const publishedOnRelays = await ndkContext.publish(ndkEvent)
 
-      // Handle cases where publishing failed or succeeded
-      if (publishedOnRelays.length === 0) {
-        toast.error('Failed to publish event on any relay.')
+      try {
+        const publishedOnRelays = await ndkContext.publish(ndkEvent)
+
+        // Handle cases where publishing failed or succeeded
+        if (publishedOnRelays.length === 0) {
+          toast.error('Failed to publish event on any relay.')
+          return null
+        } else {
+          toast.success(
+            `Event published successfully to the following relays\n\n${publishedOnRelays.join(
+              '\n'
+            )}`
+          )
+
+          !isEditing && removeLocalStorageItem(BLOG_DRAFT_CACHE_KEY)
+
+          const naddr = nip19.naddrEncode({
+            identifier: uuid,
+            pubkey: signedEvent.pubkey,
+            kind: signedEvent.kind,
+            relays: publishedOnRelays
+          })
+          return redirect(getBlogPageRoute(naddr))
+        }
+      } catch (publishError) {
+        log(true, LogType.Error, 'Failed to publish the event!', publishError)
+        toast.error('Failed to publish the event. Please try again.')
         return null
-      } else {
-        toast.success(
-          `Event published successfully to the following relays\n\n${publishedOnRelays.join(
-            '\n'
-          )}`
-        )
-
-        !isEditing && removeLocalStorageItem(BLOG_DRAFT_CACHE_KEY)
-
-        const naddr = nip19.naddrEncode({
-          identifier: uuid,
-          pubkey: signedEvent.pubkey,
-          kind: signedEvent.kind,
-          relays: publishedOnRelays
-        })
-        return redirect(getBlogPageRoute(naddr))
       }
     } catch (error) {
       log(true, LogType.Error, 'Failed to sign the event!', error)

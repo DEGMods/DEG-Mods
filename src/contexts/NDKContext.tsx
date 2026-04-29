@@ -454,7 +454,12 @@ export const NDKContextProvider = ({ children }: { children: ReactNode }) => {
     if (!event.sig) throw new Error('Before publishing first sign the event!')
 
     try {
-      const res = await event.publish(undefined, 10000)
+      // Race against a timeout to prevent hanging when relays are down.
+      // Same resilience pattern used by fetchMods/fetchEvents/etc.
+      const res = await Promise.race([
+        event.publish(undefined, 10000),
+        timeout(NDK_FETCH_TIMEOUT_MS)
+      ])
       const relaysPublishedOn = Array.from(res)
       return relaysPublishedOn.map((relay) => relay.url)
     } catch (err) {
