@@ -87,116 +87,111 @@ export class DegmodsServer extends NostrCheckServer {
   getResponse = async (url: string, auth: string, file: File) => {
     const sha256 = await getFileSha256(file)
 
-    try {
-      const response = await axios.put<Response>(url, file, {
-        headers: {
-          Authorization: 'Nostr ' + auth,
-          'Content-Type': file.type,
-          'X-Sha256': sha256
-        },
-        responseType: 'json'
-      })
+    const fetchResponse = await fetch(url, {
+      method: 'PUT',
+      headers: {
+        Authorization: 'Nostr ' + auth,
+        'Content-Type': file.type,
+        'X-Sha256': sha256
+      },
+      body: file
+    })
 
-      response.data.status = response.status === 200 ? 'success' : 'error'
-      response.data.nip94_event = {
-        tags: [['url', (response as unknown as DegmodsResponse).data.url]]
+    if (fetchResponse.ok) {
+      const data = await fetchResponse.json()
+      // Build a response compatible with the NostrCheckServer.post() expectations
+      const response = {
+        data: {
+          status: 'success' as const,
+          nip94_event: {
+            tags: [['url', data.url]]
+          },
+          url: data.url
+        },
+        status: fetchResponse.status
+      }
+      return response as unknown as import('axios').AxiosResponse<Response>
+    }
+
+    // Handle error responses — replicate the axios error handling
+    const status = fetchResponse.status
+    const responseText = await fetchResponse.text().catch(() => '')
+    const xReason = fetchResponse.headers.get('x-reason')
+
+    switch (status) {
+      case 412: {
+        // Precondition Failed - Queue scenario
+        console.log(
+          `[FileUpload] Queue response:`,
+          responseText,
+          xReason
+        )
+        const queueData: DegmodsQueueResponse = JSON.parse(xReason || '{}')
+        console.log(`[FileUpload] Queue data:`, queueData)
+
+        if (!queueData.value || typeof queueData.value !== 'string') {
+          console.warn(
+            'Invalid queue response: missing or invalid token',
+            queueData
+          )
+          throw new BaseError(DegmodsErrorType.UPLOAD_QUEUE_FULL, {
+            context: {
+              queueToken: null,
+              position: queueData.position,
+              rawResponse: responseText,
+              auth
+            }
+          })
+        }
+
+        throw new BaseError(DegmodsErrorType.UPLOAD_QUEUE_FULL, {
+          context: {
+            queueToken: queueData.value,
+            position: queueData.position,
+            header: queueData.header,
+            auth
+          }
+        })
       }
 
-      return response
-    } catch (error) {
-      if (axios.isAxiosError(error) && error.response) {
-        const status = error.response.status
-
-        switch (status) {
-          case 412: {
-            // Precondition Failed - Queue scenario
-            console.log(
-              `[FileUpload] Queue response:`,
-              error.response.data,
-              error.response.headers,
-              error.response.headers['x-reason']
-            )
-            const queueData: DegmodsQueueResponse = JSON.parse(
-              error.response.headers['x-reason']
-            )
-            console.log(`[FileUpload] Queue data:`, queueData)
-
-            // Validate queue response structure
-            if (!queueData.value || typeof queueData.value !== 'string') {
-              console.warn(
-                'Invalid queue response: missing or invalid token',
-                queueData
-              )
-              throw new BaseError(DegmodsErrorType.UPLOAD_QUEUE_FULL, {
-                context: {
-                  queueToken: null,
-                  position: queueData.position,
-                  rawResponse: error.response.data,
-                  auth
-                }
-              })
-            }
-
-            throw new BaseError(DegmodsErrorType.UPLOAD_QUEUE_FULL, {
-              context: {
-                queueToken: queueData.value,
-                position: queueData.position,
-                header: queueData.header,
-                auth
-              }
-            })
-          }
-
-          case 400: {
-            // Bad Request
-            if (error.response.data?.includes('sha256')) {
-              throw new BaseError(DegmodsErrorType.AUTH_MISSING_SHA256)
-            } else if (error.response.data?.includes('file type')) {
-              throw new BaseError(DegmodsErrorType.INVALID_FILE_TYPE)
-            } else {
-              // Check for X-Reason header first, then fall back to response data
-              const xReason = error.response.headers['x-reason']
-              const errorMessage =
-                xReason || error.response.data || 'Unknown error'
-              throw new BaseError('Bad request: ' + errorMessage)
-            }
-          }
-
-          case 401: {
-            // Unauthorized
-            throw new BaseError(
-              'Upload unauthorized: ' +
-                (error.response.data || 'Authentication failed')
-            )
-          }
-
-          case 413: {
-            // Payload Too Large
-            throw new BaseError(DegmodsErrorType.FILE_TOO_LARGE)
-          }
-
-          case 507: {
-            // Insufficient Storage
-            throw new BaseError(DegmodsErrorType.SERVER_OUT_OF_SPACE)
-          }
-
-          case 404: {
-            // Not Found
-            if (error.response.data?.includes('disabled')) {
-              throw new BaseError(DegmodsErrorType.UPLOAD_DISABLED)
-            }
-            throw new BaseError('Upload endpoint not found')
-          }
-
-          default: {
-            throw new BaseError(
-              `Upload failed: ${status} - ${error.response.data || 'Unknown error'}`
-            )
-          }
+      case 400: {
+        if (responseText?.includes('sha256')) {
+          throw new BaseError(DegmodsErrorType.AUTH_MISSING_SHA256)
+        } else if (responseText?.includes('file type')) {
+          throw new BaseError(DegmodsErrorType.INVALID_FILE_TYPE)
+        } else {
+          const errorMessage = xReason || responseText || 'Unknown error'
+          throw new BaseError('Bad request: ' + errorMessage)
         }
       }
 
-      throw error
+      case 401: {
+        throw new BaseError(
+          'Upload unauthorized: ' +
+            (responseText || 'Authentication failed')
+        )
+      }
+
+      case 413: {
+        throw new BaseError(DegmodsErrorType.FILE_TOO_LARGE)
+      }
+
+      case 507: {
+        throw new BaseError(DegmodsErrorType.SERVER_OUT_OF_SPACE)
+      }
+
+      case 404: {
+        if (responseText?.includes('disabled')) {
+          throw new BaseError(DegmodsErrorType.UPLOAD_DISABLED)
+        }
+        throw new BaseError('Upload endpoint not found')
+      }
+
+      default: {
+        throw new BaseError(
+          `Upload failed: ${status} - ${responseText || 'Unknown error'}`
+        )
+      }
     }
   }
 
@@ -209,101 +204,91 @@ export class DegmodsServer extends NostrCheckServer {
   ) => {
     const sha256 = await getFileSha256(file)
 
-    try {
-      const response = await axios.put<Response>(url, file, {
-        headers: {
-          Authorization: 'Nostr ' + auth,
-          'Content-Type': file.type,
-          'X-Sha256': sha256,
-          'X-Upload-Queue-Token': queueToken
-        },
-        responseType: 'json'
-      })
+    const fetchResponse = await fetch(url, {
+      method: 'PUT',
+      headers: {
+        Authorization: 'Nostr ' + auth,
+        'Content-Type': file.type,
+        'X-Sha256': sha256,
+        'X-Upload-Queue-Token': queueToken
+      },
+      body: file
+    })
 
-      return (response as unknown as DegmodsResponse).data.url
-    } catch (error) {
-      if (axios.isAxiosError(error) && error.response) {
-        const status = error.response.status
+    if (fetchResponse.ok) {
+      const data = await fetchResponse.json()
+      return data.url as string
+    }
 
-        switch (status) {
-          case 412: {
-            // Still in queue, update position
-            const queueData: DegmodsQueueResponse = JSON.parse(
-              error.response.headers['x-reason']
-            )
+    const status = fetchResponse.status
+    const responseText = await fetchResponse.text().catch(() => '')
+    const xReason = fetchResponse.headers.get('x-reason')
 
-            // Validate queue response structure
-            if (!queueData.value || typeof queueData.value !== 'string') {
-              console.warn(
-                'Invalid retry queue response: missing or invalid token',
-                queueData
-              )
-              throw new BaseError(DegmodsErrorType.UPLOAD_QUEUE_POSITION, {
-                context: {
-                  queueToken: queueData.value,
-                  position: queueData.position || 0,
-                  rawResponse: error.response.data
-                }
-              })
+    switch (status) {
+      case 412: {
+        // Still in queue, update position
+        const queueData: DegmodsQueueResponse = JSON.parse(xReason || '{}')
+
+        if (!queueData.value || typeof queueData.value !== 'string') {
+          console.warn(
+            'Invalid retry queue response: missing or invalid token',
+            queueData
+          )
+          throw new BaseError(DegmodsErrorType.UPLOAD_QUEUE_POSITION, {
+            context: {
+              queueToken: queueData.value,
+              position: queueData.position || 0,
+              rawResponse: responseText
             }
+          })
+        }
 
-            throw new BaseError(DegmodsErrorType.UPLOAD_QUEUE_POSITION, {
-              context: {
-                queueToken: queueData.value,
-                position: queueData.position || 0
-              }
-            })
+        throw new BaseError(DegmodsErrorType.UPLOAD_QUEUE_POSITION, {
+          context: {
+            queueToken: queueData.value,
+            position: queueData.position || 0
           }
+        })
+      }
 
-          case 400: {
-            // Bad Request
-            if (error.response.data?.includes('sha256')) {
-              throw new BaseError(DegmodsErrorType.AUTH_MISSING_SHA256)
-            } else if (error.response.data?.includes('file type')) {
-              throw new BaseError(DegmodsErrorType.INVALID_FILE_TYPE)
-            } else {
-              // Check for X-Reason header first, then fall back to response data
-              const xReason = error.response.headers['x-reason']
-              const errorMessage =
-                xReason || error.response.data || 'Unknown error'
-              throw new BaseError('Bad request: ' + errorMessage)
-            }
-          }
-
-          case 401: {
-            // Unauthorized
-            throw new BaseError(
-              'Upload unauthorized: ' +
-                (error.response.data || 'Authentication failed')
-            )
-          }
-
-          case 413: {
-            // Payload Too Large
-            throw new BaseError(DegmodsErrorType.FILE_TOO_LARGE)
-          }
-
-          case 507: {
-            // Insufficient Storage
-            throw new BaseError(DegmodsErrorType.SERVER_OUT_OF_SPACE)
-          }
-
-          case 404: {
-            // Not Found
-            if (error.response.data?.includes('disabled')) {
-              throw new BaseError(DegmodsErrorType.UPLOAD_DISABLED)
-            }
-            throw new BaseError('Upload endpoint not found')
-          }
-
-          default: {
-            throw new BaseError(
-              `Upload failed: ${status} - ${error.response.data || 'Unknown error'}`
-            )
-          }
+      case 400: {
+        if (responseText?.includes('sha256')) {
+          throw new BaseError(DegmodsErrorType.AUTH_MISSING_SHA256)
+        } else if (responseText?.includes('file type')) {
+          throw new BaseError(DegmodsErrorType.INVALID_FILE_TYPE)
+        } else {
+          const errorMessage = xReason || responseText || 'Unknown error'
+          throw new BaseError('Bad request: ' + errorMessage)
         }
       }
-      throw error
+
+      case 401: {
+        throw new BaseError(
+          'Upload unauthorized: ' +
+            (responseText || 'Authentication failed')
+        )
+      }
+
+      case 413: {
+        throw new BaseError(DegmodsErrorType.FILE_TOO_LARGE)
+      }
+
+      case 507: {
+        throw new BaseError(DegmodsErrorType.SERVER_OUT_OF_SPACE)
+      }
+
+      case 404: {
+        if (responseText?.includes('disabled')) {
+          throw new BaseError(DegmodsErrorType.UPLOAD_DISABLED)
+        }
+        throw new BaseError('Upload endpoint not found')
+      }
+
+      default: {
+        throw new BaseError(
+          `Upload failed: ${status} - ${responseText || 'Unknown error'}`
+        )
+      }
     }
   }
 
