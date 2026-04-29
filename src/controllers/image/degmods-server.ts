@@ -85,10 +85,23 @@ export class DegmodsServer extends NostrCheckServer {
   }
 
   getResponse = async (url: string, auth: string, file: File) => {
-    // Read file into memory first — Firefox has issues streaming File objects
-    // as fetch body after they've been read by getFileSha256 (causes 408 timeout)
+    console.log(`[DegmodsUpload] getResponse called — url: ${url}, file: ${file.name} (${file.size} bytes, type: ${file.type})`)
+
+    // Read file into memory first
+    console.log(`[DegmodsUpload] Reading file into ArrayBuffer...`)
+    const t0 = performance.now()
     const fileBuffer = await file.arrayBuffer()
+    console.log(`[DegmodsUpload] ArrayBuffer read: ${fileBuffer.byteLength} bytes in ${(performance.now() - t0).toFixed(0)}ms`)
+
+    console.log(`[DegmodsUpload] Computing SHA256...`)
+    const t1 = performance.now()
     const sha256 = await getFileSha256(file)
+    console.log(`[DegmodsUpload] SHA256: ${sha256} in ${(performance.now() - t1).toFixed(0)}ms`)
+
+    const blob = new Blob([fileBuffer], { type: file.type })
+    console.log(`[DegmodsUpload] Created Blob: ${blob.size} bytes, type: ${blob.type}`)
+    console.log(`[DegmodsUpload] Sending fetch PUT to ${url}...`)
+    const t2 = performance.now()
 
     const fetchResponse = await fetch(url, {
       method: 'PUT',
@@ -97,8 +110,10 @@ export class DegmodsServer extends NostrCheckServer {
         'Content-Type': file.type || 'application/octet-stream',
         'X-Sha256': sha256
       },
-      body: new Blob([fileBuffer], { type: file.type })
+      body: blob
     })
+
+    console.log(`[DegmodsUpload] Fetch completed: status=${fetchResponse.status} in ${(performance.now() - t2).toFixed(0)}ms`)
 
     if (fetchResponse.ok) {
       const data = await fetchResponse.json()
