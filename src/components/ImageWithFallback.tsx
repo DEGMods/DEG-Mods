@@ -265,6 +265,7 @@ export const ImageWithFallback: React.FC<ImageWithFallbackProps> = ({
             className="image-fallback-tampered-btn"
             onClick={(e) => {
               e.stopPropagation()
+              e.preventDefault()
               setShowTampered(true)
             }}
           >
