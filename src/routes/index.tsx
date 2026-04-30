@@ -9,6 +9,7 @@ import { ModsPage } from '../pages/mods'
 import { ModPage } from '../pages/mod'
 import { modsRouteLoader } from '../pages/mods/loader'
 import { modRouteLoader } from '../pages/mod/loader'
+import { modEditRouteLoader } from '../pages/mod/editLoader'
 import { modRouteAction } from '../pages/mod/action'
 import { SubmitModPage } from '../pages/submitMod'
 import { ProfilePage } from '../pages/profile'
@@ -183,7 +184,7 @@ export const routerWithNdkContext = (context: NDKContextType) =>
         },
         {
           path: appRoutes.editMod,
-          loader: modRouteLoader(context),
+          loader: modEditRouteLoader(context),
           action: submitModRouteAction(context),
           element: <SubmitModPage key="edit" />,
           errorElement: <NotFoundPage title={'Something went wrong.'} />
