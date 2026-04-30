@@ -1,4 +1,4 @@
-import FsLightbox from 'fslightbox-react'
+import { Lightbox } from '../../components/Lightbox'
 import { nip19 } from 'nostr-tools'
 import { useEffect, useRef, useState } from 'react'
 import {
@@ -60,8 +60,7 @@ import {
   LogType,
   getUniqueCommenterBlossomServers,
   getLocalStorageItem,
-  DEFAULT_FILTER_OPTIONS,
-  rewriteBlossomUrl
+  DEFAULT_FILTER_OPTIONS
 } from '../../utils'
 import { Comments } from '../../components/comment'
 import { PublishDetails } from 'components/Internal/PublishDetails'
@@ -907,9 +906,9 @@ const Body = ({
           </div>
         </div>
       </div>
-      <FsLightbox
+      <Lightbox
         toggler={lightBoxController.toggler}
-        sources={screenshotsUrls.map(url => rewriteBlossomUrl(url))}
+        sources={screenshotsUrls}
         slide={lightBoxController.slide}
       />
     </>

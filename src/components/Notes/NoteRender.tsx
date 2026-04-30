@@ -14,8 +14,7 @@ import {
   isValidVideoUrl,
   isYoutubeLink
 } from 'utils'
-import FsLightbox from 'fslightbox-react'
-import { createPortal } from 'react-dom'
+import { Lightbox } from '../Lightbox'
 import { CommentDepthContext } from 'contexts/CommentDepthContext'
 import { Link } from 'react-router-dom'
 import { appRoutes } from 'routes'
@@ -309,16 +308,14 @@ export const NoteRender = ({
       ) : (
         _content
       )}
-      {slides.length > 0 &&
-        createPortal(
-          <FsLightbox
-            toggler={lightBoxController.toggler}
-            sources={slides.map((s) => s.url)}
-            types={slides.map((s) => s.type)}
-            slide={lightBoxController.slide}
-          />,
-          document.body
-        )}
+      {slides.length > 0 && (
+        <Lightbox
+          toggler={lightBoxController.toggler}
+          sources={slides.map((s) => s.url)}
+          types={slides.map((s) => s.type)}
+          slide={lightBoxController.slide}
+        />
+      )}
     </>
   )
 }

@@ -14,13 +14,24 @@ const FALLBACK_SERVERS = [
 
 /**
  * Build a fallback chain of URLs for a given hash + extension.
- * e.g. for hash "abc123" and ext ".jpg":
- *   1. https://blossom.band/abc123.jpg
- *   2. https://blossom.primal.net/abc123.jpg
- *   3. https://bs.degmods.com/abc123.jpg
+ * Includes the original URL at the end if it's not already in the chain.
  */
-function buildFallbackChain(hash: string, extension: string): string[] {
-  return FALLBACK_SERVERS.map(server => `${server}/${hash}${extension}`)
+function buildFallbackChain(hash: string, extension: string, originalUrl: string): string[] {
+  const chain = FALLBACK_SERVERS.map(server => `${server}/${hash}${extension}`)
+
+  // Add original URL at the end if it's not already covered by a mirror
+  const originalInChain = chain.some(url => {
+    try {
+      return new URL(url).href === new URL(originalUrl).href
+    } catch {
+      return url === originalUrl
+    }
+  })
+  if (!originalInChain) {
+    chain.push(originalUrl)
+  }
+
+  return chain
 }
 
 /**
@@ -61,12 +72,13 @@ interface ImageWithFallbackProps {
 /**
  * Image component with automatic fallback chain.
  *
- * For bs.degmods.com hash URLs:
+ * For any URL containing a SHA256 hash (blossom hash URLs):
  *   1. Tries blossom.band first
  *   2. On error → tries blossom.primal.net
- *   3. On error → falls back to bs.degmods.com
+ *   3. On error → tries bs.degmods.com
+ *   4. On error → falls back to the original URL (if different)
  *
- * For other URLs: loads directly, no fallback.
+ * For non-hash URLs: loads directly, no fallback.
  */
 export const ImageWithFallback: React.FC<ImageWithFallbackProps> = ({
   src,
@@ -80,12 +92,11 @@ export const ImageWithFallback: React.FC<ImageWithFallbackProps> = ({
   // Extract hash and build fallback chain
   const hash = extractHashFromUrl(src)
   const extension = getExtensionFromUrl(src)
-  const isDegmodsUrl = src.includes('bs.degmods.com')
 
-  // Build the URL chain: for degmods hash URLs, try mirrors first.
-  // For non-degmods URLs, just use the original.
-  const urlChain = (enableFallback && isDegmodsUrl && hash)
-    ? buildFallbackChain(hash, extension)
+  // Build the URL chain: for any hash URL, try mirrors first.
+  // For non-hash URLs, just use the original.
+  const urlChain = (enableFallback && hash)
+    ? buildFallbackChain(hash, extension, src)
     : [src]
 
   // Track which URL in the chain we're currently trying
@@ -116,11 +127,11 @@ export const ImageWithFallback: React.FC<ImageWithFallbackProps> = ({
   )
 
   const handleLoad = useCallback(() => {
-    // Check if we loaded from a mirror (not the original bs.degmods.com)
-    if (isDegmodsUrl && urlIndex < urlChain.length - 1) {
+    // Check if we loaded from a different server than the original
+    if (hash && currentUrl !== src) {
       setLoadedFromMirror(true)
     }
-  }, [isDegmodsUrl, urlIndex, urlChain.length])
+  }, [hash, currentUrl, src])
 
   return (
     <div className="image-with-fallback-container IBMSMSCWSPicWrapper">

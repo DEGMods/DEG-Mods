@@ -10,15 +10,16 @@ interface ViewerProps {
 }
 
 /**
- * Rewrite bs.degmods.com image URLs in rendered HTML to use mirror servers.
+ * Rewrite blossom hash image URLs in rendered HTML to use mirror servers.
  * This ensures images in markdown body content benefit from the same
  * blossom server failover as other images on the site.
+ * Processes all img tags — rewriteBlossomUrl handles hash detection internally
+ * and returns non-hash URLs unchanged.
  */
 function rewriteBodyImages(html: string): string {
-  // Match img src attributes containing bs.degmods.com
   return html.replace(
-    /(<img\s[^>]*src=")([^"]*bs\.degmods\.com[^"]*)(")/gi,
-    (_match, prefix, url, suffix) => {
+    /(<img\s[^>]*src=")([^"]+)(")/gi,
+    (_match: string, prefix: string, url: string, suffix: string) => {
       const rewritten = rewriteBlossomUrl(url)
       return `${prefix}${rewritten}${suffix}`
     }
@@ -47,7 +48,7 @@ export const Viewer = ({ markdown }: ViewerProps) => {
       }
     )
 
-    // Rewrite bs.degmods.com image URLs to use mirror servers
+    // Rewrite blossom hash image URLs to use mirror servers
     return rewriteBodyImages(sanitized)
   }, [markdown])
 
