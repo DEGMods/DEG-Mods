@@ -107,20 +107,16 @@ export const ImageWithFallback: React.FC<ImageWithFallbackProps> = ({
     : null
 
   const [state, setState] = useState<ImageState>(urlChain ? 'loading' : 'unverified')
-  const [blobUrl, setBlobUrl] = useState<string | null>(null)
+  const [verifiedUrl, setVerifiedUrl] = useState<string | null>(null)
   const [verifiedFrom, setVerifiedFrom] = useState<string | null>(null)
   const [showTampered, setShowTampered] = useState(false)
   const mountedRef = useRef(true)
-  const blobUrlRef = useRef<string | null>(null)
 
-  // Cleanup on unmount
+  // Track mount state
   useEffect(() => {
     mountedRef.current = true
     return () => {
       mountedRef.current = false
-      if (blobUrlRef.current) {
-        URL.revokeObjectURL(blobUrlRef.current)
-      }
     }
   }, [])
 
@@ -133,7 +129,7 @@ export const ImageWithFallback: React.FC<ImageWithFallbackProps> = ({
 
     // Reset state for new src
     setState('loading')
-    setBlobUrl(null)
+    setVerifiedUrl(null)
     setVerifiedFrom(null)
 
     const verifyChain = async () => {
@@ -153,19 +149,10 @@ export const ImageWithFallback: React.FC<ImageWithFallbackProps> = ({
           const computedHash = await computeSha256(buffer)
 
           if (computedHash === hash) {
-            // Hash matches — content is authentic
-            const contentType = response.headers.get('content-type') || 'image/jpeg'
-            const blob = new Blob([buffer], { type: contentType })
-            const objectUrl = URL.createObjectURL(blob)
-
-            // Revoke previous blob URL if any
-            if (blobUrlRef.current) {
-              URL.revokeObjectURL(blobUrlRef.current)
-            }
-            blobUrlRef.current = objectUrl
-
+            // Hash matches — use this server's URL directly
+            // Browser cache will serve the img load from cache
             if (!cancelled && mountedRef.current) {
-              setBlobUrl(objectUrl)
+              setVerifiedUrl(url)
               setVerifiedFrom(url !== src ? url : null)
               setState('verified')
               console.log(`[ImageVerify] ✓ Verified: ${url}`)
@@ -277,13 +264,12 @@ export const ImageWithFallback: React.FC<ImageWithFallbackProps> = ({
   }
 
   // ── Verified or Unverified — show image ──
-  const displayUrl = blobUrl || src
+  const displayUrl = verifiedUrl || src
 
   return (
     <div className="image-with-fallback-container IBMSMSCWSPicWrapper">
       <img
         src={displayUrl}
-        data-original-src={blobUrl ? src : undefined}
         alt={alt}
         className={`image-with-fallback ${className}`}
         style={style}

@@ -27,4 +27,4 @@ export const DEFAULT_COMMENT_FILTER_OPTIONS: CommentsFilterOptions = {
   source: window.location.host
 }
 
-export const DEFAULT_EXCLUDED_TAGS: string[] = ['Loli', 'Gore', 'Politics']
+export const DEFAULT_EXCLUDED_TAGS: string[] = ['Loli', 'Gore', 'Politics', 'Shota']
