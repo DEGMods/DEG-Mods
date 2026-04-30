@@ -986,6 +986,13 @@ const Download = (
   })
 
   const handleDownload = async () => {
+    // If this is an external link (not a direct file), open in new tab
+    const isFile = await checkUrlForFile(bestUrl)
+    if (!isFile) {
+      window.open(bestUrl, '_blank', 'noopener,noreferrer')
+      return
+    }
+
     // If hash is available, open verification popup
     if (hash || props.automaticHash) {
       setShowHashVerification(true)

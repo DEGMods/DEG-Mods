@@ -283,6 +283,7 @@ export const ImageWithFallback: React.FC<ImageWithFallbackProps> = ({
     <div className="image-with-fallback-container IBMSMSCWSPicWrapper">
       <img
         src={displayUrl}
+        data-original-src={blobUrl ? src : undefined}
         alt={alt}
         className={`image-with-fallback ${className}`}
         style={style}
