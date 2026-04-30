@@ -4,7 +4,6 @@ import { useEffect, useRef, useState } from 'react'
 import {
   Outlet,
   Link as ReactRouterLink,
-  useLoaderData,
   useNavigate,
   useNavigation,
   useParams,
@@ -104,7 +103,11 @@ export const ModPage = () => {
     illegalBlockedType,
     isHardBlocked,
     hardBlockedType,
-    isBlockCheckComplete
+    isBlockCheckComplete,
+    isAddedToNSFW,
+    isBlocked,
+    isRepost,
+    latest
   } = useModData()
 
   // Get admin status early
@@ -196,6 +199,10 @@ export const ModPage = () => {
                             hardBlockedType={hardBlockedType}
                             isIllegalBlocked={isIllegalBlocked}
                             illegalBlockedType={illegalBlockedType}
+                            mod={mod}
+                            isAddedToNSFW={isAddedToNSFW}
+                            isBlocked={isBlocked}
+                            isRepost={isRepost}
                           />
                           {postWarning && (
                             <PostWarnings
@@ -256,7 +263,7 @@ export const ModPage = () => {
                             )}
                           </div>
                         </div>
-                        <DisplayModAuthorBlogs />
+                        <DisplayModAuthorBlogs latest={latest} />
                         <div className="IBMSMSplitMainBigSideSec">
                           <Comments
                             addressable={mod}
@@ -295,18 +302,24 @@ interface GameProps {
   hardBlockedType?: 'post' | 'user'
   isIllegalBlocked: boolean
   illegalBlockedType?: 'post' | 'user'
+  mod?: ModDetails
+  isAddedToNSFW: boolean
+  isBlocked: boolean
+  isRepost: boolean
 }
 
 const Game = ({
   isHardBlocked,
   hardBlockedType,
   isIllegalBlocked,
-  illegalBlockedType
+  illegalBlockedType,
+  mod,
+  isAddedToNSFW,
+  isBlocked,
+  isRepost
 }: GameProps) => {
   const { naddr } = useParams()
   const navigation = useNavigation()
-  const { mod, isAddedToNSFW, isBlocked, isRepost } =
-    useLoaderData() as ModPageLoaderResult
   const userState = useAppSelector((state) => state.user)
   const { ndk } = useNDKContext()
   const isLoggedIn = userState.auth && userState.user?.pubkey !== 'undefined'
@@ -1086,8 +1099,7 @@ const Download = (
   )
 }
 
-const DisplayModAuthorBlogs = () => {
-  const { latest } = useLoaderData() as ModPageLoaderResult
+const DisplayModAuthorBlogs = ({ latest }: { latest: ModPageLoaderResult['latest'] }) => {
   const { deletedBlogIds, loading: checkingDeletedBlogs } = useDeletedBlogs(
     latest || []
   )
