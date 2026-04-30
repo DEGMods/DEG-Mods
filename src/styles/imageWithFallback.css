@@ -21,48 +21,21 @@
   border-radius: 8px;
 }
 
-/* Tampered warning bar — sticks to bottom of image */
-.image-tampered-bar {
+/* Tampered pill badge — same position as verified badge */
+.image-tampered-badge {
   position: absolute;
-  bottom: 0;
-  left: 0;
-  right: 0;
+  top: 8px;
+  right: 8px;
+  background: rgba(200, 50, 50, 0.85);
+  color: rgba(255, 255, 255, 0.95);
+  border-radius: 10px;
+  padding: 2px 8px;
   display: flex;
   align-items: center;
-  gap: 6px;
-  padding: 5px 10px;
-  background: rgba(120, 20, 20, 0.7);
-  backdrop-filter: blur(6px);
-  -webkit-backdrop-filter: blur(6px);
-  color: rgba(255, 140, 140, 0.95);
-  font-size: 12px;
-  font-weight: 500;
-  z-index: 5;
-}
-
-.image-tampered-bar svg {
-  flex-shrink: 0;
-  opacity: 0.9;
-}
-
-.image-tampered-bar span {
-  flex: 1;
-}
-
-.image-tampered-bar-close {
-  flex-shrink: 0;
-  background: none;
-  border: none;
-  color: rgba(255, 180, 180, 0.8);
-  font-size: 14px;
-  cursor: pointer;
-  padding: 0 2px;
-  line-height: 1;
-  transition: color 0.15s ease;
-}
-
-.image-tampered-bar-close:hover {
-  color: rgba(255, 255, 255, 1);
+  font-size: 11px;
+  font-weight: 600;
+  z-index: 10;
+  cursor: default;
 }
 
 /* Verified badge */
