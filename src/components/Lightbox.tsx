@@ -42,8 +42,15 @@ export const Lightbox: React.FC<LightboxProps> = ({
     return s
   })
 
+  // Skip the initial render — only open when toggler actually changes
+  const isFirstRender = React.useRef(true)
+
   // Toggle open/close when toggler changes
   useEffect(() => {
+    if (isFirstRender.current) {
+      isFirstRender.current = false
+      return
+    }
     if (sources.length === 0) return
     setIsOpen(true)
     setCurrentIndex(Math.max(0, Math.min(slide - 1, sources.length - 1)))

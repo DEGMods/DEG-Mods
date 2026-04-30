@@ -11,6 +11,60 @@
   height: auto;
 }
 
+/* Loading placeholder while hash verification is in progress */
+.image-fallback-loading-state {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  min-height: 120px;
+  background: rgba(255, 255, 255, 0.03);
+  border-radius: 8px;
+}
+
+/* Tampered / integrity failure warning */
+.image-fallback-tampered {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  min-height: 120px;
+  background: rgba(255, 50, 50, 0.08);
+  border: 1px solid rgba(255, 80, 80, 0.25);
+  border-radius: 8px;
+  color: rgba(255, 100, 100, 0.85);
+  cursor: default;
+  padding: 20px;
+}
+
+.image-fallback-tampered svg {
+  opacity: 0.7;
+}
+
+.image-fallback-tampered-text {
+  font-size: 13px;
+  font-weight: 500;
+  opacity: 0.85;
+}
+
+/* Verified badge */
+.image-verified-badge {
+  position: absolute;
+  top: 8px;
+  right: 8px;
+  background: rgba(40, 167, 69, 0.9);
+  color: white;
+  border-radius: 50%;
+  width: 20px;
+  height: 20px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 12px;
+  font-weight: bold;
+  z-index: 10;
+}
+
 /* Loading spinner */
 .image-fallback-loading {
   position: absolute;

@@ -1,4 +1,4 @@
-import React, { useState, useCallback, useRef } from 'react'
+import React, { useState, useEffect, useRef } from 'react'
 import { extractHashFromUrl } from '../utils/hashBlocking'
 import '../styles/imageWithFallback.css'
 
@@ -19,7 +19,6 @@ const FALLBACK_SERVERS = [
 function buildFallbackChain(hash: string, extension: string, originalUrl: string): string[] {
   const chain = FALLBACK_SERVERS.map(server => `${server}/${hash}${extension}`)
 
-  // Add original URL at the end if it's not already covered by a mirror
   const originalInChain = chain.some(url => {
     try {
       return new URL(url).href === new URL(originalUrl).href
@@ -36,7 +35,6 @@ function buildFallbackChain(hash: string, extension: string, originalUrl: string
 
 /**
  * Extract the file extension from a URL path.
- * e.g. "https://bs.degmods.com/abc123.jpg" → ".jpg"
  */
 function getExtensionFromUrl(url: string): string {
   try {
@@ -46,12 +44,22 @@ function getExtensionFromUrl(url: string): string {
       return pathname.slice(dotIndex)
     }
   } catch {
-    // fallback: try regex
     const match = url.match(/(\.\w+)(?:\?|$)/)
     if (match) return match[1]
   }
   return ''
 }
+
+/**
+ * Compute SHA256 hash of an ArrayBuffer using Web Crypto API.
+ */
+async function computeSha256(buffer: ArrayBuffer): Promise<string> {
+  const hashBuffer = await crypto.subtle.digest('SHA-256', buffer)
+  const hashArray = Array.from(new Uint8Array(hashBuffer))
+  return hashArray.map(b => b.toString(16).padStart(2, '0')).join('')
+}
+
+type ImageState = 'loading' | 'verified' | 'unverified' | 'tampered'
 
 interface ImageWithFallbackProps {
   src: string
@@ -70,15 +78,17 @@ interface ImageWithFallbackProps {
 }
 
 /**
- * Image component with automatic fallback chain.
+ * Image component with hash verification and automatic fallback chain.
  *
- * For any URL containing a SHA256 hash (blossom hash URLs):
- *   1. Tries blossom.band first
- *   2. On error → tries blossom.primal.net
- *   3. On error → tries bs.degmods.com
- *   4. On error → falls back to the original URL (if different)
+ * For any URL containing a SHA256 hash:
+ *   1. Fetches from each server in the chain
+ *   2. Computes SHA256 of the downloaded bytes
+ *   3. Compares to the hash in the URL
+ *   4. Only displays the image if the hash matches
+ *   5. If a server serves tampered content (hash mismatch), it's rejected
+ *   6. If ALL servers fail → shows integrity warning
  *
- * For non-hash URLs: loads directly, no fallback.
+ * For non-hash URLs: loads directly via <img>, no verification.
  */
 export const ImageWithFallback: React.FC<ImageWithFallbackProps> = ({
   src,
@@ -89,68 +99,177 @@ export const ImageWithFallback: React.FC<ImageWithFallbackProps> = ({
   onError,
   enableFallback = true,
 }) => {
-  // Extract hash and build fallback chain
-  const hash = extractHashFromUrl(src)
+  const hash = enableFallback ? extractHashFromUrl(src) : null
   const extension = getExtensionFromUrl(src)
 
-  // Build the URL chain: for any hash URL, try mirrors first.
-  // For non-hash URLs, just use the original.
-  const urlChain = (enableFallback && hash)
+  const urlChain = hash
     ? buildFallbackChain(hash, extension, src)
-    : [src]
+    : null
 
-  // Track which URL in the chain we're currently trying
-  const [urlIndex, setUrlIndex] = useState(0)
-  const [loadedFromMirror, setLoadedFromMirror] = useState(false)
-  const imgRef = useRef<HTMLImageElement>(null)
+  const [state, setState] = useState<ImageState>(urlChain ? 'loading' : 'unverified')
+  const [blobUrl, setBlobUrl] = useState<string | null>(null)
+  const [verifiedFrom, setVerifiedFrom] = useState<string | null>(null)
+  const mountedRef = useRef(true)
+  const blobUrlRef = useRef<string | null>(null)
 
-  // Current URL to display
-  const currentUrl = urlChain[Math.min(urlIndex, urlChain.length - 1)]
-
-  const handleError = useCallback(
-    (e: React.SyntheticEvent<HTMLImageElement>) => {
-      const nextIndex = urlIndex + 1
-
-      if (nextIndex < urlChain.length) {
-        // Try next server in the chain
-        console.log(
-          `[ImageFallback] Failed: ${urlChain[urlIndex]} → trying: ${urlChain[nextIndex]}`
-        )
-        setUrlIndex(nextIndex)
-      } else {
-        // All servers failed
-        console.log(`[ImageFallback] All servers failed for hash: ${hash}`)
-        if (onError) onError(e)
+  // Cleanup on unmount
+  useEffect(() => {
+    mountedRef.current = true
+    return () => {
+      mountedRef.current = false
+      if (blobUrlRef.current) {
+        URL.revokeObjectURL(blobUrlRef.current)
       }
-    },
-    [urlIndex, urlChain, hash, onError]
-  )
-
-  const handleLoad = useCallback(() => {
-    // Check if we loaded from a different server than the original
-    if (hash && currentUrl !== src) {
-      setLoadedFromMirror(true)
     }
-  }, [hash, currentUrl, src])
+  }, [])
+
+  // Hash verification chain
+  useEffect(() => {
+    if (!urlChain || !hash) return
+
+    let cancelled = false
+    let tamperedFound = false
+
+    // Reset state for new src
+    setState('loading')
+    setBlobUrl(null)
+    setVerifiedFrom(null)
+
+    const verifyChain = async () => {
+      for (const url of urlChain) {
+        if (cancelled) return
+
+        try {
+          const response = await fetch(url)
+          if (!response.ok) {
+            console.log(`[ImageVerify] ${url} → ${response.status}`)
+            continue
+          }
+
+          const buffer = await response.arrayBuffer()
+          if (cancelled || !mountedRef.current) return
+
+          const computedHash = await computeSha256(buffer)
+
+          if (computedHash === hash) {
+            // Hash matches — content is authentic
+            const contentType = response.headers.get('content-type') || 'image/jpeg'
+            const blob = new Blob([buffer], { type: contentType })
+            const objectUrl = URL.createObjectURL(blob)
+
+            // Revoke previous blob URL if any
+            if (blobUrlRef.current) {
+              URL.revokeObjectURL(blobUrlRef.current)
+            }
+            blobUrlRef.current = objectUrl
+
+            if (!cancelled && mountedRef.current) {
+              setBlobUrl(objectUrl)
+              setVerifiedFrom(url !== src ? url : null)
+              setState('verified')
+              console.log(`[ImageVerify] ✓ Verified: ${url}`)
+            }
+            return
+          } else {
+            // Hash mismatch — this server is serving tampered content
+            tamperedFound = true
+            console.warn(
+              `[ImageVerify] ✗ TAMPERED: ${url}\n` +
+              `  Expected: ${hash}\n` +
+              `  Got:      ${computedHash}`
+            )
+          }
+        } catch (err) {
+          // CORS, network error, etc — can't verify from this server
+          console.log(`[ImageVerify] Fetch error: ${url}`, err instanceof Error ? err.message : err)
+          continue
+        }
+      }
+
+      // All servers exhausted
+      if (cancelled || !mountedRef.current) return
+
+      if (tamperedFound) {
+        // At least one server returned content with wrong hash
+        setState('tampered')
+        console.warn(`[ImageVerify] ⚠ All servers failed verification for hash: ${hash}`)
+      } else {
+        // All servers unreachable (CORS/network/404) — fall back to unverified display
+        setState('unverified')
+        console.log(`[ImageVerify] All servers unreachable for ${hash}, showing unverified`)
+      }
+    }
+
+    verifyChain()
+
+    return () => {
+      cancelled = true
+    }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [src])
+
+  // ── Loading state ──
+  if (state === 'loading') {
+    return (
+      <div className="image-with-fallback-container IBMSMSCWSPicWrapper">
+        <div
+          className={`image-with-fallback image-fallback-loading-state ${className}`}
+          style={style}
+        >
+          <div className="image-fallback-spinner-large"></div>
+        </div>
+      </div>
+    )
+  }
+
+  // ── Tampered state ──
+  if (state === 'tampered') {
+    return (
+      <div className="image-with-fallback-container IBMSMSCWSPicWrapper">
+        <div
+          className={`image-with-fallback image-fallback-tampered ${className}`}
+          style={style}
+          onClick={onClick}
+        >
+          <svg
+            xmlns="http://www.w3.org/2000/svg"
+            viewBox="0 0 512 512"
+            width="28"
+            height="28"
+            fill="currentColor"
+          >
+            <path d="M256 32c14.2 0 27.3 7.5 34.5 19.8l216 368c7.3 12.4 7.3 27.7 .2 40.1S486.3 480 472 480H40c-14.3 0-27.6-7.7-34.7-20.1s-7-27.8 .2-40.1l216-368C228.7 39.5 241.8 32 256 32zm0 128c-13.3 0-24 10.7-24 24V296c0 13.3 10.7 24 24 24s24-10.7 24-24V184c0-13.3-10.7-24-24-24zm32 224a32 32 0 1 0 -64 0 32 32 0 1 0 64 0z" />
+          </svg>
+          <span className="image-fallback-tampered-text">
+            Image failed integrity check
+          </span>
+        </div>
+      </div>
+    )
+  }
+
+  // ── Verified or Unverified — show image ──
+  const displayUrl = blobUrl || src
 
   return (
     <div className="image-with-fallback-container IBMSMSCWSPicWrapper">
       <img
-        ref={imgRef}
-        src={currentUrl}
+        src={displayUrl}
         alt={alt}
         className={`image-with-fallback ${className}`}
         style={style}
         onClick={onClick}
-        onError={handleError}
-        onLoad={handleLoad}
+        onError={onError}
       />
 
-      {/* Mirror indicator */}
-      {loadedFromMirror && (
+      {/* Verified badge */}
+      {state === 'verified' && (
         <div
-          className="image-fallback-success"
-          title={`Loaded from ${new URL(currentUrl).hostname}`}
+          className="image-verified-badge"
+          title={verifiedFrom
+            ? `Verified from ${new URL(verifiedFrom).hostname}`
+            : 'Hash verified'
+          }
         >
           <span>✓</span>
         </div>
