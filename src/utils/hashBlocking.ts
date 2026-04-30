@@ -3,26 +3,38 @@
  */
 
 /**
- * Extracts SHA256 hash from a URL if present
+ * Extracts SHA256 hash from a URL if present.
+ * Targets the LAST hash in the path (the filename), not intermediate
+ * directory segments which may be pubkeys or other identifiers.
+ *
+ * e.g. "https://cdn.nostrcheck.me/<pubkey>/<filehash>.webp" → filehash
+ * e.g. "https://blossom.band/<filehash>.jpg" → filehash
+ *
  * @param url - The URL to extract hash from
  * @returns The SHA256 hash if found, null otherwise
  */
 export const extractHashFromUrl = (url: string): string | null => {
   try {
-    // Pattern to match SHA256 hash in URL path (64 hex characters)
-    const hashRegex = /\/([a-fA-F0-9]{64})(?:\.[a-zA-Z0-9]+)?(?:\/|$)/
-    const match = url.match(hashRegex)
-
-    if (match && match[1]) {
-      return match[1].toLowerCase()
+    // Extract just the pathname to avoid matching hashes in query params
+    let pathname: string
+    try {
+      pathname = new URL(url).pathname
+    } catch {
+      pathname = url
     }
 
-    // Also check for hash at the end of the path
-    const endHashRegex = /\/([a-fA-F0-9]{64})(?:\.[a-zA-Z0-9]+)?$/
-    const endMatch = url.match(endHashRegex)
+    // Get the last path segment (the filename)
+    const segments = pathname.split('/').filter(Boolean)
+    if (segments.length === 0) return null
 
-    if (endMatch && endMatch[1]) {
-      return endMatch[1].toLowerCase()
+    const lastSegment = segments[segments.length - 1]
+
+    // Strip extension and check if it's a valid SHA256 hash
+    const nameWithoutExt = lastSegment.replace(/\.[a-zA-Z0-9]+$/, '')
+    const sha256Regex = /^[a-fA-F0-9]{64}$/
+
+    if (sha256Regex.test(nameWithoutExt)) {
+      return nameWithoutExt.toLowerCase()
     }
 
     return null
