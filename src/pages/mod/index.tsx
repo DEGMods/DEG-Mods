@@ -736,9 +736,6 @@ const Body = ({
   // Get blossom server lists for image fallback
   const { hostMirrors, defaultHostMirrors } = useBlossomList()
 
-  // Rewrite bs.degmods.com URL to use a mirror server
-  const featuredImageCurrentUrl = rewriteBlossomUrl(featuredImageUrl)
-
   const openLightBoxOnSlide = (slide: number) => {
     setLightBoxController((prev) => ({
       toggler: !prev.toggler,
@@ -773,12 +770,13 @@ const Body = ({
   return (
     <>
       <div className="IBMSMSMBSSPost">
-        <div
-          className="IBMSMSMBSSPostPicture"
-          style={{
-            background: `url(${featuredImageCurrentUrl}) center / cover no-repeat`
-          }}
-        ></div>
+        <div className="IBMSMSMBSSPostPicture">
+          <ImageWithFallback
+            src={featuredImageUrl}
+            alt={title}
+            style={{ width: '100%', height: '100%', objectFit: 'cover' }}
+          />
+        </div>
         <div className="IBMSMSMBSSPostInside">
           <div className="IBMSMSMBSSPostTitle">
             <h1 className="IBMSMSMBSSPostTitleHeading">{title}</h1>
@@ -911,7 +909,7 @@ const Body = ({
       </div>
       <FsLightbox
         toggler={lightBoxController.toggler}
-        sources={screenshotsUrls}
+        sources={screenshotsUrls.map(url => rewriteBlossomUrl(url))}
         slide={lightBoxController.slide}
       />
     </>

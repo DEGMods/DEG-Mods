@@ -20,6 +20,16 @@
   align-items: center;
   padding-top: 56.25%;
   border-bottom: solid 1px rgb(255 255 255 / 5%);
+  position: relative;
+  overflow: hidden;
+}
+
+.IBMSMSMBSSPostPicture > .image-with-fallback-container {
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
 }
 
 .IBMSMSMBSSPostTitle {

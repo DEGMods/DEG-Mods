@@ -3,9 +3,26 @@ import { marked } from 'marked'
 import { createDirectives, presetDirectiveConfigs } from 'marked-directive'
 import { youtubeDirective } from './YoutubeDirective'
 import { useMemo } from 'react'
+import { rewriteBlossomUrl } from '../../utils/blossomRewrite'
 
 interface ViewerProps {
   markdown: string
+}
+
+/**
+ * Rewrite bs.degmods.com image URLs in rendered HTML to use mirror servers.
+ * This ensures images in markdown body content benefit from the same
+ * blossom server failover as other images on the site.
+ */
+function rewriteBodyImages(html: string): string {
+  // Match img src attributes containing bs.degmods.com
+  return html.replace(
+    /(<img\s[^>]*src=")([^"]*bs\.degmods\.com[^"]*)(")/gi,
+    (_match, prefix, url, suffix) => {
+      const rewritten = rewriteBlossomUrl(url)
+      return `${prefix}${rewritten}${suffix}`
+    }
+  )
 }
 
 export const Viewer = ({ markdown }: ViewerProps) => {
@@ -19,7 +36,7 @@ export const Viewer = ({ markdown }: ViewerProps) => {
       }
     })
 
-    return DOMPurify.sanitize(
+    const sanitized = DOMPurify.sanitize(
       marked
         .use(createDirectives([...presetDirectiveConfigs, youtubeDirective]))
         .parse(`${markdown}`, {
@@ -29,6 +46,9 @@ export const Viewer = ({ markdown }: ViewerProps) => {
         ADD_TAGS: ['iframe']
       }
     )
+
+    // Rewrite bs.degmods.com image URLs to use mirror servers
+    return rewriteBodyImages(sanitized)
   }, [markdown])
 
   return (

@@ -1,5 +1,5 @@
 import { useMemo, useState } from 'react'
-import { rewriteBlossomUrl } from '../../utils/blossomRewrite'
+import { ImageWithFallback } from '../../components/ImageWithFallback'
 import {
   useLoaderData,
   Link as ReactRouterLink,
@@ -486,14 +486,13 @@ export const BlogPage = () => {
                                   )}
                                 </div>
                               </div>
-                              <div
-                                className="IBMSMSMBSSPostPicture"
-                                style={{
-                                  background: `url("${
-                                    blog.image !== '' ? rewriteBlossomUrl(blog.image ?? '') : placeholder
-                                  }") center / cover no-repeat`
-                                }}
-                              ></div>
+                              <div className="IBMSMSMBSSPostPicture">
+                                <ImageWithFallback
+                                  src={blog.image !== '' ? (blog.image ?? '') : placeholder}
+                                  alt={blog.title}
+                                  style={{ width: '100%', height: '100%', objectFit: 'cover' }}
+                                />
+                              </div>
                               <div className="IBMSMSMBSSPostInside">
                                 <div className="IBMSMSMBSSPostTitle">
                                   <h1 className="IBMSMSMBSSPostTitleHeading">
