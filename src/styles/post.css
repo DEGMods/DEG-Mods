@@ -258,15 +258,7 @@
   color: rgba(255,255,255,0.5);
 }
 
-.dropdown.dropdownMain.dropdownMainBlogpost {
-    flex-grow: unset;
-    position: absolute;
-    top: 10px;
-    right: 10px;
-    background: #0000002e;
-    border-radius: 6px;
-    padding: 2px;
-}
+
 
 .IBMSMSMBSSPostBody > div:first-child > div > p {
     margin-bottom: 10px;
@@ -287,6 +279,7 @@
   background: rgba(0,0,0,0.1);
   border-radius: 6px;
   padding: 2px;
+  z-index: 20;
 }
 
 .IBMSMSMBSSWarning {
