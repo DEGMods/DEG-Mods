@@ -109,6 +109,7 @@ export const ImageWithFallback: React.FC<ImageWithFallbackProps> = ({
   const [state, setState] = useState<ImageState>(urlChain ? 'loading' : 'unverified')
   const [blobUrl, setBlobUrl] = useState<string | null>(null)
   const [verifiedFrom, setVerifiedFrom] = useState<string | null>(null)
+  const [showTampered, setShowTampered] = useState(false)
   const mountedRef = useRef(true)
   const blobUrlRef = useRef<string | null>(null)
 
@@ -222,14 +223,31 @@ export const ImageWithFallback: React.FC<ImageWithFallbackProps> = ({
     )
   }
 
-  // ── Tampered state ──
+  // ── Tampered state (user chose to view) ──
+  if (state === 'tampered' && showTampered) {
+    return (
+      <div className="image-with-fallback-container IBMSMSCWSPicWrapper">
+        <img
+          src={src}
+          alt={alt}
+          className={`image-with-fallback image-fallback-tampered-shown ${className}`}
+          style={style}
+          onClick={onClick}
+        />
+        <div className="image-tampered-badge" title="Unverified — hash mismatch">
+          <span>⚠</span>
+        </div>
+      </div>
+    )
+  }
+
+  // ── Tampered state (warning) ──
   if (state === 'tampered') {
     return (
       <div className="image-with-fallback-container IBMSMSCWSPicWrapper">
         <div
           className={`image-with-fallback image-fallback-tampered ${className}`}
           style={style}
-          onClick={onClick}
         >
           <svg
             xmlns="http://www.w3.org/2000/svg"
@@ -243,6 +261,15 @@ export const ImageWithFallback: React.FC<ImageWithFallbackProps> = ({
           <span className="image-fallback-tampered-text">
             Image failed integrity check
           </span>
+          <button
+            className="image-fallback-tampered-btn"
+            onClick={(e) => {
+              e.stopPropagation()
+              setShowTampered(true)
+            }}
+          >
+            Show anyway
+          </button>
         </div>
       </div>
     )
