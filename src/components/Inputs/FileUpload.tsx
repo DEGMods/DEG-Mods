@@ -80,31 +80,31 @@ export const FileUpload = React.memo(
     const [cachedFiles, setCachedFiles] = useState<File[]>([])
     const [isScanned, setIsScanned] = useState(false)
     const [scanError, setScanError] = useState<string | null>(null)
-    // For non-simple uploads, use the domain-based blossom server as default
+    // Determine default upload server based on file type:
+    // - Zip/mod files → bs.degmods.com (degmods-server with malware scanning)
+    // - Images → blossom.band (blossomband-server, no scanning needed)
+    const isZipUpload = accept && Object.keys(accept).some((k) => k.includes('zip'))
     const getDefaultMediaOption = useCallback((): MediaOption => {
-      if (!simple) {
-        const currentDomain = window.location.hostname
-        const isLocalhost = currentDomain.includes('localhost')
+      const currentDomain = window.location.hostname
+      const isLocalhost = currentDomain.includes('localhost')
 
-        if (isLocalhost) {
-          return {
-            name: `localhost`,
-            host: 'http://localhost:3000/',
-            type: 'degmods-server'
-          }
+      if (isLocalhost) {
+        return {
+          name: `localhost`,
+          host: 'http://localhost:3000/',
+          type: 'degmods-server'
         }
+      }
 
+      if (isZipUpload) {
+        // Mod file uploads → use bs.degmods.com for malware scanning
         const blossomServerUrl = `https://bs.${currentDomain}/`
-
-        // Check if this domain-based server exists in MEDIA_OPTIONS
         const domainOption = MEDIA_OPTIONS.find(
           (option) => option.host === blossomServerUrl
         )
         if (domainOption) {
           return domainOption
         }
-
-        // If not found, create a new option for this domain
         return {
           name: `bs.${currentDomain}`,
           host: blossomServerUrl,
@@ -112,9 +112,9 @@ export const FileUpload = React.memo(
         }
       }
 
-      // For simple uploads, use the first available option
+      // Image uploads → use blossom.band (no scanning)
       return MEDIA_OPTIONS[0]
-    }, [simple])
+    }, [isZipUpload])
 
     const [mediaOption, setMediaOption] = useState<MediaOption>(
       getDefaultMediaOption()
