@@ -1,4 +1,3 @@
-import { NDKKind } from '@nostr-dev-kit/ndk'
 import { NDKContextType } from 'contexts/NDKContext'
 import { nip19 } from 'nostr-tools'
 import { LoaderFunctionArgs, redirect } from 'react-router-dom'
@@ -21,7 +20,7 @@ import {
  * navigation, so clicking a mod card navigates instantly.
  */
 export const modRouteLoader =
-  (ndkContext: NDKContextType) =>
+  (_ndkContext: NDKContextType) =>
   async ({ params, request }: LoaderFunctionArgs) => {
     const { naddr } = params
     if (!naddr) {
