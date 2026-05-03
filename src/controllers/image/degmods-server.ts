@@ -1,9 +1,38 @@
 import axios from 'axios'
 import { NostrCheckServer, Response } from './nostrcheck-server'
 import { NostrEvent, NDKKind } from '@nostr-dev-kit/ndk'
-import { getFileSha256, now, log, LogType } from 'utils'
+import { now, log, LogType } from 'utils'
 import { BaseError, handleError } from 'types'
 import { store } from 'store'
+
+/**
+ * Infer MIME type from file extension when browser doesn't provide one.
+ * Prevents 400 rejections for files with unrecognized extensions.
+ */
+function inferMimeType(file: File): string {
+  if (file.type && file.type !== 'application/octet-stream') return file.type
+
+  const ext = file.name.split('.').pop()?.toLowerCase()
+  switch (ext) {
+    case 'zip': return 'application/zip'
+    case 'jpg':
+    case 'jpeg': return 'image/jpeg'
+    case 'png': return 'image/png'
+    case 'gif': return 'image/gif'
+    case 'webp': return 'image/webp'
+    default: return file.type || 'application/octet-stream'
+  }
+}
+
+/**
+ * Compute SHA-256 hash from an ArrayBuffer (avoids re-reading the file).
+ */
+async function hashBuffer(buffer: ArrayBuffer): Promise<string> {
+  const hashBuf = await crypto.subtle.digest('SHA-256', buffer)
+  return Array.from(new Uint8Array(hashBuf))
+    .map((b) => b.toString(16).padStart(2, '0'))
+    .join('')
+}
 
 export type DegmodsResponse = {
   status: number
@@ -87,31 +116,46 @@ export class DegmodsServer extends NostrCheckServer {
   getResponse = async (url: string, auth: string, file: File) => {
     console.log(`[DegmodsUpload] getResponse called — url: ${url}, file: ${file.name} (${file.size} bytes, type: ${file.type})`)
 
-    // Read file into memory first
+    // Read file into memory once
     console.log(`[DegmodsUpload] Reading file into ArrayBuffer...`)
     const t0 = performance.now()
     const fileBuffer = await file.arrayBuffer()
     console.log(`[DegmodsUpload] ArrayBuffer read: ${fileBuffer.byteLength} bytes in ${(performance.now() - t0).toFixed(0)}ms`)
 
-    console.log(`[DegmodsUpload] Computing SHA256...`)
+    // Hash from the same buffer (no double-read)
+    console.log(`[DegmodsUpload] Computing SHA256 from buffer...`)
     const t1 = performance.now()
-    const sha256 = await getFileSha256(file)
+    const sha256 = await hashBuffer(fileBuffer)
     console.log(`[DegmodsUpload] SHA256: ${sha256} in ${(performance.now() - t1).toFixed(0)}ms`)
 
-    const blob = new Blob([fileBuffer], { type: file.type })
-    console.log(`[DegmodsUpload] Created Blob: ${blob.size} bytes, type: ${blob.type}`)
+    // Infer MIME type from extension if browser doesn't provide one
+    const contentType = inferMimeType(file)
+    const blob = new Blob([fileBuffer], { type: contentType })
+    console.log(`[DegmodsUpload] Created Blob: ${blob.size} bytes, type: ${contentType}`)
     console.log(`[DegmodsUpload] Sending fetch PUT to ${url}...`)
     const t2 = performance.now()
+
+    // Abort after 10 minutes to prevent indefinite hangs
+    const controller = new AbortController()
+    const uploadTimeout = setTimeout(() => controller.abort(), 10 * 60 * 1000)
 
     const fetchResponse = await fetch(url, {
       method: 'PUT',
       headers: {
         Authorization: 'Nostr ' + auth,
-        'Content-Type': file.type || 'application/octet-stream',
+        'Content-Type': contentType,
         'X-Sha256': sha256
       },
-      body: blob
+      body: blob,
+      signal: controller.signal,
+    }).catch((err) => {
+      clearTimeout(uploadTimeout)
+      if (err instanceof DOMException && err.name === 'AbortError') {
+        throw new BaseError('Upload timed out after 10 minutes. Please check your connection and try again.')
+      }
+      throw err
     })
+    clearTimeout(uploadTimeout)
 
     console.log(`[DegmodsUpload] Fetch completed: status=${fetchResponse.status} in ${(performance.now() - t2).toFixed(0)}ms`)
 
@@ -221,18 +265,30 @@ export class DegmodsServer extends NostrCheckServer {
     queueToken: string
   ) => {
     const fileBuffer = await file.arrayBuffer()
-    const sha256 = await getFileSha256(file)
+    const sha256 = await hashBuffer(fileBuffer)
+
+    const contentType = inferMimeType(file)
+    const controller = new AbortController()
+    const uploadTimeout = setTimeout(() => controller.abort(), 10 * 60 * 1000)
 
     const fetchResponse = await fetch(url, {
       method: 'PUT',
       headers: {
         Authorization: 'Nostr ' + auth,
-        'Content-Type': file.type || 'application/octet-stream',
+        'Content-Type': contentType,
         'X-Sha256': sha256,
         'X-Upload-Queue-Token': queueToken
       },
-      body: new Blob([fileBuffer], { type: file.type })
+      body: new Blob([fileBuffer], { type: contentType }),
+      signal: controller.signal,
+    }).catch((err) => {
+      clearTimeout(uploadTimeout)
+      if (err instanceof DOMException && err.name === 'AbortError') {
+        throw new BaseError('Upload timed out after 10 minutes. Please check your connection and try again.')
+      }
+      throw err
     })
+    clearTimeout(uploadTimeout)
 
     if (fetchResponse.ok) {
       const data = await fetchResponse.json()
