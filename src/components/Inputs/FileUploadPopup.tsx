@@ -5,6 +5,7 @@ import { Spinner } from 'components/Spinner'
 import { MirrorStatus, MirrorError } from './types'
 import FileUploadMirrorItem from './FileUploadMirrorItem'
 import { useBodyScrollDisable } from '../../hooks'
+import type { UploadProgress } from '../../controllers'
 
 import { UploadQueueInfo } from './FileUpload'
 import { MEDIA_OPTIONS } from '../../controllers'
@@ -32,6 +33,7 @@ interface FileUploadPopupProps {
   onClearScanError?: () => void
   uploadQueue?: Record<string, UploadQueueInfo>
   showMalwareWarning?: boolean
+  uploadProgress?: UploadProgress | null
 }
 
 export const FileUploadPopup = ({
@@ -56,7 +58,8 @@ export const FileUploadPopup = ({
   scanError,
   onClearScanError,
   uploadQueue,
-  showMalwareWarning = false
+  showMalwareWarning = false,
+  uploadProgress = null
 }: FileUploadPopupProps) => {
   useBodyScrollDisable(true)
   // Set mainHost to first item in MEDIA_OPTIONS if externalMainHost is empty or not set
@@ -646,6 +649,67 @@ export const FileUploadPopup = ({
                   </div>
                 </div>
               </div>
+
+              {/* Upload Progress Bar */}
+              {loading && stage === 'host' && uploadProgress && (
+                <div
+                  style={{
+                    marginTop: '15px',
+                    padding: '12px 16px',
+                    backgroundColor: 'rgba(0, 0, 0, 0.08)',
+                    borderRadius: '8px',
+                    border: '1px solid rgba(0, 0, 0, 0.1)'
+                  }}
+                >
+                  {/* Progress bar */}
+                  <div
+                    style={{
+                      width: '100%',
+                      height: '8px',
+                      backgroundColor: 'rgba(255, 255, 255, 0.1)',
+                      borderRadius: '4px',
+                      overflow: 'hidden',
+                      marginBottom: '8px'
+                    }}
+                  >
+                    <div
+                      style={{
+                        width: `${uploadProgress.percent}%`,
+                        height: '100%',
+                        backgroundColor: '#007bff',
+                        borderRadius: '4px',
+                        transition: 'width 0.3s ease'
+                      }}
+                    />
+                  </div>
+                  {/* Stats row */}
+                  <div
+                    style={{
+                      display: 'flex',
+                      justifyContent: 'space-between',
+                      alignItems: 'center',
+                      fontSize: '12px',
+                      color: '#adb5bd'
+                    }}
+                  >
+                    <span>
+                      {uploadProgress.percent}%{' · '}
+                      {(uploadProgress.loaded / (1024 * 1024)).toFixed(1)} / {(uploadProgress.total / (1024 * 1024)).toFixed(1)} MB
+                    </span>
+                    <span>
+                      {uploadProgress.speed > 0
+                        ? `${(uploadProgress.speed / (1024 * 1024)).toFixed(2)} MB/s`
+                        : 'Calculating...'}
+                      {uploadProgress.eta > 0 && uploadProgress.speed > 0 && (
+                        <>{' · '}{uploadProgress.eta < 60
+                          ? `${Math.ceil(uploadProgress.eta)}s left`
+                          : `${Math.ceil(uploadProgress.eta / 60)}m left`
+                        }</>
+                      )}
+                    </span>
+                  </div>
+                </div>
+              )}
 
               {/* Malware Scanning Alert */}
               {showMalwareWarning && !(

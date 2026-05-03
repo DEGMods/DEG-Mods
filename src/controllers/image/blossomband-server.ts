@@ -32,7 +32,7 @@ export class BlossomBandServer extends NostrCheckServer {
     return `${this.#url}${hash}`
   }
 
-  getResponse = async (url: string, auth: string, file: File) => {
+  getResponse = async (url: string, auth: string, file: File, _onProgress?: (p: any) => void) => {
     const response = await axios.put<Response>(url, file, {
       headers: {
         Authorization: 'Nostr ' + auth,

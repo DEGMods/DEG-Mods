@@ -2,11 +2,13 @@ import { DropzoneOptions } from 'react-dropzone'
 import { NostrCheckServer } from './nostrcheck-server'
 import { BaseError } from 'types'
 import { BlossomBandServer } from './blossomband-server'
-import { DegmodsServer } from './degmods-server'
+import { DegmodsServer, UploadProgress } from './degmods-server'
 import { AxiosResponse } from 'axios'
 
+export type { UploadProgress } from './degmods-server'
+
 export interface MediaOperations {
-  post: (file: File) => Promise<string>
+  post: (file: File, onProgress?: (p: UploadProgress) => void) => Promise<string>
 }
 export type MediaStrategy = Omit<MediaOperations, 'auth'> & {
   auth?: (hash: string, cachedSignedEvent?: string) => Promise<string>
@@ -18,12 +20,14 @@ export type MediaStrategy = Omit<MediaOperations, 'auth'> & {
     url: string,
     auth: string,
     file: File,
-    queueToken: string
+    queueToken: string,
+    onProgress?: (p: UploadProgress) => void
   ) => Promise<string>
   getResponse?: (
     url: string,
     auth: string,
-    file: File
+    file: File,
+    onProgress?: (p: UploadProgress) => void
   ) => Promise<AxiosResponse>
   getMediaUrl?: () => string
   getMirrorUrl?: () => string
@@ -92,7 +96,7 @@ enum ImageErrorType {
 }
 
 export class ImageController implements MediaStrategy {
-  post: (file: File) => Promise<string>
+  post: (file: File, onProgress?: (p: UploadProgress) => void) => Promise<string>
   auth?: (hash: string, cachedSignedEvent?: string) => Promise<string>
   scan?: (hash: string) => Promise<string>
   uploadMirrors?: (hash: string, mirrors: string[]) => Promise<string>
@@ -102,12 +106,14 @@ export class ImageController implements MediaStrategy {
     url: string,
     auth: string,
     file: File,
-    queueToken: string
+    queueToken: string,
+    onProgress?: (p: UploadProgress) => void
   ) => Promise<string>
   getResponse?: (
     url: string,
     auth: string,
-    file: File
+    file: File,
+    onProgress?: (p: UploadProgress) => void
   ) => Promise<AxiosResponse>
   getMediaUrl?: () => string
   getMirrorUrl?: () => string

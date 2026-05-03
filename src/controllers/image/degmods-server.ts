@@ -5,6 +5,37 @@ import { now, log, LogType } from 'utils'
 import { BaseError, handleError } from 'types'
 import { store } from 'store'
 
+export type UploadProgress = {
+  /** 0–100 */
+  percent: number
+  /** Bytes uploaded so far */
+  loaded: number
+  /** Total bytes */
+  total: number
+  /** Upload speed in bytes/sec (smoothed) */
+  speed: number
+  /** Estimated seconds remaining */
+  eta: number
+}
+
+/**
+ * Compute a generous upload timeout based on file size.
+ * Assumes worst-case 0.5 MB/s upload speed + 2 minute buffer for
+ * server-side processing (ClamAV scan, storage write).
+ * Minimum: 2 minutes. No upper cap.
+ */
+function computeUploadTimeout(fileSizeBytes: number): number {
+  const bytesPerSec = 0.5 * 1024 * 1024 // 0.5 MB/s assumed floor
+  const transferTime = (fileSizeBytes / bytesPerSec) * 1000
+  const processingBuffer = 2 * 60 * 1000 // 2 minutes
+  return Math.max(2 * 60 * 1000, transferTime + processingBuffer)
+}
+
+function formatTimeout(ms: number): string {
+  const mins = Math.round(ms / 60000)
+  return mins >= 60 ? `${(mins / 60).toFixed(1)} hours` : `${mins} minutes`
+}
+
 /**
  * Infer MIME type from file extension when browser doesn't provide one.
  * Prevents 400 rejections for files with unrecognized extensions.
@@ -113,7 +144,7 @@ export class DegmodsServer extends NostrCheckServer {
     return 'error'
   }
 
-  getResponse = async (url: string, auth: string, file: File) => {
+  getResponse = async (url: string, auth: string, file: File, onProgress?: (p: UploadProgress) => void) => {
     console.log(`[DegmodsUpload] getResponse called — url: ${url}, file: ${file.name} (${file.size} bytes, type: ${file.type})`)
 
     // Read file into memory once
@@ -132,36 +163,17 @@ export class DegmodsServer extends NostrCheckServer {
     const contentType = inferMimeType(file)
     const blob = new Blob([fileBuffer], { type: contentType })
     console.log(`[DegmodsUpload] Created Blob: ${blob.size} bytes, type: ${contentType}`)
-    console.log(`[DegmodsUpload] Sending fetch PUT to ${url}...`)
-    const t2 = performance.now()
+    console.log(`[DegmodsUpload] Sending XHR PUT to ${url}...`)
 
-    // Abort after 10 minutes to prevent indefinite hangs
-    const controller = new AbortController()
-    const uploadTimeout = setTimeout(() => controller.abort(), 10 * 60 * 1000)
+    const timeoutMs = computeUploadTimeout(blob.size)
+    console.log(`[DegmodsUpload] Dynamic timeout: ${formatTimeout(timeoutMs)} for ${(blob.size / (1024 * 1024)).toFixed(1)} MB`)
 
-    const fetchResponse = await fetch(url, {
-      method: 'PUT',
-      headers: {
-        Authorization: 'Nostr ' + auth,
-        'Content-Type': contentType,
-        'X-Sha256': sha256
-      },
-      body: blob,
-      signal: controller.signal,
-    }).catch((err) => {
-      clearTimeout(uploadTimeout)
-      if (err instanceof DOMException && err.name === 'AbortError') {
-        throw new BaseError('Upload timed out after 10 minutes. Please check your connection and try again.')
-      }
-      throw err
-    })
-    clearTimeout(uploadTimeout)
+    const { status, responseText, headers } = await this._xhrUpload(
+      url, auth, contentType, sha256, blob, timeoutMs, undefined, onProgress
+    )
 
-    console.log(`[DegmodsUpload] Fetch completed: status=${fetchResponse.status} in ${(performance.now() - t2).toFixed(0)}ms`)
-
-    if (fetchResponse.ok) {
-      const data = await fetchResponse.json()
-      // Build a response compatible with the NostrCheckServer.post() expectations
+    if (status >= 200 && status < 300) {
+      const data = JSON.parse(responseText)
       const response = {
         data: {
           status: 'success' as const,
@@ -170,200 +182,176 @@ export class DegmodsServer extends NostrCheckServer {
           },
           url: data.url
         },
-        status: fetchResponse.status
+        status
       }
       return response as unknown as import('axios').AxiosResponse<Response>
     }
 
-    // Handle error responses — replicate the axios error handling
-    const status = fetchResponse.status
-    const responseText = await fetchResponse.text().catch(() => '')
-    const xReason = fetchResponse.headers.get('x-reason')
-
-    switch (status) {
-      case 412: {
-        // Precondition Failed - Queue scenario
-        console.log(
-          `[FileUpload] Queue response:`,
-          responseText,
-          xReason
-        )
-        const queueData: DegmodsQueueResponse = JSON.parse(xReason || '{}')
-        console.log(`[FileUpload] Queue data:`, queueData)
-
-        if (!queueData.value || typeof queueData.value !== 'string') {
-          console.warn(
-            'Invalid queue response: missing or invalid token',
-            queueData
-          )
-          throw new BaseError(DegmodsErrorType.UPLOAD_QUEUE_FULL, {
-            context: {
-              queueToken: null,
-              position: queueData.position,
-              rawResponse: responseText,
-              auth
-            }
-          })
-        }
-
-        throw new BaseError(DegmodsErrorType.UPLOAD_QUEUE_FULL, {
-          context: {
-            queueToken: queueData.value,
-            position: queueData.position,
-            header: queueData.header,
-            auth
-          }
-        })
-      }
-
-      case 400: {
-        if (responseText?.includes('sha256')) {
-          throw new BaseError(DegmodsErrorType.AUTH_MISSING_SHA256)
-        } else if (responseText?.includes('file type')) {
-          throw new BaseError(DegmodsErrorType.INVALID_FILE_TYPE)
-        } else {
-          const errorMessage = xReason || responseText || 'Unknown error'
-          throw new BaseError('Bad request: ' + errorMessage)
-        }
-      }
-
-      case 401: {
-        throw new BaseError(
-          'Upload unauthorized: ' +
-            (responseText || 'Authentication failed')
-        )
-      }
-
-      case 413: {
-        throw new BaseError(DegmodsErrorType.FILE_TOO_LARGE)
-      }
-
-      case 507: {
-        throw new BaseError(DegmodsErrorType.SERVER_OUT_OF_SPACE)
-      }
-
-      case 404: {
-        if (responseText?.includes('disabled')) {
-          throw new BaseError(DegmodsErrorType.UPLOAD_DISABLED)
-        }
-        throw new BaseError('Upload endpoint not found')
-      }
-
-      default: {
-        throw new BaseError(
-          `Upload failed: ${status} - ${responseText || 'Unknown error'}`
-        )
-      }
-    }
+    this._handleErrorResponse(status, responseText, headers, auth)
   }
 
-  // New method to retry upload with queue token
+  // Retry upload with queue token
   retryWithQueueToken = async (
     url: string,
     auth: string,
     file: File,
-    queueToken: string
+    queueToken: string,
+    onProgress?: (p: UploadProgress) => void
   ) => {
     const fileBuffer = await file.arrayBuffer()
     const sha256 = await hashBuffer(fileBuffer)
-
     const contentType = inferMimeType(file)
-    const controller = new AbortController()
-    const uploadTimeout = setTimeout(() => controller.abort(), 10 * 60 * 1000)
+    const blob = new Blob([fileBuffer], { type: contentType })
 
-    const fetchResponse = await fetch(url, {
-      method: 'PUT',
-      headers: {
-        Authorization: 'Nostr ' + auth,
-        'Content-Type': contentType,
-        'X-Sha256': sha256,
-        'X-Upload-Queue-Token': queueToken
-      },
-      body: new Blob([fileBuffer], { type: contentType }),
-      signal: controller.signal,
-    }).catch((err) => {
-      clearTimeout(uploadTimeout)
-      if (err instanceof DOMException && err.name === 'AbortError') {
-        throw new BaseError('Upload timed out after 10 minutes. Please check your connection and try again.')
-      }
-      throw err
-    })
-    clearTimeout(uploadTimeout)
+    const timeoutMs = computeUploadTimeout(blob.size)
 
-    if (fetchResponse.ok) {
-      const data = await fetchResponse.json()
+    const { status, responseText, headers } = await this._xhrUpload(
+      url, auth, contentType, sha256, blob, timeoutMs, queueToken, onProgress
+    )
+
+    if (status >= 200 && status < 300) {
+      const data = JSON.parse(responseText)
       return data.url as string
     }
 
-    const status = fetchResponse.status
-    const responseText = await fetchResponse.text().catch(() => '')
-    const xReason = fetchResponse.headers.get('x-reason')
+    // For retries, also handle 412 (still in queue)
+    if (status === 412) {
+      const xReason = headers['x-reason'] || ''
+      const queueData: DegmodsQueueResponse = JSON.parse(xReason || '{}')
 
-    switch (status) {
-      case 412: {
-        // Still in queue, update position
-        const queueData: DegmodsQueueResponse = JSON.parse(xReason || '{}')
-
-        if (!queueData.value || typeof queueData.value !== 'string') {
-          console.warn(
-            'Invalid retry queue response: missing or invalid token',
-            queueData
-          )
-          throw new BaseError(DegmodsErrorType.UPLOAD_QUEUE_POSITION, {
-            context: {
-              queueToken: queueData.value,
-              position: queueData.position || 0,
-              rawResponse: responseText
-            }
-          })
-        }
-
+      if (!queueData.value || typeof queueData.value !== 'string') {
+        console.warn('Invalid retry queue response: missing or invalid token', queueData)
         throw new BaseError(DegmodsErrorType.UPLOAD_QUEUE_POSITION, {
           context: {
             queueToken: queueData.value,
-            position: queueData.position || 0
+            position: queueData.position || 0,
+            rawResponse: responseText
           }
         })
       }
 
+      throw new BaseError(DegmodsErrorType.UPLOAD_QUEUE_POSITION, {
+        context: {
+          queueToken: queueData.value,
+          position: queueData.position || 0
+        }
+      })
+    }
+
+    this._handleErrorResponse(status, responseText, headers, auth)
+  }
+
+  /* ─── Shared XHR upload with progress tracking ─── */
+
+  private _xhrUpload(
+    url: string,
+    auth: string,
+    contentType: string,
+    sha256: string,
+    blob: Blob,
+    timeoutMs: number,
+    queueToken?: string,
+    onProgress?: (p: UploadProgress) => void
+  ): Promise<{ status: number; responseText: string; headers: Record<string, string> }> {
+    return new Promise((resolve, reject) => {
+      const xhr = new XMLHttpRequest()
+      const startTime = Date.now()
+      let lastLoaded = 0
+      let lastTime = startTime
+      let smoothSpeed = 0
+
+      xhr.open('PUT', url)
+      xhr.setRequestHeader('Authorization', 'Nostr ' + auth)
+      xhr.setRequestHeader('Content-Type', contentType)
+      xhr.setRequestHeader('X-Sha256', sha256)
+      if (queueToken) {
+        xhr.setRequestHeader('X-Upload-Queue-Token', queueToken)
+      }
+      xhr.timeout = timeoutMs
+
+      xhr.upload.onprogress = (e) => {
+        if (!e.lengthComputable || !onProgress) return
+        const now = Date.now()
+        const elapsed = (now - lastTime) / 1000
+        if (elapsed > 0.3) {
+          const instantSpeed = (e.loaded - lastLoaded) / elapsed
+          smoothSpeed = smoothSpeed === 0 ? instantSpeed : smoothSpeed * 0.7 + instantSpeed * 0.3
+          lastLoaded = e.loaded
+          lastTime = now
+        }
+        const remaining = e.total - e.loaded
+        onProgress({
+          percent: Math.round((e.loaded / e.total) * 100),
+          loaded: e.loaded,
+          total: e.total,
+          speed: smoothSpeed,
+          eta: smoothSpeed > 0 ? remaining / smoothSpeed : 0
+        })
+      }
+
+      xhr.onload = () => {
+        // Parse response headers we care about
+        const headers: Record<string, string> = {}
+        const xReason = xhr.getResponseHeader('x-reason')
+        if (xReason) headers['x-reason'] = xReason
+        resolve({ status: xhr.status, responseText: xhr.responseText, headers })
+      }
+
+      xhr.onerror = () => reject(new BaseError('Network error during upload. Please check your connection.'))
+
+      xhr.ontimeout = () => {
+        reject(new BaseError(
+          `Upload timed out after ${formatTimeout(timeoutMs)}. The file may be too large for your connection speed.`
+        ))
+      }
+
+      xhr.send(blob)
+    })
+  }
+
+  /* ─── Shared error handler for non-OK responses ─── */
+
+  private _handleErrorResponse(
+    status: number,
+    responseText: string,
+    headers: Record<string, string>,
+    auth: string
+  ): never {
+    const xReason = headers['x-reason'] || ''
+
+    switch (status) {
+      case 412: {
+        console.log(`[FileUpload] Queue response:`, responseText, xReason)
+        const queueData: DegmodsQueueResponse = JSON.parse(xReason || '{}')
+        console.log(`[FileUpload] Queue data:`, queueData)
+
+        if (!queueData.value || typeof queueData.value !== 'string') {
+          console.warn('Invalid queue response: missing or invalid token', queueData)
+          throw new BaseError(DegmodsErrorType.UPLOAD_QUEUE_FULL, {
+            context: { queueToken: null, position: queueData.position, rawResponse: responseText, auth }
+          })
+        }
+        throw new BaseError(DegmodsErrorType.UPLOAD_QUEUE_FULL, {
+          context: { queueToken: queueData.value, position: queueData.position, header: queueData.header, auth }
+        })
+      }
       case 400: {
-        if (responseText?.includes('sha256')) {
-          throw new BaseError(DegmodsErrorType.AUTH_MISSING_SHA256)
-        } else if (responseText?.includes('file type')) {
-          throw new BaseError(DegmodsErrorType.INVALID_FILE_TYPE)
-        } else {
-          const errorMessage = xReason || responseText || 'Unknown error'
-          throw new BaseError('Bad request: ' + errorMessage)
-        }
+        if (responseText?.includes('sha256')) throw new BaseError(DegmodsErrorType.AUTH_MISSING_SHA256)
+        if (responseText?.includes('file type')) throw new BaseError(DegmodsErrorType.INVALID_FILE_TYPE)
+        throw new BaseError('Bad request: ' + (xReason || responseText || 'Unknown error'))
       }
-
-      case 401: {
-        throw new BaseError(
-          'Upload unauthorized: ' +
-            (responseText || 'Authentication failed')
-        )
-      }
-
-      case 413: {
+      case 401:
+        throw new BaseError('Upload unauthorized: ' + (responseText || 'Authentication failed'))
+      case 413:
         throw new BaseError(DegmodsErrorType.FILE_TOO_LARGE)
-      }
-
-      case 507: {
+      case 507:
         throw new BaseError(DegmodsErrorType.SERVER_OUT_OF_SPACE)
-      }
-
       case 404: {
-        if (responseText?.includes('disabled')) {
-          throw new BaseError(DegmodsErrorType.UPLOAD_DISABLED)
-        }
+        if (responseText?.includes('disabled')) throw new BaseError(DegmodsErrorType.UPLOAD_DISABLED)
         throw new BaseError('Upload endpoint not found')
       }
-
-      default: {
-        throw new BaseError(
-          `Upload failed: ${status} - ${responseText || 'Unknown error'}`
-        )
-      }
+      default:
+        throw new BaseError(`Upload failed: ${status} - ${responseText || 'Unknown error'}`)
     }
   }
 

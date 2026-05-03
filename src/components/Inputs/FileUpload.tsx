@@ -4,7 +4,8 @@ import {
   MediaOption,
   MEDIA_OPTIONS,
   ImageController,
-  MEDIA_DROPZONE_OPTIONS
+  MEDIA_DROPZONE_OPTIONS,
+  UploadProgress
 } from '../../controllers'
 import { errorFeedback } from '../../types'
 import { useBlossomList } from '../../hooks'
@@ -80,6 +81,7 @@ export const FileUpload = React.memo(
     const [cachedFiles, setCachedFiles] = useState<File[]>([])
     const [isScanned, setIsScanned] = useState(false)
     const [scanError, setScanError] = useState<string | null>(null)
+    const [uploadProgress, setUploadProgress] = useState<UploadProgress | null>(null)
     // Determine default upload server based on file type:
     // - Zip/mod files → bs.degmods.com (degmods-server with malware scanning)
     // - Images → blossom.band (blossomband-server, no scanning needed)
@@ -156,6 +158,7 @@ export const FileUpload = React.memo(
             setMirrorStatus({})
             setMirrorErrors({})
             setScanError(null)
+            setUploadProgress(null)
 
             const imageController = new ImageController(
               correspondingMediaOption
@@ -214,11 +217,11 @@ export const FileUpload = React.memo(
                     )
                     url = response || ''
                   } else {
-                    url = await imageController.post(file)
+                    url = await imageController.post(file, (p) => setUploadProgress(p))
                   }
                 } else {
                   // Normal upload
-                  url = await imageController.post(file)
+                  url = await imageController.post(file, (p) => setUploadProgress(p))
                 }
 
                 if (url) {
@@ -1400,6 +1403,7 @@ export const FileUpload = React.memo(
               setUploadQueue({})
               setFileHashMap({})
               setRetryInProgress({})
+              setUploadProgress(null)
               setIsLoading(false)
             }}
             supportsScanning={(() => {
@@ -1413,6 +1417,7 @@ export const FileUpload = React.memo(
             scanError={scanError}
             onClearScanError={clearScanError}
             uploadQueue={uploadQueue}
+            uploadProgress={uploadProgress}
           />
         )}
         <MediaInputPopover

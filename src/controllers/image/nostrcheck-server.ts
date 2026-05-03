@@ -66,7 +66,7 @@ export class NostrCheckServer implements MediaOperations {
     return `${this.#url}${this.#head}/${hash}`
   }
 
-  getResponse = async (url: string, auth: string, file: File) => {
+  getResponse = async (url: string, auth: string, file: File, _onProgress?: (p: any) => void) => {
     const response = await axios.postForm<Response>(
       url,
       {
@@ -392,12 +392,12 @@ export class NostrCheckServer implements MediaOperations {
     }
   }
 
-  post = async (file: File) => {
+  post = async (file: File, onProgress?: (p: any) => void) => {
     const url = this.getMediaUrl()
     const sha256 = await getFileSha256(file)
     const auth = await this.auth(sha256)
     try {
-      const response = await this.getResponse(url, auth, file)
+      const response = await this.getResponse(url, auth, file, onProgress)
 
       if (response.data.status !== 'success') {
         throw new BaseError(HandledErrorType.NOSTR_CHECK_NO_SUCCESS, {
