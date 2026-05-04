@@ -19,22 +19,12 @@ export type UploadProgress = {
 }
 
 /**
- * Compute a generous upload timeout based on file size.
- * Assumes worst-case 0.5 MB/s upload speed + 2 minute buffer for
- * server-side processing (ClamAV scan, storage write).
- * Minimum: 2 minutes. No upper cap.
+ * Stall detection: abort upload if no progress is made for this many ms.
+ * This replaces fixed timeouts — uploads of any size/speed succeed as long
+ * as data keeps flowing. Only truly stalled connections get aborted.
  */
-function computeUploadTimeout(fileSizeBytes: number): number {
-  const bytesPerSec = 0.5 * 1024 * 1024 // 0.5 MB/s assumed floor
-  const transferTime = (fileSizeBytes / bytesPerSec) * 1000
-  const processingBuffer = 2 * 60 * 1000 // 2 minutes
-  return Math.max(2 * 60 * 1000, transferTime + processingBuffer)
-}
-
-function formatTimeout(ms: number): string {
-  const mins = Math.round(ms / 60000)
-  return mins >= 60 ? `${(mins / 60).toFixed(1)} hours` : `${mins} minutes`
-}
+const STALL_TIMEOUT_MS = 60_000 // 60 seconds with no progress → abort
+const STALL_CHECK_INTERVAL_MS = 5_000 // check every 5 seconds
 
 /**
  * Infer MIME type from file extension when browser doesn't provide one.
@@ -164,12 +154,10 @@ export class DegmodsServer extends NostrCheckServer {
     const blob = new Blob([fileBuffer], { type: contentType })
     console.log(`[DegmodsUpload] Created Blob: ${blob.size} bytes, type: ${contentType}`)
     console.log(`[DegmodsUpload] Sending XHR PUT to ${url}...`)
-
-    const timeoutMs = computeUploadTimeout(blob.size)
-    console.log(`[DegmodsUpload] Dynamic timeout: ${formatTimeout(timeoutMs)} for ${(blob.size / (1024 * 1024)).toFixed(1)} MB`)
+    console.log(`[DegmodsUpload] Stall detection: abort if no progress for ${STALL_TIMEOUT_MS / 1000}s`)
 
     const { status, responseText, headers } = await this._xhrUpload(
-      url, auth, contentType, sha256, blob, timeoutMs, undefined, onProgress
+      url, auth, contentType, sha256, blob, undefined, onProgress
     )
 
     if (status >= 200 && status < 300) {
@@ -203,10 +191,8 @@ export class DegmodsServer extends NostrCheckServer {
     const contentType = inferMimeType(file)
     const blob = new Blob([fileBuffer], { type: contentType })
 
-    const timeoutMs = computeUploadTimeout(blob.size)
-
     const { status, responseText, headers } = await this._xhrUpload(
-      url, auth, contentType, sha256, blob, timeoutMs, queueToken, onProgress
+      url, auth, contentType, sha256, blob, queueToken, onProgress
     )
 
     if (status >= 200 && status < 300) {
@@ -241,7 +227,7 @@ export class DegmodsServer extends NostrCheckServer {
     this._handleErrorResponse(status, responseText, headers, auth)
   }
 
-  /* ─── Shared XHR upload with progress tracking ─── */
+  /* ─── Shared XHR upload with stall-based progress tracking ─── */
 
   private _xhrUpload(
     url: string,
@@ -249,7 +235,6 @@ export class DegmodsServer extends NostrCheckServer {
     contentType: string,
     sha256: string,
     blob: Blob,
-    timeoutMs: number,
     queueToken?: string,
     onProgress?: (p: UploadProgress) => void
   ): Promise<{ status: number; responseText: string; headers: Record<string, string> }> {
@@ -259,6 +244,27 @@ export class DegmodsServer extends NostrCheckServer {
       let lastLoaded = 0
       let lastTime = startTime
       let smoothSpeed = 0
+      let lastProgressTime = Date.now()
+      let settled = false
+
+      const cleanup = () => {
+        settled = true
+        clearInterval(stallChecker)
+      }
+
+      // Stall detection — abort if no progress for STALL_TIMEOUT_MS
+      const stallChecker = setInterval(() => {
+        if (settled) return
+        const stallDuration = Date.now() - lastProgressTime
+        if (stallDuration > STALL_TIMEOUT_MS) {
+          cleanup()
+          xhr.abort()
+          const stallSecs = Math.round(stallDuration / 1000)
+          reject(new BaseError(
+            `Upload stalled — no data sent for ${stallSecs} seconds. Please check your connection and try again.`
+          ))
+        }
+      }, STALL_CHECK_INTERVAL_MS)
 
       xhr.open('PUT', url)
       xhr.setRequestHeader('Authorization', 'Nostr ' + auth)
@@ -267,9 +273,10 @@ export class DegmodsServer extends NostrCheckServer {
       if (queueToken) {
         xhr.setRequestHeader('X-Upload-Queue-Token', queueToken)
       }
-      xhr.timeout = timeoutMs
+      // No xhr.timeout — stall detection handles it
 
       xhr.upload.onprogress = (e) => {
+        lastProgressTime = Date.now() // reset stall timer on any progress
         if (!e.lengthComputable || !onProgress) return
         const now = Date.now()
         const elapsed = (now - lastTime) / 1000
@@ -290,19 +297,24 @@ export class DegmodsServer extends NostrCheckServer {
       }
 
       xhr.onload = () => {
-        // Parse response headers we care about
+        cleanup()
         const headers: Record<string, string> = {}
         const xReason = xhr.getResponseHeader('x-reason')
         if (xReason) headers['x-reason'] = xReason
         resolve({ status: xhr.status, responseText: xhr.responseText, headers })
       }
 
-      xhr.onerror = () => reject(new BaseError('Network error during upload. Please check your connection.'))
+      xhr.onerror = () => {
+        cleanup()
+        reject(new BaseError('Network error during upload. Please check your connection.'))
+      }
 
-      xhr.ontimeout = () => {
-        reject(new BaseError(
-          `Upload timed out after ${formatTimeout(timeoutMs)}. The file may be too large for your connection speed.`
-        ))
+      xhr.onabort = () => {
+        // Only handle if not already settled by stall detection
+        if (!settled) {
+          cleanup()
+          reject(new BaseError('Upload was cancelled.'))
+        }
       }
 
       xhr.send(blob)
