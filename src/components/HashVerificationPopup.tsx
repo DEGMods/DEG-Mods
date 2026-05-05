@@ -175,7 +175,51 @@ export const HashVerificationPopup = ({
    */
   const downloadFileForVerification = useCallback(
     async (downloadUrl: string): Promise<File> => {
-      const response = await fetch(downloadUrl)
+      // ── Pre-check: HEAD request to detect missing files quickly ──
+      // The blossom server responds to HEAD with 200/404 from its DB almost
+      // instantly, so a missing-from-DB file is caught in <1s.  We use a
+      // short timeout so that even if the HEAD hangs (e.g. server down) we
+      // don't block the user for long — the real fetch below has its own
+      // timeout too.
+      try {
+        const headController = new AbortController()
+        const headTimer = setTimeout(() => headController.abort(), 8_000)
+        const headRes = await fetch(downloadUrl, {
+          method: 'HEAD',
+          signal: headController.signal
+        })
+        clearTimeout(headTimer)
+
+        if (headRes.status === 404) {
+          throw new Error(
+            'File not found on server — it may have been deleted or is no longer available'
+          )
+        }
+        // Any other non-OK status (except 202 for challenges) is suspicious
+        // but we let the real GET handle it below.
+      } catch (headErr) {
+        // If the HEAD itself threw (timeout / network error), log but
+        // continue to the GET — the GET has its own timeout.
+        if (
+          headErr instanceof Error &&
+          headErr.message.startsWith('File not found')
+        ) {
+          throw headErr // re-throw our explicit 404 message
+        }
+        console.warn(
+          '[HashVerification] HEAD pre-check failed, continuing to GET:',
+          headErr
+        )
+      }
+
+      // ── Main fetch with a response timeout ──
+      const fetchController = new AbortController()
+      const fetchTimer = setTimeout(() => fetchController.abort(), 30_000)
+      const response = await fetch(downloadUrl, {
+        signal: fetchController.signal
+      })
+      clearTimeout(fetchTimer)
+
       console.log('[HashVerification] Response status:', response.status)
 
       // Check for challenge response (HTTP 202)
@@ -256,6 +300,16 @@ export const HashVerificationPopup = ({
         const chunks: Uint8Array[] = []
         let receivedBytes = 0
 
+        // ── Stall detection: abort if no data arrives for 30s ──
+        let stallTimer: ReturnType<typeof setTimeout> | null = null
+        const resetStallTimer = () => {
+          if (stallTimer) clearTimeout(stallTimer)
+          stallTimer = setTimeout(() => {
+            reader.cancel('Download stalled — no data received for 30 seconds')
+          }, 30_000)
+        }
+        resetStallTimer()
+
         try {
           // eslint-disable-next-line no-constant-condition
           while (true) {
@@ -266,6 +320,7 @@ export const HashVerificationPopup = ({
             if (value) {
               chunks.push(value)
               receivedBytes += value.length
+              resetStallTimer()
 
               // Update progress
               const progress = Math.round((receivedBytes / totalBytes) * 100)
@@ -275,7 +330,15 @@ export const HashVerificationPopup = ({
               }))
             }
           }
+        } catch (streamErr) {
+          if (stallTimer) clearTimeout(stallTimer)
+          throw new Error(
+            streamErr instanceof Error
+              ? streamErr.message
+              : 'Download stalled or was interrupted'
+          )
         } finally {
+          if (stallTimer) clearTimeout(stallTimer)
           reader.releaseLock()
         }
 
