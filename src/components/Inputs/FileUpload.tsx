@@ -325,17 +325,108 @@ export const FileUpload = React.memo(
                       `[FileUpload] BaseError for file ${file.name}:`,
                       error
                     )
-                    failedFiles.push({ file, error: error as Error })
-                    errorOccurred = true
+
+                    // Attempt fallback servers for non-zip uploads
+                    if (!isZipUpload) {
+                      let fallbackSucceeded = false
+                      const fallbackServers = MEDIA_OPTIONS.filter(
+                        (mo) => mo.host !== correspondingMediaOption.host
+                      )
+
+                      for (const fallbackOption of fallbackServers) {
+                        try {
+                          console.log(
+                            `[FileUpload] Trying fallback server: ${fallbackOption.name}`
+                          )
+                          const fallbackController = new ImageController(fallbackOption)
+                          const fallbackUrl = await fallbackController.post(file, (p) => setUploadProgress(p))
+
+                          if (fallbackUrl) {
+                            console.log(
+                              `[FileUpload] Fallback succeeded on ${fallbackOption.name}: ${fallbackUrl}`
+                            )
+                            urls.push(fallbackUrl)
+                            hashes.push(hash)
+                            filenameMap[file.name] = hash
+                            setUploadedUrls((prev) => [...prev, fallbackUrl])
+                            setUploadedHashes((prev) => [...prev, hash])
+                            setUploadedFilenames((prev) => ({
+                              ...prev,
+                              [file.name]: hash
+                            }))
+                            fallbackSucceeded = true
+                            break
+                          }
+                        } catch (fallbackError) {
+                          console.warn(
+                            `[FileUpload] Fallback server ${fallbackOption.name} also failed:`,
+                            fallbackError
+                          )
+                        }
+                      }
+
+                      if (!fallbackSucceeded) {
+                        failedFiles.push({ file, error: error as Error })
+                        errorOccurred = true
+                      }
+                    } else {
+                      failedFiles.push({ file, error: error as Error })
+                      errorOccurred = true
+                    }
                   }
                 } else {
                   console.error(
                     `[FileUpload] Unknown error for file ${file.name}:`,
                     error
                   )
-                  failedFiles.push({ file, error: error as Error })
-                  errorOccurred = true
-                }
+
+                  // Attempt fallback servers for non-zip uploads
+                  if (!isZipUpload) {
+                    let fallbackSucceeded = false
+                    const fallbackServers = MEDIA_OPTIONS.filter(
+                      (mo) => mo.host !== correspondingMediaOption.host
+                    )
+
+                    for (const fallbackOption of fallbackServers) {
+                      try {
+                        console.log(
+                          `[FileUpload] Trying fallback server: ${fallbackOption.name}`
+                        )
+                        const fallbackController = new ImageController(fallbackOption)
+                        const fallbackUrl = await fallbackController.post(file, (p) => setUploadProgress(p))
+
+                        if (fallbackUrl) {
+                          console.log(
+                            `[FileUpload] Fallback succeeded on ${fallbackOption.name}: ${fallbackUrl}`
+                          )
+                          urls.push(fallbackUrl)
+                          hashes.push(hash)
+                          filenameMap[file.name] = hash
+                          setUploadedUrls((prev) => [...prev, fallbackUrl])
+                          setUploadedHashes((prev) => [...prev, hash])
+                          setUploadedFilenames((prev) => ({
+                            ...prev,
+                            [file.name]: hash
+                          }))
+                          fallbackSucceeded = true
+                          break
+                        }
+                      } catch (fallbackError) {
+                        console.warn(
+                          `[FileUpload] Fallback server ${fallbackOption.name} also failed:`,
+                          fallbackError
+                        )
+                      }
+                    }
+
+                    if (!fallbackSucceeded) {
+                      failedFiles.push({ file, error: error as Error })
+                      errorOccurred = true
+                    }
+                  } else {
+                    failedFiles.push({ file, error: error as Error })
+                    errorOccurred = true
+                  }
               }
             }
 

@@ -1,5 +1,5 @@
 import { FALLBACK_PROFILE_IMAGE } from 'constants.ts'
-import { rewriteBlossomUrl } from '../utils/blossomRewrite'
+import { ImageWithFallback } from './ImageWithFallback'
 import { Event, Filter, nip19, UnsignedEvent } from 'nostr-tools'
 import { QRCodeSVG } from 'qrcode.react'
 import { Fragment, useEffect, useMemo, useState } from 'react'
@@ -143,10 +143,29 @@ export const ProfileSection = ({ pubkey }: Props) => {
                       {post.imageUrl && (
                         <div
                           className="IBMSMSMSSS_ShortPostsPost_BottomImg"
-                          style={{
-                            background: `linear-gradient(0deg, #232323 5%, rgba(255, 255, 255, 0)), url("${rewriteBlossomUrl(post.imageUrl)}") top / cover no-repeat`
-                          }}
-                        ></div>
+                          style={{ position: 'relative', overflow: 'hidden' }}
+                        >
+                          <ImageWithFallback
+                            src={post.imageUrl}
+                            alt=""
+                            style={{
+                              width: '100%',
+                              height: '100%',
+                              objectFit: 'cover',
+                              position: 'absolute',
+                              top: 0,
+                              left: 0
+                            }}
+                          />
+                          <div style={{
+                            position: 'absolute',
+                            bottom: 0,
+                            left: 0,
+                            right: 0,
+                            height: '30%',
+                            background: 'linear-gradient(0deg, #232323 5%, rgba(255, 255, 255, 0))'
+                          }} />
+                        </div>
                       )}
                     </div>
                   </div>
@@ -219,10 +238,13 @@ export const Profile = ({ pubkey }: ProfileProps) => {
                 <div className="IBMSMSMSSS_Author_Top_PPWrapper">
                   <div
                     className="IBMSMSMSSS_Author_Top_PP"
-                    style={{
-                      background: `url('${rewriteBlossomUrl(image)}') center / cover no-repeat`
-                    }}
-                  ></div>
+                  >
+                    <ImageWithFallback
+                      src={image}
+                      alt={displayName}
+                      style={{ width: '100%', height: '100%', objectFit: 'cover', borderRadius: 'inherit' }}
+                    />
+                  </div>
                 </div>
               </div>
               <div className="IBMSMSMSSS_Author_Top_Left_InsideDetails">

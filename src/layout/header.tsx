@@ -437,14 +437,6 @@ const RegisterButtonWithDialog = () => {
                     <a
                       className="btn btnMain btnMainPopup"
                       role="button"
-                      href="https://chromewebstore.google.com/detail/nostrame/phfdiknibomfgpefcicfckkklimoniej"
-                      target="_blank"
-                    >
-                      Nostrome (Chromium)
-                    </a>
-                    <a
-                      className="btn btnMain btnMainPopup"
-                      role="button"
                       href="https://addons.mozilla.org/en-US/firefox/addon/nostr-connect/"
                       target="_blank"
                     >
