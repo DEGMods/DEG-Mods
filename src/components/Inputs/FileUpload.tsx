@@ -427,6 +427,7 @@ export const FileUpload = React.memo(
                     failedFiles.push({ file, error: error as Error })
                     errorOccurred = true
                   }
+                }
               }
             }
 
