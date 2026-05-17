@@ -13,7 +13,6 @@ import {
   TimeoutError
 } from 'types'
 import {
-  isReachable,
   isValidImageUrl,
   isValidUrl,
   log,
@@ -246,12 +245,9 @@ const validateState = async (
 
   if (!formState.featuredImageUrl || formState.featuredImageUrl === '') {
     errors.featuredImageUrl = 'FeaturedImageUrl field can not be empty'
-  } else if (
-    !isValidImageUrl(formState.featuredImageUrl) ||
-    !(await isReachable(formState.featuredImageUrl))
-  ) {
+  } else if (!isValidImageUrl(formState.featuredImageUrl)) {
     errors.featuredImageUrl =
-      'FeaturedImageUrl must be a valid and reachable image URL'
+      'FeaturedImageUrl must be a valid image URL'
   }
 
   if (!formState.summary || formState.summary === '') {
@@ -263,16 +259,12 @@ const validateState = async (
   } else {
     for (let i = 0; i < formState.screenshotsUrls.length; i++) {
       const url = formState.screenshotsUrls[i]
-      if (
-        !isValidUrl(url) ||
-        !isValidImageUrl(url) ||
-        !(await isReachable(url))
-      ) {
+      if (!isValidUrl(url) || !isValidImageUrl(url)) {
         if (!errors.screenshotsUrls)
           errors.screenshotsUrls = Array(formState.screenshotsUrls.length)
 
         errors.screenshotsUrls![i] =
-          'All screenshot URLs must be valid and reachable image URLs'
+          'All screenshot URLs must be valid image URLs'
       }
     }
   }
@@ -297,13 +289,12 @@ const validateState = async (
         downloadUrl.mediaUrl &&
         downloadUrl.mediaUrl.trim() !== '' &&
         (!isValidUrl(downloadUrl.mediaUrl) ||
-          !isValidImageUrl(downloadUrl.mediaUrl) ||
-          !(await isReachable(downloadUrl.mediaUrl)))
+          !isValidImageUrl(downloadUrl.mediaUrl))
       ) {
         if (!errors.downloadUrls)
           errors.downloadUrls = Array(formState.downloadUrls.length)
 
-        errors.downloadUrls![i] = 'Media URLs must be valid and reachable image'
+        errors.downloadUrls![i] = 'Media URLs must be valid image URLs'
       }
     }
   }
