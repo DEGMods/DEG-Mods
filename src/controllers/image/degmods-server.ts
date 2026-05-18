@@ -22,8 +22,12 @@ export type UploadProgress = {
  * Stall detection: abort upload if no progress is made for this many ms.
  * This replaces fixed timeouts — uploads of any size/speed succeed as long
  * as data keeps flowing. Only truly stalled connections get aborted.
+ *
+ * Base timeout is 60s for fast failure when the connection is genuinely dead.
+ * The adaptive extension (set in onprogress) extends this based on observed
+ * upload speed so slow-but-healthy connections aren't killed prematurely.
  */
-const STALL_TIMEOUT_MS = 60_000 // 60 seconds with no progress → abort
+const STALL_TIMEOUT_BASE_MS = 60_000 // 60s base — fast feedback on dead connections
 const STALL_CHECK_INTERVAL_MS = 5_000 // check every 5 seconds
 
 /**
@@ -154,7 +158,7 @@ export class DegmodsServer extends NostrCheckServer {
     const blob = new Blob([fileBuffer], { type: contentType })
     console.log(`[DegmodsUpload] Created Blob: ${blob.size} bytes, type: ${contentType}`)
     console.log(`[DegmodsUpload] Sending XHR PUT to ${url}...`)
-    console.log(`[DegmodsUpload] Stall detection: abort if no progress for ${STALL_TIMEOUT_MS / 1000}s`)
+    console.log(`[DegmodsUpload] Stall detection: abort if no progress for ${STALL_TIMEOUT_BASE_MS / 1000}s`)
 
     const { status, responseText, headers } = await this._xhrUpload(
       url, auth, contentType, sha256, blob, undefined, onProgress
@@ -252,11 +256,11 @@ export class DegmodsServer extends NostrCheckServer {
         clearInterval(stallChecker)
       }
 
-      // Stall detection — abort if no progress for STALL_TIMEOUT_MS
+      // Stall detection — abort if no progress for STALL_TIMEOUT_BASE_MS
       const stallChecker = setInterval(() => {
         if (settled) return
         const stallDuration = Date.now() - lastProgressTime
-        if (stallDuration > STALL_TIMEOUT_MS) {
+        if (stallDuration > STALL_TIMEOUT_BASE_MS) {
           cleanup()
           xhr.abort()
           const stallSecs = Math.round(stallDuration / 1000)
